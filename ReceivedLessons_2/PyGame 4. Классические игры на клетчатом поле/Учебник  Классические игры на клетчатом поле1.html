@@ -1,0 +1,50 @@
+<section class="lesson-material__content"><article class="material"><h1>Классические игры на клетчатом поле</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Игра «Жизнь»</a></li>
+<li><a class="material__link" href="#2">Сапер</a></li>
+<li><a class="material__link" href="#3">Lines</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Занятие целиком состоит из задач. Ваша цель — решать задачи на алгоритмы из популярных классических игр. Потом, при желании, вы сможете доработать какую-то из них до итогового проекта.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Игра «Жизнь»</h2>
+<p>Игра Жизнь («Conway's Game of Life») придумана английским математиком Джоном Конвеем в далеком 1970 году. Нам она интересна сейчас, потому что ее очень легко реализовать при помощи класса, который вы построили на прошлом занятии.</p>
+<p>Ознакомьтесь или вспомните <a class="material__link" href="https://ru.wikipedia.org/wiki/%D0%98%D0%B3%D1%80%D0%B0_%C2%AB%D0%96%D0%B8%D0%B7%D0%BD%D1%8C%C2%BB#.D0.9F.D1.80.D0.B0.D0.B2.D0.B8.D0.BB.D0.B0" rel="noopener noreferrer" target="_blank">правила игры</a> и попробуйте ее написать.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-4/lifegame.gif" width="600"/></div>
+<p>Этапы игры:</p>
+<ol>
+<li>Расставить клетки на игровом поле нажатиями левой кнопки мышки</li>
+<li>Запустить развитие колонии нажатием пробела или правой кнопки мыши. Покрутив колесиком мышки, можно ускорить или замедлить развитие популяции</li>
+<li>Повторное нажатие на пробел останавливает процесс и дает возможность вручную заново откорректировать ситуацию на игровом поле</li>
+</ol>
+<p><strong>На что стоит обратить внимание:</strong></p>
+<ol>
+<li>Чтобы получить следующую итерацию игры необходимо сделать полную копию поля. В этом может помочь функция <code>deepcopy()</code> из модуля <var>copy</var></li>
+<li>Оформите генерацию следующего состояния в виде метода с именем <code>next_move()</code> и вызывайте его в игровом цикле</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="2">Сапер</h2>
+<p>Нам кажется, что нет на свете такого человека, который имел дело с компьютерами и хоть раз в жизни не играл в <a class="material__link" href="https://ru.wikipedia.org/wiki/%D0%A1%D0%B0%D0%BF%D1%91%D1%80_(%D0%B8%D0%B3%D1%80%D0%B0)" rel="noopener noreferrer" target="_blank">Сапера</a>.</p>
+<p>Поэтому давайте сделаем заготовку для этой игры в виде класса <var>Minesweeper</var>.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-4-2.png" width="170"/></div>
+<p><strong>На что стоит обратить внимание:</strong> в обычной игре, если игрок открывает пустую клетку (то есть клетку, вокруг которой нет ни одной мины), то открываются все связанные соседние пустые клетки.</p>
+<p>Эту механику можно эффектно реализовать как императивным способом (с помощью циклов), так и рекурсивно. Например, рекурсивное определение может звучать так:</p>
+<ol>
+<li>Если клетка пустая и еще не открыта, то открываем все ее соседние клетки</li>
+<li>Выполним эту же операцию последовательно для всех соседних клеток</li>
+</ol>
+<p>Еще одна вещь, на которую часто никто не обращает внимания: если вы открыли все мины вокруг ячейки и нажмете на ней одновременно обе клавиши мыши, то откроются все оставшиеся ячейки вокруг открытых бомб, в том числе и пустых.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Lines</h2>
+<p>В игре <a class="material__link" href="https://ru.wikipedia.org/wiki/Color_Lines" rel="noopener noreferrer" target="_blank">Lines</a> игроку постоянно добавляются на поле разноцветные шарики (в списке <var>board</var> их можно моделировать целыми числами, ноль означает, что шарика нет).</p>
+<p>Игрок может выбрать любой шарик и указать ему клетку, в которую тот должен попасть. Перемещение шарика начинается только тогда, когда есть «проход» из стартовой клетки в финишную. Если набрать нужное количество одноцветных шариков, они исчезают.</p>
+<p>Чтобы найти «проход» необходимо воспользоваться <strong>волновым алгоритмом</strong>. Про него много написано в интернете, например, <a class="material__link" href="https://www.pvsm.ru/python/77932" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+<p>После каждого хода на поле случайным образом возникают новые шарики.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-4-3.jpeg" width="240"/></div>
+</section></article></section>

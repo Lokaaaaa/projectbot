@@ -1,0 +1,288 @@
+<section class="lesson-material__content"><article class="material"><h1>Функции. Возвращение значений из функций</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Связь между математическими функциями и функциями в Python</a></li>
+<li><a class="material__link" href="#2">Возвращаемые значения</a></li>
+<li><a class="material__link" href="#3">Множественные точки возврата из функции</a></li>
+<li><a class="material__link" href="#4">Возврат из глубины функции</a></li>
+<li><a class="material__link" href="#5">Отладка</a></li>
+<li><a class="material__link" href="#6">Что можно возвращать из функции</a></li>
+<li><a class="material__link" href="#7">Возврат нескольких значений</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы обсудим, почему функции называются функциями, чем они похожи и чем отличаются от функций в математике. И главное: мы разберемся с основной целью вызова функций — возвратом во внешнюю программу результата вычисления.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Связь между математическими функциями и функциями в Python</h2>
+<p>Функции, которые мы писали до сих пор, выводили значение на экран. Однако значение, выведенное на экран, полезно только для человека. Сама программа никак не может его использовать. Если бы функции могли выводить результаты своей работы только на экран, их было бы почти невозможно комбинировать.</p>
+<p>Каждая функция может не только выполнять действия, но и выдавать какой-то результат, который потом можно использовать в программе — например, записать в переменную. Вы еще не делали таких функций, но уже не раз пользовались ими. Попробуйте вспомнить несколько примеров.</p>
+<p>Если вы посмотрите примеры таких функций, вы увидите среди них много математических... функций.</p>
+<p>Функция в математике — такое преобразование, которое из одного значения или набора значений делает другое значение. Например, функция квадратного корня делает из числа его корень. Функция f(a,b) = (a+b)^2 делает из двух чисел квадрат их суммы. Фактически единственное важное свойство математической функции заключается в том, что каждому набору аргументов она сопоставляет значение, и каждый раз вычисление функции на одних и тех же аргументах дает один и тот же результат. Сколько бы раз вы ни вычисляли корень из шестнадцати, каждый раз будете получать четыре.</p>
+<p>Заметьте: математическая функция не обязана работать с числами. Например, в математике можно встретить такую функцию — число перестановок букв в слове. Это функция, которая принимает аргументом строку, а возвращает число. Или функцию пересечения множеств, которая берет в качестве аргументов два множества и возвращает тоже множество.</p>
+<p>Чем функции в программировании похожи и чем отличаются от функций в математике?</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция в языке Python</strong></p>
+<p>Функция в языке Python — некий алгоритм, который выполняется каждый раз одинаково. Для большинства функций возвращаемое значение, как и в случае математической функции, зависит только от аргументов.</p>
+</section>
+<p>У функций в Python, как вы знаете, тоже есть список аргументов: иногда одно значение, иногда несколько, а иногда он и вовсе пустой, как у функции <var>input</var>. У функций также есть возвращаемое значение — значение всегда ровно одно.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Может показаться, что некоторые функции ничего не возвращают (как функция <var>print</var>), но на самом деле они тоже возвращают значение — None.</p>
+</section>
+<p>В некоторых других языках программирования существуют функции, которые могут не возвращать значения, их называют «процедуры».</p>
+<p>Их отличие от математических функций в том, что функция в Python может зависеть не только от аргументов, но и от внешних причин. Что для функции может быть внешними причинами? Например, действия пользователя.</p>
+<p>Функция <var>input</var>, помимо пустого списка аргументов, получает ввод с клавиатуры пользователя. Некоторые функции читают файлы на жестком диске или в Интернете, а значит, их результат зависит от содержимого файла или веб-страницы. Есть функции, работа которых зависит от текущего времени. Есть функции, зависящие от датчика случайных чисел.</p>
+<p>Кроме того, работа некоторых функций зависит от внешних (глобальных) переменных (об этом мы будем говорить на следующем занятии). Это еще одна особенность функций в Python: они могут изменять что-то снаружи функции — менять глобальные переменные, выводить текст на экран, записывать что-то в файлы.</p>
+<p>Таким образом, функции можно разделить на функции с побочными эффектами и без них.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функции без побочных эффектов</strong></p>
+<p>Функции без побочных эффектов и использования внешних источников данных (их еще называют «чистые функции») ведут себя в точности как математические функции. Их результат зависит только от аргументов, а вызов таких функций никак не влияет на ход остальной программы.</p>
+</section>
+<p>Большая часть известных вам встроенных функций Python ведет себя так: <var>math.sqrt</var>, <var>math.cos</var>, <var>abs</var>, <var>int</var>, <var>str</var>, <var>len</var>, <var>min</var>, <var>max</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функции с побочными эффектами</strong></p>
+<p>Функции с побочными эффектами — как правило, функции, предназначенные для общения с «внешним миром»: пользователем, файлами на жестком диске, другими программами или серверами в Интернете. Пока что вы знаете две такие функции, встроенные в язык: <var>input</var> и <var>print</var>.</p>
+</section>
+<p>Побочные эффекты часто используются для изменения аргумента — как в методах <var>sort</var> и <var>reverse</var>, которые изменяют данные в списке.</p>
+<p>Любая функция, которая использует <code>input()</code> или <code>print()</code>, тоже имеет побочные эффекты. И любая функция, которая изменяет значения внешних переменных, тоже имеет побочные эффекты. На следующем занятии мы отдельно поговорим о том, как функции с побочными эффектами могут влиять на глобальные переменные, а как делать чистые функции и работать с ними, мы начнем говорить сейчас.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Возвращаемые значения</h2>
+<p>Для того чтобы функция вернула значение, используется оператор <var>return</var>. Использовать его очень просто. Давайте напишем функцию <var>double_it</var>, которая удваивает значение:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">double_it</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> x <span class="token operator">*</span> <span class="token number">2</span>
+</code></pre>
+<p>Эта функция получила число <var>x</var> в качестве аргумента, умножила его на 2 и вернула результат в основную программу. Значением, которое функция вернула, можно воспользоваться. Например, мы можем посчитать длину окружности с использованием этой функции:</p>
+<pre class="language-python"><code class="language-python">radius <span class="token operator">=</span> <span class="token number">3</span>
+length <span class="token operator">=</span> double_it<span class="token punctuation">(</span><span class="token number">3.14</span><span class="token punctuation">)</span> <span class="token operator">*</span> radius
+</code></pre>
+<p>Когда интерпретатор дойдет до <code>double_it(3.14)</code>, начнет исполняться код функции. Когда он дойдет до слова <var>return</var>, значение, которое указано после <var>return</var>, будет подставлено в программе вместо вызова функции. Можно сказать, что сразу после того как функция досчитается, вычисление превратится в такое:</p>
+<pre class="language-python"><code class="language-python">length <span class="token operator">=</span> <span class="token number">6.28</span> <span class="token operator">*</span> radius
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Заметьте: функция <var>double_it</var> ничего не выводит на экран. Она выполняет вычисления и сообщает их не пользователю, как мы делали раньше, а другой части программы.</p>
+</section>
+<p>Если нам потребуется не просто вернуть удвоенное число, а еще и вывести его на экран, лучше не добавлять <var>print</var> внутрь функции. Ведь если вы добавите <var>print</var> в функцию, уже никак не сможете вызвать эту функцию в «тихом» режиме, чтобы она ничего не печатала. Вместо этого лучше сначала вернуть результат, а потом уже распечатать его во внешней программе. Вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>double_it<span class="token punctuation">(</span><span class="token number">3.14</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Или, если вам нужно еще как-то использовать вычисленное значение, можно завести специальную переменную, хранящую результат вычисления.</p>
+<pre class="language-python"><code class="language-python">double_pi <span class="token operator">=</span> double_it<span class="token punctuation">(</span><span class="token number">3.14</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>double_pi<span class="token punctuation">)</span>
+length <span class="token operator">=</span> double_pi <span class="token operator">*</span> radius
+</code></pre>
+<p>Функция удваивания числа, конечно, совершенно бесполезна.</p>
+<p>А теперь давайте рассмотрим чуть более сложный пример — вычисление суммы элементов списка:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">my_sum</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    result <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token keyword">for</span> element <span class="token keyword">in</span> arr<span class="token punctuation">:</span>
+        result <span class="token operator">+=</span> element
+    <span class="token keyword">return</span> result
+
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_sum<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Здесь мы используем очень распространенный способ написания функций: создаем вспомогательную переменную, а затем возвращаем ее значение.</p>
+<p>Но мы ведь недавно говорили, что локальные переменные живут только внутри функции. Если переменная <var>result</var> исчезнет, почему результат — число 10 — никуда не пропадает?</p>
+<p>Объект (значение) может существовать, даже когда нет переменной, в которой он хранится. Когда мы записываем число в <var>result</var>, мы фактически создаем объект числа и даем ему временное имя <var>result</var>. Потом, когда мы пишем <code>return result</code>, мы возвращаем не переменную. Как и в большинстве конструкций языка (кроме, пожалуй, присваивания), вместо переменной подставляется ее значение: таким образом, мы возвращаем объект «число 10». У этого объекта нет имени, что не мешает функции <var>print</var> использовать его и напечатать 10 на экране (подробнее об этом мы поговорим, когда будем рассматривать, как передаются параметры в функции).</p>
+<p>Однако, если ни программист, ни программа не имеют возможности пользоваться объектом, этот объект становится не нужен. После того как функция <var>print</var> отработала, доступ к результату вычисления пропал, ведь мы никуда не сохранили этот результат. На объект «число 10» нет ссылок, поэтому интерпретатор может его «выкинуть».</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Сборка мусора</strong></p>
+<p>Это называется «сборка мусора»: Python автоматически избавляется от всех объектов, которые невозможно использовать.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="3">Множественные точки возврата из функции</h2>
+<p>Часто бывают ситуации, когда в зависимости от входных данных нужно выполнить различные наборы команд. Например, когда мы считаем модуль, в случае отрицательного числа нужно взять число со знаком минус, а в случае неотрицательного числа (положительное или ноль) мы берем само число.</p>
+<p>Давайте запишем это в виде функции <code>my_abs(x)</code>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">my_abs</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> x
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> <span class="token operator">-</span>x
+    <span class="token keyword">return</span> result
+</code></pre>
+<p>Но если вдуматься: зачем ждать конца функции, когда мы уже вычислили результат и совершили все необходимые действия? Давайте завершим функцию сразу, ведь <var>return</var> именно для этого создан: он не только возвращает значение функции, но и возвращает нас из функции в основную программу. После вызова оператора <var>return</var> выполнение кода функции заканчивается. Раз так, давайте немного упростим программу. Сначала мы перенесем <var>return</var> к тому месту, где результат получен:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">my_abs</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> x
+        <span class="token keyword">return</span> result
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> <span class="token operator">-</span>x
+        <span class="token keyword">return</span> result
+</code></pre>
+<p>А теперь можно заметить, что переменная <var>result</var> лишняя: когда вы подставляете значение <var>result</var>, вместо <var>result</var> вы легко можете подставить сразу результат.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">my_abs</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> x
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token operator">-</span>x
+</code></pre>
+<p>Можно обратить внимание, что в последней записи <var>else</var>-часть становится нам вообще не нужна, и тогда сократить функцию до вот такой:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">my_abs</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> x
+    <span class="token keyword">return</span> <span class="token operator">-</span>x
+</code></pre>
+<p>Заметьте, что любую функцию можно написать с одним-единственным оператором <var>return</var>, но часто использовать несколько точек выхода из функции просто удобно.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Возврат из глубины функции</h2>
+<p>Множественные точки возврата из функции позволяют нам упростить обработку и более сложных структур, например, вложенных списков. Наша следующая программа будет проверять, есть ли в матрице элемент, отличающийся от искомого не больше чем на число <var>eps</var>.</p>
+<p>Матрица записывается как список списков. Мы предполагаем, что наша функция будет работать с большими матрицами, поэтому нам не хочется тратить лишнее время на проверку. Мы будем прекращать поиск, как только нашли подходящий элемент. Давайте для начала разберемся, как бы мы действовали без множественных операторов <var>return</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">matrix_has_close_value</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> value<span class="token punctuation">,</span> eps<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    found <span class="token operator">=</span> <span class="token boolean">False</span>
+    <span class="token keyword">for</span> row <span class="token keyword">in</span> matrix<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> cell <span class="token keyword">in</span> row<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>cell <span class="token operator">-</span> value<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> eps<span class="token punctuation">:</span>
+                found <span class="token operator">=</span> <span class="token boolean">True</span>
+                <span class="token keyword">break</span>
+        <span class="token keyword">if</span> found<span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+    <span class="token keyword">if</span> found<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+</code></pre>
+<p>Как видите, нам приходится прилагать некоторые усилия, чтобы выйти из нескольких уровней вложенности. Каждый уровень вложенности — дополнительное препятствие на пути к завершению функции. Ему мешают не только циклы, как в этом примере, но и условные операторы.</p>
+<p>Перепишем теперь функцию с учетом того, что, как только мы нашли элемент, мы уже знаем, что ответ — True (т. е. элемент содержится в матрице). А если мы закончили перебор элементов и так и не нашли ни одного элемента, ответ False.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">matrix_has_close_value</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> value<span class="token punctuation">,</span> eps<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> row <span class="token keyword">in</span> matrix<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> cell <span class="token keyword">in</span> row<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>cell <span class="token operator">-</span> value<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> eps<span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">return</span> <span class="token boolean">False</span>
+</code></pre>
+<p>Хотя <code>return False</code> не заключен ни в какое условие, выполняется он только тогда, когда элемент не найден. Если элемент найден, мы сразу выходим из функции и до этой строки просто не доходим. Оператор <var>return</var> очень удобен, когда нужно выйти из глубины функции.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Отладка</h2>
+<p>В PyCharm процесс отладки аналогичен тому, как он происходил в Wing IDE. Для создания/удаления точки останова, надо кликнуть на левое поле рядом со строчкой кода, где мы хотим остановится в режиме отладки. Запустить программу в режиме отладки можно несколькими способами:</p>
+<ol>
+<li>Из пункта меню Run → Debug &lt;имя файла с программой&gt;.</li>
+<li>Из меню быстрых действий — кнопка с жуком над кодом в правом верхнем углу.</li>
+<li>Кликнув правой кнопкой мышки в любом месте нашего файла и выбрав в выпадающем меню пункт Debug &lt;имя файла с программой&gt;.</li>
+<li>Используя сочетание клавиш Shift + F9.</li>
+</ol>
+<p>После того как программа запустится в режиме отладки, в нижней части программы откроется уже привычная консоль, но только перед выводом самой программы в нее выведется надпись вроде</p>
+<pre><code>pydev debugger: process 20924 is connecting
+</code></pre>
+<p>а затем</p>
+<pre><code>#Connected to pydev debugger (build 191.7479.30)#
+</code></pre>
+<p>Эти надписи говорят, что отладчик сначала попытался «прицепиться» к нашей программе, а потом — что он преуспел в этом и готов работать.</p>
+<p>После остановки на брейкпоинте и в процессе дальнейшей отладки вам, как и Wing IDE, будет доступен просмотр текущих значений переменных во вкладке Debugger в нижней части окна PyCharm. Приятным отличием от Wing является то, что текущие значения переменных пишутся еще и в коде в том месте, где они были объявлены.</p>
+<p>Давайте проследим последовательность выполнения команд в отладчике. Запустим следующий код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">matrix_has_close_value</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> value<span class="token punctuation">,</span> eps<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> row <span class="token keyword">in</span> matrix<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> cell <span class="token keyword">in</span> row<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>cell <span class="token operator">-</span> value<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> eps<span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+
+table <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+result <span class="token operator">=</span> matrix_has_close_value<span class="token punctuation">(</span>table<span class="token punctuation">,</span> <span class="token number">3.75</span><span class="token punctuation">,</span> <span class="token number">0.5</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+</code></pre>
+<p>Будем выполнять инструкции по одной с помощью команды Step Into (F7). Сначала будет определена функция <var>matrix_has_close_value</var>. На этом шаге интерпретатор Python в нее еще не заходит. Затем мы определяем переменную <var>table</var>, и она появляется на вкладке Stack data в разделе глобальных переменных. Затем мы запускаем функцию и попадаем внутрь нее.</p>
+<p>Обратите внимание: появились локальные переменные <var>matrix</var>, <var>value</var> и <var>eps</var>. Причем <var>matrix</var> указывает ровно туда же, куда указывает <var>table</var> (у них одинаковый идентификатор 0x&lt;...&gt;). На прошлых занятиях мы обсуждали, что объект, который был подставлен в аргумент получает новое имя — в нашем случае <var>matrix</var>, но старое имя тоже остается, потому что переменная <var>table</var> находится в глобальной области видимости.</p>
+<p>Если продолжить выполнение, пройдет несколько итераций цикла, пока мы не дойдем до момента, когда элемент в ячейке (число 4) c точностью до <code>eps(=0.5)</code> совпадет со значением <code>value(=3.75)</code>, которое мы ищем. На этом месте мы перейдем на строчку <code>return True</code> и следующим шагом выйдем из функции.</p>
+<p>После того как мы вышли из функции, возвращенное значение True будет записано в переменную <var>result</var>, которая появится в списке глобальных. Затем эта переменная будет подставлена в функцию <var>print</var> и напечатана.</p>
+<p>Что мы видим? Во-первых, у нас есть возможность пронаблюдать, что происходит с объектами и переменными. Во-вторых, слово <var>return</var> действительно моментально завершает функцию и перемещает нас к строке, в которой мы вызвали функцию. И, конечно, возвращает результат.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Step Into</strong></p>
+<p>Для пошаговой отладки мы пользовались командой Step Into. Она так называется, поскольку заставляет отладчик зайти в функцию (если это возможно) и показывать мельчайшие детали исполнения кода функции.</p>
+</section>
+<p>Бывает, что заходить в функцию незачем: вы в ней уверены и ничего не собираетесь менять. Или в ней слишком много команд, которые не просмотреть. Или решили отложить ее отладку на будущее.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Step Over Statement</strong></p>
+<p>На этот случай в отладчике предусмотрена команда Step Over Statement (F8). При ее применении функция все равно будет вызвана, но отладчик не покажет вам подробности исполнения. Он просто дождется, пока функция завершит свою работу, вернет результат и переведет вас на следующую строчку после вызова функции.</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Step Out</strong></p>
+<p>Иногда бывает нужно также выйти из функции. Например, когда вы зашли в нее отладчиком случайно или когда вы все в ней уже понимаете. В таких случаях вам поможет команда Step Out (Shift + F8). Она продолжает выполнение, пока не встретит return, выполняет его и оказывается за пределами функции.</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Resume Program</strong></p>
+<p>Если вы посмотрели то, что хотели, в режиме отладки и хотите, чтобы выполнение программы продолжилось далее в обычном режиме (или до следующего брейкпоинта), удобно воспользоваться командой Resume Program (F9).</p>
+</section>
+<p><strong>Задание.</strong> Поэкспериментируйте с отладчиком:</p>
+<ul>
+<li>С помощью пошаговой отладки узнайте, что произойдет, если вместо второго аргумента подставить значение, которого нет в матрице?</li>
+</ul>
+<ul>
+<li>Сравните списки локальных и глобальных переменных до того, как мы входим в функцию. Что происходит со списком глобальных переменных, когда мы входим в функцию? Что происходит со списком локальных переменных?</li>
+</ul>
+<ul>
+<li>Узнайте, как будут изменяться переменные при входе в функцию (следите за идентификаторами объектов), если завести еще одну глобальную переменную с именем <var>matrix</var>?</li>
+</ul>
+<ul>
+<li>Что произойдет, если, находясь в функции, присвоить что-нибудь переменной <var>table</var>?</li>
+</ul>
+<ul>
+<li>А что если, находясь в функции, попробовать изменить какой-нибудь элемент в <var>table</var>?</li>
+</ul>
+<ul>
+<li>Разберитесь с отличиями между Step Into, Step Out и Step Over. В каких ситуациях они работают, а в каких нет?</li>
+</ul>
+<p>Не бойтесь испортить функцию! Изменяйте ее как угодно, лишь бы можно было понять, как ведет себя интерпретатор Python в сложных ситуациях.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Что можно возвращать из функции</h2>
+<p>В функциях, которые не возвращают значение, тоже можно использовать <var>return</var>. Если написать <var>return</var> без аргументов, функция просто сразу завершит свою работу (без <var>return</var> функция завершает работу, когда выполнит последнюю команду).</p>
+<p>Как мы уже упоминали, результат возвращает любая функция, даже если в ней нет слова <var>return</var>. Результатом такой функции будет None.</p>
+<p>Если в функции использован <var>return</var> без аргументов, это фактически эквивалентно <code>return None</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Возврат нескольких значений</h2>
+<p>В задаче про корни квадратного уравнения у нас уже возникала необходимость вернуть несколько значений. Вы видели, что это можно сделать, вернув список значений.</p>
+<p>То же самое можно сделать немного проще: если после <var>return</var> написать несколько значений через запятую, Python автоматически поместит эти значения в кортеж и вернет этот кортеж.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_coordinates</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span>
+
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>get_coordinates<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; (1, 2)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Команда возврата нескольких значений</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span>
+</code></pre>
+<p>практически идентична команде возврата кортежа с этими значениями</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Вы можете пользоваться любой, как вам больше нравится.</p>
+<p>Мы разобрались, как возвращать значения из функции. Но как программа их получает, когда значений несколько? Оказывается, есть несколько способов. Один вариант вы знаете, можно записать в переменную весь кортеж:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_coordinates</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span>
+
+
+result <span class="token operator">=</span> get_coordinates<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; (1, 2)</span>
+</code></pre>
+<p>Можно вместо этого воспользоваться множественным присваиванием, тогда значения автоматически будут распределены по разным переменным:</p>
+<pre class="language-python"><code class="language-python">x<span class="token punctuation">,</span> y <span class="token operator">=</span> get_coordinates<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token comment"># =&gt; 1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span> <span class="token comment"># =&gt; 2</span>
+</code></pre>
+<p>Обратите внимание: <var>get_coordinates</var> в обоих случаях — одна и та же функция, которая используется немного по-разному.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Когда в функции используется несколько операторов <var>return</var>, позаботьтесь о том, чтобы каждый из операторов возвращал однотипные наборы значений. Ведь вызывающая функция заранее не знает, какой из операторов <var>return</var> выполнится, а значит, мы не сможем использовать множественное присваивание в полную силу.</p>
+</section>
+<p>В следующей функции (это, конечно, бесполезная функция, она нужна только для иллюстрации) мы не последовали этому совету и возвращаем координаты то на плоскости, то в трехмерном пространстве.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_coordinates</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> index <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1.5</span><span class="token punctuation">,</span> <span class="token number">2.5</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1.5</span><span class="token punctuation">,</span> <span class="token number">2.5</span><span class="token punctuation">,</span> <span class="token number">0</span>
+</code></pre>
+<p>Теперь вызов <code>x, y = get_coordinates()</code> будет ломаться на нечетных индексах, а <code>x, y, z = get_coordinates()</code> — на четных индексах. В итоге мы не сможем записать ни один из вариантов так, чтобы он не сломался при каких-нибудь условиях.</p>
+<p>Вы уже видели, как локальные переменные помогают интерпретатору Python не запутаться в именах переменных. Но не всегда бывает просто понять, что за переменная используется в функции: собственная локальная переменная или чужая — из внешней программы. Чтобы разобраться в этих тонкостях, на следующем занятии мы очень подробно обсудим, что такое область видимости переменных.</p>
+</section></article></section>

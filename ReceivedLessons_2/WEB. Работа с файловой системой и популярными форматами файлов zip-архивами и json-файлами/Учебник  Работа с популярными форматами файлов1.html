@@ -1,0 +1,768 @@
+<section class="lesson-material__content"><article class="material"><h1>Работа с файловой системой и популярными форматами файлов: zip-архивами и json-файлами</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение</a></li>
+<li><a class="material__link" href="#2">Манипуляции с файлами и папками</a></li>
+<li><a class="material__link" href="#3">Модули os и os.path</a></li>
+<li><a class="material__link" href="#4">Модуль shutil (shell utilities)</a></li>
+<li><a class="material__link" href="#5">Zip-архивы</a></li>
+<li><a class="material__link" href="#6">Формат JSON</a></li>
+<li><a class="material__link" href="#7">Библиотека для работы с JSON</a></li>
+<li><a class="material__link" href="#8">В заключении</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке рассказывается об основных средствах манипуляции с файлами и папками в Python, а также о работе с файлами специализированных форматов: zip-архивах и JSON.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Введение</h2>
+<p>Мы уже научились создавать программы с графическим пользовательским интерфейсом с использованием виджетов PyQt, работать с базами данных, а также создавать игровые приложения с применением библиотеки PyGame. В этом полугодии мы будем рассматривать еще одну сложную и многообразную тему — работу с сетью Интернет. Периодически мы будем немного отвлекаться непосредственно от самого Интернета и говорить о смежных темах, которые сильно облегчат нам жизнь в дальнейшем.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Манипуляции с файлами и папками</h2>
+<p>Когда мы создавали PyQt-приложения, мы говорили о том, что такое файл, какими они бывают и как с каждым типом файлов работать с помощью языка программирования Python. Давайте копнем немного глубже в этом направлении.</p>
+<p>Уверены, что ни для кого не является сюрпризом, что файлы в современных операционных системах (ОС) не валяются в одной куче, а организованы особым образом. Почти все ОС поддерживают технологию иерархической, или древовидной, организации файловых систем. Кроме понятия <strong>файл</strong> существует также и понятие <strong>папка</strong> (или каталог). Папка — это контейнер, содержащий файлы, причем папка может быть вложена в другую папку, а та — в другую папку и т. д. Файловая система представляет собой своеобразное дерево с вершинами-папками и листьями-файлами. В UNIX-подобных операционных системах благодаря концепции «все есть файл» папка является также специальным файлом.</p>
+<p>Действия с файлами и папками могут быть специфичными для операционной системы, поэтому нужно внимательно изучать документацию к той или иной библиотеке языка. Однако большинство обычных операций с файловой системой для большинства современных операционных систем универсальны.</p>
+<p>Помимо работы с содержимым файла, в Python есть средства для работы с файловой системой в целом, а именно:</p>
+<ul>
+<li>Управление местоположением файла (копирование и перемещение)</li>
+<li>Создание и удаление файла</li>
+<li>Обход файловой системы</li>
+<li>Получение метаданных файлов и т. д.</li>
+</ul>
+<p>Мы начнем обзор возможностей с модуля os, потом рассмотрим модуль os.path и модуль shutil.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Модули os и os.path</h2>
+<p>Модуль os содержит в себе некоторые уникальные функции, зависящие от конкретной операционной системы. Посмотрим, что же в нем находится. Нам поможет функция <var>dir()</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">dir</span><span class="token punctuation">(</span>os<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['DirEntry', 'F_OK', 'MutableMapping', 'O_APPEND', 'O_BINARY', 'O_CREAT',
+ 'O_EXCL', 'O_NOINHERIT', 'O_RANDOM', 'O_RDONLY', 'O_RDWR', 'O_SEQUENTIAL',
+ 'O_SHORT_LIVED', 'O_TEMPORARY', 'O_TEXT', 'O_TRUNC', 'O_WRONLY',
+ 'P_DETACH', 'P_NOWAIT', 'P_NOWAITO', 'P_OVERLAY', 'P_WAIT', 'PathLike',
+ 'R_OK', 'SEEK_CUR', 'SEEK_END', 'SEEK_SET', 'TMP_MAX', 'W_OK', 'X_OK',
+ '_Environ', '__all__', '__builtins__', '__cached__', '__doc__',
+ '__file__', '__loader__', '__name__', '__package__', '__spec__',
+ '_execvpe', '_exists', '_exit', '_fspath', '_get_exports_list', '_putenv',
+ '_unsetenv', '_wrap_close', 'abc', 'abort', 'access', 'altsep', 'chdir',
+ 'chmod', 'close', 'closerange', 'cpu_count', 'curdir', 'defpath',
+ 'device_encoding', 'devnull', 'dup', 'dup2', 'environ', 'error', 'execl',
+ 'execle', 'execlp', 'execlpe', 'execv', 'execve', 'execvp', 'execvpe',
+ 'extsep', 'fdopen', 'fsdecode', 'fsencode', 'fspath', 'fstat', 'fsync',
+ 'ftruncate', 'get_exec_path', 'get_handle_inheritable', 'get_inheritable',
+ 'get_terminal_size', 'getcwd', 'getcwdb', 'getenv', 'getlogin', 'getpid',
+ 'getppid', 'isatty', 'kill', 'linesep', 'link', 'listdir', 'lseek', 'lstat',
+ 'makedirs', 'mkdir', 'name', 'open', 'pardir', 'path', 'pathsep', 'pipe',
+ 'popen', 'putenv', 'read', 'readlink', 'remove', 'removedirs', 'rename',
+ 'renames', 'replace', 'rmdir', 'scandir', 'sep', 'set_handle_inheritable',
+ 'set_inheritable', 'spawnl', 'spawnle', 'spawnv', 'spawnve', 'st',
+ 'startfile', 'stat', 'stat_result', 'statvfs_result', 'strerror',
+ 'supports_bytes_environ', 'supports_dir_fd', 'supports_effective_ids',
+ 'supports_fd', 'supports_follow_symlinks', 'symlink', 'sys', 'system',
+ 'terminal_size', 'times', 'times_result', 'truncate', 'umask', 'uname_result',
+ 'unlink', 'urandom', 'utime', 'waitpid', 'walk', 'write']</samp></pre>
+<p>Рассмотрим некоторые полезные функции из этого модуля, относящиеся к файлам и папкам. Остальные возможности вы можете почерпнуть из <a class="material__link" href="https://docs.python.org/3/library/os.html" rel="noopener noreferrer" target="_blank">документации</a> самостоятельно.</p>
+<p>Аттрибут <var>os.name</var> содержит строковое значение с типом операционной системы, в которой выполняется наша программа. Допустимые значения:</p>
+<ul>
+<li><var>posix</var> — для linux и macOS</li>
+<li><var>nt</var> — для операционных систем семейства Windows</li>
+<li><var>java</var> — для систем, работающих в виртуальной Java-машине (например, Android)</li>
+</ul>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>name<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>posix</samp></pre>
+<p>Чтобы узнать имя текущего каталога, надо вызвать функцию <code>os.getcwd()</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>getcwd<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>/SomeUser/some folder</samp></pre>
+<p>Если текущий каталог не был изменен (об этом ниже), то функция <code>os.getcwd()</code> вернет адрес каталога, в котором лежит ваша программа.</p>
+<p>Для смены текущего каталога используется функция <code>os.chdir()</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+
+os<span class="token punctuation">.</span>chdir<span class="token punctuation">(</span><span class="token string">'files'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>getcwd<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>/SomeUser/some folder/files</samp></pre>
+<p>Для чего это может быть нужно? Давайте, например, представим, что у нас идет обработка большого количества файлов, которые лежат в папке с нашей программой, в директории files. Тогда из программы необходимо будет обращаться к этим файлам с указанием относительного пути: files/file1, files/file2 и т. д. Это не всегда удобно. Иногда значительно проще поменять текущий каталог на /files и обращаться к файлам непосредственно по имени: file1, file2 и т. д.</p>
+<p>Для того чтобы перейти из текущего каталога в родительский, необходимо вызвать функцию <code>os.chdir()</code> с аргументом <code>'..'</code></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+
+os<span class="token punctuation">.</span>chdir<span class="token punctuation">(</span><span class="token string">'..'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>getcwd<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>/SomeUser/</samp></pre>
+<p>Можно использовать не только относительные пути, но и абсолютные, например: C:\Program files.</p>
+<p>Проверить, существует ли файл, доступен ли файл для чтения или записи, можно с помощью функции <code>os.access()</code>:</p>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>access<span class="token punctuation">(</span><span class="token string">"1.txt"</span><span class="token punctuation">,</span> os<span class="token punctuation">.</span>F_OK<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True</samp></pre>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>access<span class="token punctuation">(</span><span class="token string">"1.txt"</span><span class="token punctuation">,</span> os<span class="token punctuation">.</span>R_OK<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True</samp></pre>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>access<span class="token punctuation">(</span><span class="token string">"такого файла нет.txt"</span><span class="token punctuation">,</span> os<span class="token punctuation">.</span>F_OK<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>False</samp></pre>
+<p>Флаги <var>W_OK</var>, <var>R_OK</var>, <var>F_OK</var> отвечают соответственно за возможность записи, чтения, а также за факт существования файла.</p>
+<p>Для получения списка файлов и вложенных каталогов используется функция <code>os.listdir()</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>listdir<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['1', '2', '3', '1.txt', 'Icon\r']</samp></pre>
+<p>В качестве параметра в <code>os.listdir()</code> можно передать относительный или абсолютный адрес каталога. Если ничего не передать, то напечатается список файлов и директорий в текущей папке.</p>
+<p>Очень полезной может быть функция рекурсивного прохода по всем папкам в заданной папке (примерно такой же функциональности можно добиться самостоятельно, написав рекурсивный алгоритм, с использованием функции <code>os.listdir()</code> и <code>os.chdir()</code>).</p>
+<p>Для примера рассмотрим следующую файловую структуру, начиная с каталога files:</p>
+<pre><code>│ 1.txt
+├───1
+├───2
+└───3
+    │ Описание.txt
+    │
+    └───files
+            └───csvs
+                  └───данные.сsv
+</code></pre>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> currentdir<span class="token punctuation">,</span> dirs<span class="token punctuation">,</span> files <span class="token keyword">in</span> os<span class="token punctuation">.</span>walk<span class="token punctuation">(</span><span class="token string">'files'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>currentdir<span class="token punctuation">,</span> dirs<span class="token punctuation">,</span> files<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>files ['1', '2', '3'] ['1.txt', 'Icon\r']
+files/1 [] ['Icon\r']
+files/2 [] ['Icon\r']
+files/3 ['files'] ['Icon\r', 'Описание.txt']
+files/3/files ['csvs'] []
+files/3/files/csvs [] ['Icon\r', 'данные.csv']</samp></pre>
+<p>Видим, что функция <code>os.walk()</code> возвращает кортеж из трех элементов: текущий каталог, список вложенных каталогов, список файлов текущей директории.</p>
+<p>Рекурсивно перебирая папки, мы всегда имеем полное имя текущего каталога (относительно того, откуда стартовали), список папок данного каталога и список его файлов.</p>
+<p>Например, когда оказались в папке 3, то текущий каталог — это files/3, список папок — это <code>['files']</code>, а список файлов — <code>['Icon\r', 'Описание.txt']</code>.</p>
+<p>Посмотрим теперь, какие функции нам предлагает модуль <var>os.path</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">dir</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>path<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['__all__', '__builtins__', '__cached__', '__doc__', '__file__',
+ '__loader__', '__name__', '__package__', '__spec__', '_get_sep',
+ '_joinrealpath', '_varprog', '_varprogb', 'abspath', 'altsep',
+ 'basename', 'commonpath', 'commonprefix', 'curdir', 'defpath',
+ 'devnull', 'dirname', 'exists', 'expanduser', 'expandvars',
+ 'extsep', 'genericpath', 'getatime', 'getctime', 'getmtime',
+ 'getsize', 'isabs', 'isdir', 'isfile', 'islink', 'ismount', 'join',
+ 'lexists', 'normcase', 'normpath', 'os', 'pardir', 'pathsep',
+ 'realpath', 'relpath', 'samefile', 'sameopenfile', 'samestat',
+ 'sep', 'split', 'splitdrive', 'splitext', 'stat',
+ 'supports_unicode_filenames', 'sys']</samp></pre>
+<p>С помощью функции <code>os.path.exists()</code> можно проверить, существует ли файл, а с помощью функций <code>os.path.isfile()</code> и <code>os.path.isdir()</code> определить, какого он типа: «настоящий» или папка (здесь работает идеология UNIX).</p>
+<p>Как видите, одну и ту же задачу можно выполнить по-разному, используя функциональность различных библиотек.</p>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>exists<span class="token punctuation">(</span><span class="token string">'files/3'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True</samp></pre>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>isfile<span class="token punctuation">(</span><span class="token string">'files/3'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>False</samp></pre>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>isdir<span class="token punctuation">(</span><span class="token string">'files/2'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True</samp></pre>
+<p>Функция <code>os.path.abspath()</code> вернет абсолютный путь по относительному:</p>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>abspath<span class="token punctuation">(</span><span class="token string">'1.txt'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>'/SomeUser/some folder/1.txt'</samp></pre>
+<p>А функция <code>os.path.dirname()</code> — полное имя каталога, в котором находится файл.</p>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>dirname<span class="token punctuation">(</span><span class="token string">'1.txt'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>''</samp></pre>
+<pre class="language-python"><code class="language-python">os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>dirname<span class="token punctuation">(</span><span class="token string">'3/files/csvs/данные.csv'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>'3/files/csvs'</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Модуль shutil (shell utilities)</h2>
+<p>Еще один полезный модуль — shutil (правда веселое название?). В нем содержатся несколько высокоуровневых функций для манипуляции с файлами: копирование, перемещение, удаление и другие. Все то, что обычно делается через файловые менеджеры ОС, например, через проводник.</p>
+<p>Чтобы скопировать файл, надо использовать функцию <code>shutil.copy()</code>. В ней необходимо указать два <strong>обязательных</strong> параметра:</p>
+<ul>
+<li>Источник (что копируем)</li>
+<li>Приемник (куда копируем)</li>
+</ul>
+<p>Оба параметра — строки.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> shutil
+
+shutil<span class="token punctuation">.</span>copy<span class="token punctuation">(</span><span class="token string">'files/3/Описание.txt'</span><span class="token punctuation">,</span> <span class="token string">'files/Копия.txt'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>'files/Копия.txt'</samp></pre>
+<p>Заметьте, что если файл-приемник уже существовал, то он будет <strong>перезаписан</strong>. Кроме того, файл-источник и файл-приемник не могут совпадать, то есть файл <strong>нельзя</strong> скопировать в себя же.</p>
+<p>Удаление папки со всем ее содержимым выполняется функцией <code>shutil.rmtree()</code> (от английского remove tree). В качестве параметра передается полный путь до папки.</p>
+<pre class="language-python"><code class="language-python">shutil<span class="token punctuation">.</span>rmtree<span class="token punctuation">(</span><span class="token string">'Путь до папки'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Перенос папки (со всем ее содержимым) в новое место осуществляется функцией <code>shutil.move()</code>, которая по своему виду похожа на <code>shutil.copy()</code>, только после копирования она «заметает свои следы».</p>
+<pre class="language-python"><code class="language-python">shutil<span class="token punctuation">.</span>move<span class="token punctuation">(</span>старое_место<span class="token punctuation">,</span> новое_место<span class="token punctuation">)</span>
+</code></pre>
+<p>Также функции модуля shutil дают возможность работать с некоторыми типами зарегистрированных в системе архивов, создавая их или распаковывая:</p>
+<pre class="language-python"><code class="language-python">shutil<span class="token punctuation">.</span>get_archive_formats<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[('bztar', "bzip2'ed tar-file"),
+ ('gztar', "gzip'ed tar-file"),
+ ('tar', 'uncompressed tar file'),
+ ('xztar', "xz'ed tar-file"),
+ ('zip', 'ZIP file')]</samp></pre>
+<pre class="language-python"><code class="language-python">shutil<span class="token punctuation">.</span>make_archive<span class="token punctuation">(</span><span class="token string">'archive'</span><span class="token punctuation">,</span> <span class="token string">'zip'</span><span class="token punctuation">,</span> root_dir<span class="token operator">=</span><span class="token string">'files'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>'/SomeUser/some folder/archive.zip'</samp></pre>
+<p>В последнем примере мы создали архив с именем archive типа zip, положив него все содержимое каталога files. Сам архив при этом будет размещен в текущем каталоге.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Zip-архивы</h2>
+<p>Раз уж мы заговорили об архивах, задержимся на них немного подольше.</p>
+<p>Работе с архивами посвящена соответствующая <a class="material__link" href="https://docs.python.org/3/library/archiving.html" rel="noopener noreferrer" target="_blank">глава документации</a>. В современном мире применяется большое количество архиваторов: zip, 7z, rar и т. д. Мы пока остановимся только на zip-архивах по двум причинам:</p>
+<ul>
+<li>Это самый распространенный и свободный формат архива. (Под термином <strong>свободный</strong> мы понимаем то, что алгоритм опубликован и свободен в том числе от коммерческих отчислений автору)</li>
+<li>Несколько типов файлов (даже среди тех форматов, с которыми мы уже работали), например, docx, pptx, jar являются по сути форматами на основе zip-архивов. Сделано это было потому, что удобнее все ресурсы документа хранить как единое целое, нежели как набор файлов. Кроме того, архивация позволяет существенно уменьшить объем документа</li>
+</ul>
+<p>Архивы, помимо сжатия данных (а мы говорим только про сжатие <strong>без потерь</strong> и не касаемся, например, сжатия видео-информации), могут пригодиться для удобной упаковки разнородной информации в одном файле.</p>
+<p>В Python с архивами можно работать разными способами:</p>
+<ul>
+<li>Как и в большинстве языков программирования, нам доступен запуск сторонних программ, и в этом случае мы можем просто вызвать стороннюю программу-архиватор</li>
+<li>Стандартный модуль shutil (это мы уже немного попробовали)</li>
+<li>Стандартный модуль gzip</li>
+<li>Стандартный модуль zipfile</li>
+</ul>
+<p>Мы остановимся на модуле zipfile, как наиболее функциональном и удобном.</p>
+<p>Основное преимущество данной библиотеки заключается в том, что она позволяет работать с архивом (а в архив может быть помещена целая структура каталогов), как с обычной папкой, содержащей файлы и другие каталоги.</p>
+<p>Напишем программу, которая выведет на экран содержание архива, который мы создали ранее, используя арсенал библиотеки shutil:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> zipfile <span class="token keyword">import</span> ZipFile
+
+<span class="token keyword">with</span> ZipFile<span class="token punctuation">(</span><span class="token string">'archive.zip'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> myzip<span class="token punctuation">:</span>
+    myzip<span class="token punctuation">.</span>printdir<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>File Name                              Modified             Size
+1/                                2017-09-18 16:02:12         0
+2/                                2017-09-18 16:02:14         0
+3/                                2017-09-18 16:02:44         0
+1.txt                             2017-09-18 15:59:30        35
+                                  2017-09-18 14:28:20         0
+Копия.txt                         2017-09-18 16:26:52         0
+                                  2017-09-18 16:02:12         0
+                                  2017-09-18 16:02:14         0
+3/files/                          2017-09-18 16:02:30         0
+                                  2017-09-18 16:02:16         0
+3/Описание.txt                    2017-09-18 16:02:40         0
+3/files/csvs/                     2017-09-18 16:02:58         0
+                                  2017-09-18 16:02:36         0
+3/files/csvs/данные.csv           2017-09-18 16:02:52         0</samp></pre>
+<p>В начале работы мы создаем объект типа <var>ZipFile</var>, передавая ему имя архива. Можно указать и необязательный параметр <var>mode</var> (режим работы), который принимает в себя значения <var>r</var>, <var>w</var> или <var>a</var> (все по аналогии с «чистыми» файлами). Но по умолчанию считается, что архив открывается для чтения, поэтому мы не будем его указывать.</p>
+<p>Кроме печати, можно получать информацию о файлах в архиве в виде списка:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> ZipFile<span class="token punctuation">(</span><span class="token string">'archive.zip'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> myzip<span class="token punctuation">:</span>
+    info <span class="token operator">=</span> myzip<span class="token punctuation">.</span>infolist<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>info<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>orig_filename<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>1/</samp></pre>
+<p>А также имена файлов в архиве, тоже в виде списка:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> ZipFile<span class="token punctuation">(</span><span class="token string">'archive.zip'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> myzip<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>myzip<span class="token punctuation">.</span>namelist<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['1/', '2/', '3/', '1.txt', 'Icon\r', 'Копия.txt', '1/Icon\r',
+ '2/Icon\r', '3/files/', '3/Icon\r', '3/Описание.txt',
+ '3/files/csvs/', '3/files/csvs/Icon\r', '3/files/csvs/данные.csv']</samp></pre>
+<p>Согласитесь, такой способ очень похож на классический вариант работы с файлами, который мы рассматривали ранее.</p>
+<p>Структуру архива мы получили, «вытащим» теперь и конкретный файл:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> ZipFile<span class="token punctuation">(</span><span class="token string">'archive.zip'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> myzip<span class="token punctuation">:</span>
+    <span class="token keyword">with</span> myzip<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'1.txt'</span><span class="token punctuation">,</span> <span class="token string">'r'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">file</span><span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>b'\xd0\x9f\xd1\x80\xd0\xbe\xd0\xb8\xd0\xb7\xd0\xb2\xd0\xbe\xd0\xbb\xd1\x8c\xd0\xbd\xd1\x8b\xd0\xb9\xd1\x82\xd0\xb5\xd0\xba\xd1\x81\xd1\x82'</samp></pre>
+<p>Что же у нас получилось? Обратите внимание на символ <var>b</var> перед выводом. Это бинарная последовательность. Но мы-то знаем, что перед нами — текстовый файл, поэтому мы можем быстро преобразовать (декодировать) эту строку. Надо только помнить, в какой кодировке записан файл.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> ZipFile<span class="token punctuation">(</span><span class="token string">'archive.zip'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> myzip<span class="token punctuation">:</span>
+    <span class="token keyword">with</span> myzip<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'1.txt'</span><span class="token punctuation">,</span> <span class="token string">'r'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">file</span><span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Произвольный текст</samp></pre>
+<p>По аналогии с чтением файлов из архива их можно туда и записывать.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> ZipFile<span class="token punctuation">(</span><span class="token string">'archive.zip'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> myzip<span class="token punctuation">:</span>
+    myzip<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">'test.txt'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>myzip<span class="token punctuation">.</span>namelist<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['test.txt']</samp></pre>
+<p>Сейчас мы создали новый архив, а предыдущий уничтожили, поэтому для добавления файла в уже существующий архив будем работать с ним с ключом <var>a</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> ZipFile<span class="token punctuation">(</span><span class="token string">'archive.zip'</span><span class="token punctuation">,</span> <span class="token string">'a'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> myzip<span class="token punctuation">:</span>
+    myzip<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">'test.txt'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>myzip<span class="token punctuation">.</span>namelist<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['1/', '2/', '3/', '1.txt', 'Icon\r', 'Копия.txt', '1/Icon\r',
+ '2/Icon\r', '3/files/', '3/Icon\r', '3/Описание.txt',
+ '3/files/csvs/', '3/files/csvs/Icon\r', '3/files/csvs/данные.csv',
+ 'test.txt']</samp></pre>
+<p>Вот! Теперь другое дело!</p>
+<p>Кроме того, у <var>ZipFile</var> есть метод <var>extractall()</var>, который вытаскивает из архива все содержимое в указанную папку. Интересный момент: если папку не указывать, то данные сложатся в «текущую папку», то есть в данном случае туда, где находится файл с программой. Структура каталогов при этом сохраняется.</p>
+<pre class="language-python"><code class="language-python">ZipFile<span class="token punctuation">.</span>extractall<span class="token punctuation">(</span>path<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span> members<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span> pwd<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="6">Формат JSON</h2>
+<p>Вот мы и добрались до, пожалуй, самого популярного формата файлов в Интернете — JSON. Некоторые из вас могут удивиться этому утверждению, так как услышат про этот формат впервые. На самом деле все из вас пользовались данным форматом, пусть и неявно. Именно JSON обмениваются большинство приложений в Интернете.</p>
+<p>JSON (англ. JavaScript Object Notation) — один из самых популярных типов структурированных файлов, поддерживающих произвольную вложенность. Это формат объекта в языке JavaScript, содержащий в себе сочетание словарей и списков (в терминах Python). Оказывается, что вместо того, чтобы передавать или хранить файлы в каких-то форматах, потом при помощи библиотек обрабатывая их, удобней передавать сами объекты языка. Ведь в этом случае не надо ничего дополнительно обрабатывать. Перед нами — уже готовый объект. Так как в последнее время очень распространились веб-приложения на JavaScript, JSON стал одним из самых популярных форматов, в том числе и в других языках.</p>
+<p>Чтобы лучше понять JSON, давайте сначала посмотрим на модуль pickle. Он служит для того, чтобы превращать любой объект Python в байтовую структуру и обратно:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> pickle <span class="token keyword">import</span> loads<span class="token punctuation">,</span> dumps
+s <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'Иван'</span><span class="token punctuation">:</span> <span class="token number">24</span><span class="token punctuation">,</span> <span class="token string">'Сергей'</span><span class="token punctuation">:</span> <span class="token number">11</span><span class="token punctuation">}</span>
+d <span class="token operator">=</span> dumps<span class="token punctuation">(</span>s<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>d<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>b'\x80\x03}q\x00(X\x08\x00\x00\x00\xd0\x98\xd0\xb2\xd0\xb0\xd0\xbdq\x01K\x18X\x0c\x00\x00\x00\xd0\xa1\xd0\xb5\xd1\x80\xd0\xb3\xd0\xb5\xd0\xb9q\x02K\x0bu.'</samp></pre>
+<pre class="language-python"><code class="language-python">loads<span class="token punctuation">(</span>d<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>{'Иван': 24, 'Сергей': 11}</samp></pre>
+<p>Объект, представленный в виде массива байт, легко хранить на жестком диске, в базах данных, передавать по сети между двумя приложениями или от одного приложения другому в рамках одного компьютера и т. д.</p>
+<p>Теперь посмотрим, что же такое JSON.</p>
+<p>Запросим по <a class="material__link" href="https://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&amp;geocode=аэропорт%20Внуково&amp;format=json" rel="noopener noreferrer" target="_blank">ссылке</a> у Яндекс.Карт информацию о московском аэропорте Внуково.</p>
+<p>Пройдите по этой ссылке и убедитесь, что ответ действительно приходит.</p>
+<p>Нам вернется вот такой ответ:</p>
+<pre><samp>{
+	"response": {
+		"GeoObjectCollection": {
+			"metaDataProperty": {
+				"GeocoderResponseMetaData": {
+					"request": "аэропорт Внуково",
+					"found": "2",
+					"results": "10"
+				}
+			},
+			"featureMember": [{
+				"GeoObject": {
+					"metaDataProperty": {
+						"GeocoderMetaData": {
+							"kind": "airport",
+							"text": "Россия, Москва, аэропорт Внуково",
+							"precision": "other",
+							"Address": {
+								"country_code": "RU",
+								"formatted": "Москва, аэропорт Внуково",
+								"Components": [{
+									"kind": "country",
+									"name": "Россия"
+								},
+								{
+									"kind": "province",
+									"name": "Центральный федеральный округ"
+								},
+								{
+									"kind": "province",
+									"name": "Москва"
+								},
+								{
+									"kind": "airport",
+									"name": "аэропорт Внуково"
+								}]
+							},
+							"AddressDetails": {
+								"Country": {
+									"AddressLine": "Москва, аэропорт Внуково",
+									"CountryNameCode": "RU",
+									"CountryName": "Россия",
+									"AdministrativeArea": {
+										"AdministrativeAreaName": "Москва",
+										"Locality": {
+											"DependentLocality": {
+												"DependentLocalityName": "аэропорт Внуково"
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"description": "Москва, Россия",
+					"name": "аэропорт Внуково",
+					"boundedBy": {
+						"Envelope": {
+							"lowerCorner": "37.229833 55.583169",
+							"upperCorner": "37.303809 55.61598"
+						}
+					},
+					"Point": {
+						"pos": "37.286292 55.605058"
+					}
+				}
+			},
+			{
+				"GeoObject": {
+					"metaDataProperty": {
+						"GeocoderMetaData": {
+							"kind": "railway",
+							"text": "Россия, Киевское направление Московской железной дороги, платформа Аэропорт Внуково",
+							"precision": "other",
+							"Address": {
+								"country_code": "RU",
+								"formatted": "Киевское направление Московской железной дороги, платформа Аэропорт Внуково",
+								"Components": [{
+									"kind": "country",
+									"name": "Россия"
+								},
+								{
+									"kind": "province",
+									"name": "Центральный федеральный округ"
+								},
+								{
+									"kind": "route",
+									"name": "Киевское направление Московской железной дороги"
+								},
+								{
+									"kind": "railway",
+									"name": "платформа Аэропорт Внуково"
+								}]
+							},
+							"AddressDetails": {
+								"Country": {
+									"AddressLine": "Киевское направление Московской железной дороги, платформа Аэропорт Внуково",
+									"CountryNameCode": "RU",
+									"CountryName": "Россия",
+									"Country": {
+										"Locality": ""
+									}
+								}
+							}
+						}
+					},
+					"description": "Киевское направление Московской железной дороги, Россия",
+					"name": "платформа Аэропорт Внуково",
+					"boundedBy": {
+						"Envelope": {
+							"lowerCorner": "37.279914 55.601106",
+							"upperCorner": "37.296371 55.610423"
+						}
+					},
+					"Point": {
+						"pos": "37.288142 55.605765"
+					}
+				}
+			}]
+		}
+	}
+}</samp></pre>
+<p>Как видно из этого примера, JSON очень похож по синтаксису на формат словаря в Python. Поэтому любая работа с JSON в Python происходит по алгоритму:</p>
+<ol>
+<li>Получение словаря с данными</li>
+<li>Преобразование словаря в JSON-объект</li>
+<li>Передача данных</li>
+</ol>
+<p>Или в обратную сторону:</p>
+<ol>
+<li>Получение файла или строки с JSON-содержимым</li>
+<li>Преобразование данных в словарь Python</li>
+<li>Работа с данными</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="7">Библиотека для работы с JSON</h2>
+<p>Для работы с JSON есть стандартный модуль json.</p>
+<p>Поработаем с ним. Этот модуль содержит аналогичный <var>pickle</var> интерфейс, то есть нам доступны функции <code>loads()</code> (загрузка из строки JSON-объекта и преобразование его в Python-объект) и <code>dumps()</code> (обратное преобразование).</p>
+<p><strong>Чтение json.</strong></p>
+<p>Откроем в IDE файл <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/web/cats_json.json" rel="noopener noreferrer" target="_blank">cats_json.json</a>. Мы видим, что там в виде словаря записана некоторая информация о питомце:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span>
+  <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"Barsik"</span><span class="token punctuation">,</span>
+  <span class="token string">"age"</span><span class="token punctuation">:</span> <span class="token number">7</span><span class="token punctuation">,</span>
+  <span class="token string">"meals"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+    <span class="token string">"Wiskas"</span><span class="token punctuation">,</span>
+    <span class="token string">"Royal Canin"</span><span class="token punctuation">,</span>
+    <span class="token string">"Purina"</span><span class="token punctuation">,</span>
+    <span class="token string">"Hills"</span><span class="token punctuation">,</span>
+    <span class="token string">"Brit Care"</span>
+  <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Обратите внимание: в формате JSON используются только двойные кавычки.</p>
+<p>Для чтения данных в модуле <var>json</var> есть два метода:</p>
+<ol>
+<li><code>json.load()</code> — считывает целиком файл в формате JSON и возвращает объекты Python</li>
+<li><code>json.loads()</code> — считывает строку в формате JSON и возвращает объекты Python</li>
+</ol>
+<p>Напишем код, читающий файл и выводящий содержимое полученного словаря:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> json
+
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats_json.json'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> cat_file<span class="token punctuation">:</span>
+    data <span class="token operator">=</span> json<span class="token punctuation">.</span>load<span class="token punctuation">(</span>cat_file<span class="token punctuation">)</span>
+<span class="token keyword">for</span> key<span class="token punctuation">,</span> value <span class="token keyword">in</span> data<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">list</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>key<span class="token punctuation">}</span></span><span class="token string">: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token string">", "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>value<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>key<span class="token punctuation">}</span></span><span class="token string">: </span><span class="token interpolation"><span class="token punctuation">{</span>value<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>name: Barsik
+age: 7
+meals: Wiskas, Royal Canin, Purina, Hills, Brit Care
+</samp></pre>
+<p>В отличие от метода <code>json.load(filename)</code>, метод <code>json.loads(string)</code> считывает строку и возвращает объект json, если его возможно получить из переданной строки.</p>
+<p>В случае, если строка или файловый объект содержат некорректный JSON, будет выброшено исключение типа json.decoder.JSONDecodeError.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> json
+
+s <span class="token operator">=</span> <span class="token string">'Не Json'</span>
+json<span class="token punctuation">.</span>loads<span class="token punctuation">(</span>s<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+</samp></pre>
+<p>Создайте в IDE новый файл cats_2.json, в который кроме Барсика добавьте еще одного кота по вашему усмотрению. Поскольку теперь в файле у нас уже два словаря, их надо объединить в одну структуру, пусть это будет список. Получим что-то вроде такого содержимого:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">[</span>
+  <span class="token punctuation">{</span>
+    <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"Barsik"</span><span class="token punctuation">,</span>
+    <span class="token string">"age"</span><span class="token punctuation">:</span> <span class="token number">7</span><span class="token punctuation">,</span>
+    <span class="token string">"meals"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+      <span class="token string">"Wiskas"</span><span class="token punctuation">,</span>
+      <span class="token string">"Royal Canin"</span><span class="token punctuation">,</span>
+      <span class="token string">"Purina"</span><span class="token punctuation">,</span>
+      <span class="token string">"Hills"</span><span class="token punctuation">,</span>
+      <span class="token string">"Brit Care"</span>
+    <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">{</span>
+    <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"Mursik"</span><span class="token punctuation">,</span>
+    <span class="token string">"age"</span><span class="token punctuation">:</span> <span class="token number">3</span><span class="token punctuation">,</span>
+    <span class="token string">"meals"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+      <span class="token string">"Purina"</span><span class="token punctuation">,</span>
+      <span class="token string">"Hills"</span><span class="token punctuation">,</span>
+      <span class="token string">"Brit Care"</span>
+    <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">]</span>
+</code></pre>
+<p>Чтобы воспользоваться методом <code>loads()</code>, нужно сначала считать весь файл в строку, а затем передать ее методу для преобразования в json-объект.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> json
+
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats_2.json'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> cat_file<span class="token punctuation">:</span>
+    f <span class="token operator">=</span> cat_file<span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    data <span class="token operator">=</span> json<span class="token punctuation">.</span>loads<span class="token punctuation">(</span>f<span class="token punctuation">)</span>
+    <span class="token keyword">for</span> item <span class="token keyword">in</span> data<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> key<span class="token punctuation">,</span> value <span class="token keyword">in</span> item<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">list</span><span class="token punctuation">:</span>
+                <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>key<span class="token punctuation">}</span></span><span class="token string">: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token string">", "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>value<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>key<span class="token punctuation">}</span></span><span class="token string">: </span><span class="token interpolation"><span class="token punctuation">{</span>value<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>И в том, и в другом случае мы получили объект языка Python, словарь или список, с которым можно сразу работать средствами языка.</p>
+<p>В таблице представлено соответствие между данными в Python и в JSON:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<thead>
+<tr>
+<th>Python</th>
+<th>JSON</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dict</td>
+<td>object</td>
+</tr>
+<tr>
+<td>list, tuple</td>
+<td>array</td>
+</tr>
+<tr>
+<td>str</td>
+<td>string</td>
+</tr>
+<tr>
+<td>int, float</td>
+<td>number</td>
+</tr>
+<tr>
+<td>True</td>
+<td>true</td>
+</tr>
+<tr>
+<td>False</td>
+<td>false</td>
+</tr>
+<tr>
+<td>None</td>
+<td>null</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>При обратном преобразовании массив <var>array</var> преобразуется в список.</p>
+<p><strong>Запись в файл.</strong></p>
+<p>Для записи информации в файл в <var>json</var> также есть два метода:</p>
+<ol>
+<li><code>json.dump()</code> — метод записывает объект Python в файл в формате JSON</li>
+<li><code>json.dumps()</code> — метод преобразует объект Python в строку в формате JSON</li>
+</ol>
+<p>Давайте создадим словарь, в котором коту добавим хозяев, а затем полученную информацию сохраним в файле:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> json
+
+cats_dict <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">'name'</span><span class="token punctuation">:</span> <span class="token string">'Pushin'</span><span class="token punctuation">,</span>
+    <span class="token string">'age'</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+    <span class="token string">'meals'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+        <span class="token string">'Purina'</span><span class="token punctuation">,</span> <span class="token string">'Cat Chow'</span><span class="token punctuation">,</span> <span class="token string">'Hills'</span>
+    <span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token string">'owners'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">'first_name'</span><span class="token punctuation">:</span> <span class="token string">'Bill'</span><span class="token punctuation">,</span>
+            <span class="token string">'last_name'</span><span class="token punctuation">:</span> <span class="token string">'Gates'</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">'first_name'</span><span class="token punctuation">:</span> <span class="token string">'Melinda'</span><span class="token punctuation">,</span>
+            <span class="token string">'last_name'</span><span class="token punctuation">:</span> <span class="token string">'Gates'</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats_3.json'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> cat_file<span class="token punctuation">:</span>
+    json<span class="token punctuation">.</span>dump<span class="token punctuation">(</span>cats_dict<span class="token punctuation">,</span> cat_file<span class="token punctuation">)</span>
+</code></pre>
+<p>Если сейчас открыть в IDE PyCharm файл cats_3.json, который был создан нашей программой, мы увидим, что json выведен в одну строку без форматирования. Для представления json в удобном для чтения виде в PyCharm можно использовать горячую клавишу Ctrl-Alt-L.</p>
+<p>Метод <code>dumps()</code> используется, когда надо просто преобразовать объект в json-формат, необязательно для записи в файл. Это нужно, например, при передаче информации в веб-приложении.</p>
+<p>Посмотрим на примере:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> json
+
+weekdays <span class="token operator">=</span> <span class="token punctuation">{</span>i<span class="token punctuation">:</span> day
+            <span class="token keyword">for</span> i<span class="token punctuation">,</span> day <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'Sunday'</span><span class="token punctuation">,</span> 
+                                     <span class="token string">'Monday'</span><span class="token punctuation">,</span>
+                                     <span class="token string">'Tuesday'</span><span class="token punctuation">,</span> 
+                                     <span class="token string">'Wednesday'</span><span class="token punctuation">,</span>
+                                     <span class="token string">'Thursday'</span><span class="token punctuation">,</span> 
+                                     <span class="token string">'Friday'</span><span class="token punctuation">,</span>
+                                     <span class="token string">'Saturday'</span>
+                                     <span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">}</span>
+data <span class="token operator">=</span> json<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>weekdays<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">type</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Получим строку в формате json:</p>
+<pre><samp>{"0": "Sunday", "1": "Monday", "2": "Tuesday", "3": "Wednesday", "4": "Thursday", "5": "Friday", "6": "Saturday"}
+&lt;class 'str'&gt;</samp></pre>
+<p><strong>Дополнительные параметры методов записи.</strong></p>
+<p>Методы записи имеют несколько необязательных параметров, которые можно менять для более удобного чтения человеком. Рассмотрим некоторые из них.</p>
+<p><strong>ensure_ascii</strong>. В случае, если <code>ensure_ascii=True</code> (по умолчанию), все не-ASCII символы в выводе будут экранированы последовательностями \uXXXX. Если <code>ensure_ascii=False</code>, эти символы будут записаны как есть. Это важно, если в содержимом есть русские буквы.</p>
+<p>Запишем в файл cats.json содержимое списка без флага:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats.json'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+    json<span class="token punctuation">.</span>dump<span class="token punctuation">(</span>data<span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В файле:</p>
+<pre><samp>[
+    {
+        "name": "\u0411\u0430\u0440\u0441\u0438\u043a",
+        "age": 7,
+        "toys": [
+            "\u041c\u044b\u0448\u043a\u0430",
+            "\u041f\u0440\u0443\u0442\u0438\u043a",
+            "\u0411\u0430\u043d\u0442\u0438\u043a",
+            "\u0421\u0432\u043e\u0439 \u0445\u0432\u043e\u0441\u0442"
+        ]
+    },
+    {
+        "name": "\u041c\u0443\u0440\u0437\u0438\u043a",
+        "age": 3,
+        "toys": [
+            "\u0420\u0443\u043a\u0430 \u0445\u043e\u0437\u044f\u0439\u043a\u0438",
+            "\u0428\u043d\u0443\u0440 \u043e\u0442 \u0442\u0435\u043b\u0435\u0432\u0438\u0437\u043e\u0440\u0430",
+            "\u041e\u0431\u043e\u0438 \u043d\u0430 \u0441\u0442\u0435\u043d\u0435"
+        ]
+    }
+]</samp></pre>
+<p>А теперь — с флагом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats.json'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+    json<span class="token punctuation">.</span>dump<span class="token punctuation">(</span>data<span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token punctuation">,</span> ensure_ascii<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В файле:</p>
+<pre><samp>[
+    {
+        "name": "Барсик",
+        "age": 7,
+        "toys": [
+            "Мышка",
+            "Прутик",
+            "Бантик",
+            "Свой хвост"
+        ]
+    },
+    {
+        "name": "Мурзик",
+        "age": 3,
+        "toys": [
+            "Рука хозяйки",
+            "Шнур от телевизора",
+            "Обои на стене"
+        ]
+    }
+]</samp></pre>
+<p><strong>indent</strong>. Отступ <var>indent</var> нужен для удобного для чтения человеком представления информации в объекте JSON. По умолчанию имеет значение None для более компактного представления, то есть без отступов. Также отступов не будет, если значение <var>indent</var> равно 0, отрицательному числу или пустой строке. Если <var>indent</var> — строка (например, <code>\t</code>), эта строка используется в качестве отступа.</p>
+<p>Пример со значением <code>indent=2</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats.json'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+    json<span class="token punctuation">.</span>dump<span class="token punctuation">(</span>data<span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token punctuation">,</span> ensure_ascii<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span> indent<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Результат:</p>
+<pre><samp>[
+  {
+    "name": "Барсик",
+    "age": 7,
+    "toys": [
+      "Мышка",
+      "Прутик",
+      "Бантик",
+      "Свой хвост"
+    ]
+  },
+  {
+    "name": "Мурзик",
+    "age": 3,
+    "toys": [
+      "Рука хозяйки",
+      "Шнур от телевизора",
+      "Обои на стене"
+    ]
+  }
+]</samp></pre>
+<p><strong>sort_keys</strong>. Если <code>sort_keys=True</code> (по умолчанию False), ключи выводимого словаря будут отсортированы. Это удобно, если ключей много.</p>
+<p>Пример со значением <code>sort_keys=True</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats.json'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+    json<span class="token punctuation">.</span>dump<span class="token punctuation">(</span>data<span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token punctuation">,</span> ensure_ascii<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+              indent<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> sort_keys<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Результат:</p>
+<pre><samp>[
+  {
+    "age": 7,
+    "name": "Барсик",
+    "toys": [
+      "Мышка",
+      "Прутик",
+      "Бантик",
+      "Свой хвост"
+    ]
+  },
+  {
+    "age": 3,
+    "name": "Мурзик",
+    "toys": [
+      "Рука хозяйки",
+      "Шнур от телевизора",
+      "Обои на стене"
+    ]
+  }
+]</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="8">В заключении</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Сериализация и десериализация</strong></p>
+<p>Мы производили преобразования между объектами языка Python и json-объектами. Такие преобразования называются <strong>сериализацией</strong> (кодирование в json-формат, то есть в поток байт) и <strong>десериализацией</strong> (декодирование в объект языка).</p>
+</section>
+<p>Есть еще несколько моментов при работе с JSON, о которых стоит помнить:</p>
+<ol>
+<li>Чтобы не возникали проблемы с кодировкой, если в файл передаются данные с русскими буквами, как и во всех других случаяx работы с файлом, при открытии нужно принудительно устанавливать кодировку (особенно актуально для OS семейства Windows):
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'cats_3.json'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">'utf8'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> cat_file<span class="token punctuation">:</span>
+    cat_file<span class="token punctuation">.</span>write<span class="token punctuation">(</span>json<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>cats_dict<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</li>
+<li>При создании json-файла «вручную» нужно помнить, что в нем нельзя использовать одинарные кавычки. При создании программными средствами нужные кавычки ставятся автоматически.</li>
+<li>Ключами словаря в json не могут быть кортежи и числа. Но ключ-число не вызовет ошибку при сериализации, он будет просто преобразован в строку.</li>
+<li>Помните, что при преобразовании данные будут не всегда того же типа, что были в Python, то есть:</li>
+</ol>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>json<span class="token punctuation">.</span>loads<span class="token punctuation">(</span>json<span class="token punctuation">.</span>dumps<span class="token punctuation">(</span>weekdays<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span> weekdays<span class="token punctuation">)</span>  <span class="token comment"># False</span>
+</code></pre>
+<p>Более подробную информацию по работе с модулем <var>json</var> можно найти по <a class="material__link" href="https://docs.python.org/3/library/json.html" rel="noopener noreferrer" target="_blank">ссылке</a>.</p>
+<p>О работе непосредственно с API мы поговорим уже на следующем уроке.</p>
+</section></article></section>

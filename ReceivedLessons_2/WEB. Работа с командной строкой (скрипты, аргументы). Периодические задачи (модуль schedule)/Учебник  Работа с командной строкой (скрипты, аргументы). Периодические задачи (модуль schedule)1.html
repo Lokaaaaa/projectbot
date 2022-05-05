@@ -1,0 +1,240 @@
+<section class="lesson-material__content"><article class="material"><h1>Работа с командной строкой (скрипты, аргументы). Периодические задачи (модуль schedule)</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Про командную строку</a></li>
+<li><a class="material__link" href="#2">Виртуальные машины и WSL</a></li>
+<li><a class="material__link" href="#3">Запуск командной строки</a></li>
+<li><a class="material__link" href="#4">Принципы работы с командной строкой</a></li>
+<li><a class="material__link" href="#5">Базовые команды</a></li>
+<li><a class="material__link" href="#6">Потоки, exit-коды</a></li>
+<li><a class="material__link" href="#7">Как запустить свой скрипт?</a></li>
+<li><a class="material__link" href="#8">Простой парсинг аргументов в Python</a></li>
+<li><a class="material__link" href="#9">Периодические задачи</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке мы систематизируем уже накопленные к этому времени знания о командной строке как самом простом, с точки зрения реализации, интерфейсе пользователя, и о создании скриптов для командной строки на языке Python. Разбирается простой способ работы с параметрами командной строкой через список <var>sys.argv</var> из модуля sys.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Про командную строку</h2>
+<p>Большинство современных пользователей ПК знают, что такое графический интерфейс GUI, как выглядят окна, кнопки, поля для ввода данных и другие визуальные элементы. Такие элементы интерфейсов сейчас принято называть <strong>виджетами</strong>. Мы уже достаточно близко познакомились с ними в блоках PyQt и PyGame.</p>
+<p>На заре эволюции пользовательских интерфейсов самым популярным был текстовый интерфейс — <strong>командная строка</strong>. Отчасти его популярность была связана с тем, что графические устройства были дорогими и <em>медленными</em>, но в современном мире дела уже обстоят не так. Графические платы и мониторы существенно улучшили свои показатели и характеристики как по производительности, так и по цене.</p>
+<p>Однако интерфейс командной строки, несмотря на свой архаизм, до сих пор «жив-здоров» и находит применение в различных сферах IT-индустрии, например, в серверном программировании и создании веб-приложений.</p>
+<p>Давайте разберемся, почему так происходит и зачем IT-инженеру надо обязательно уметь работать с командной строкой?</p>
+<p>Какие же преимущества имеет командная строка перед GUI?</p>
+<ol>
+<li>Простота удаленной работы. Легче синхронизировать два экрана разного разрешения, которые выводят текст, чем два экрана, выводящих графическую информацию. Кроме того, для вывода графической информации надо передать существенно больший объем данных, а это зачастую требует хорошей сетевой инфраструктуры</li>
+<li>Самим протоколом командной строки предусмотрены механизмы автоматизации, средства общения между командами и вывод ошибок. Проще говоря, если разработчик программы с графическим интерфейсом не заложил в нее возможности повторять на экране действия оператора или взаимодействовать с другой программой, то сделать это при необходимости будет затруднительно</li>
+<li>Интерфейс командной строки уже поддерживает множество отлаженных временем команд и технологий</li>
+<li>На большинстве серверов графическая оболочка отсутствует, чтобы не тратить лишние серверные ресурсы и не нагружать дополнительно сеть при удаленном подключении</li>
+</ol>
+<p>Давайте попробуем немного разобраться с командной строкой и понять, как же она работает.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Виртуальные машины и WSL</h2>
+<p>Очень часто программисту или IT-инженеру, работающему в какой-либо операционной системе, нужно смоделировать работу другой операционной системы. Например, вы работаете на компьютере под управлением операционной системы Windows, а хотите проверить работу программы под операционной системой Linux. Конечно, можно поставить вторую операционную систему на свой компьютер, но это требует определенной квалификации и при ошибке может привести к выходу из строя основной ОС. Безопаснее установить <strong>виртуальную машину</strong>. Благодаря ей вы сможете получить <em>операционную систему как бы внутри другой операционной системы</em>.</p>
+<p>Самое главное, что таких дочерних операционных систем может быть сколько угодно много. Их количество ограничено лишь ресурсами вашего компьютера.</p>
+<p>В сети Интернет можно найти много готовых образов операционных систем для виртуальных машин. Мы же приготовили вам свою, но вы можете использовать и другие.</p>
+<p>Что касается ПО виртуальных машин, то мы рекомендуем использовать <a class="material__link" href="https://www.virtualbox.org/" rel="noopener noreferrer" target="_blank">VirtualBox</a>, хотя на рынке существует множество аналогичных программ.</p>
+<p>По <a class="material__link" href="https://yadi.sk/d/VJKJAty1ZICszg" rel="noopener noreferrer" target="_blank">ссылке</a> вы можете скачать готовые образы ОС Ubuntu 17.04 и ОС Lite Linux для VirtualBox. (Это — zip-архив, и он немаленький). Чтобы их использовать, скачайте последнюю версию VirtualBox для вашей операционной системы.</p>
+<p>Для входа в систему (при появлении запроса) используйте логин: user и пароль: user.</p>
+<p>А в <a class="material__link" href="https://www.youtube.com/watch?v=VDh9Re_s6c8" rel="noopener noreferrer" target="_blank">этом видео</a> показывается, как подключить готовый образ к VirtualBox.</p>
+<p>Кроме того, Windows 10 дает возможность использовать Linux с использованием слоя совместимости для запуска Linux-приложений (<a class="material__link" href="https://ru.wikipedia.org/wiki/Windows_Subsystem_for_Linux" rel="noopener noreferrer" target="_blank">WSL</a>). В таком случае дистрибутив Linux можно установить непосредственно в Windows и работать в нем через командную строку. Инструкцию можно найти <a class="material__link" href="https://docs.microsoft.com/ru-ru/windows/wsl/install-win10" rel="noopener noreferrer" target="_blank">здесь</a>. Так же в ОС Windows можно использовать в качестве терминала программу Git bash, тогда команды будут те же, что и для ОС Linux. Если у вас уже установлен git для Windows, то и git bash тоже установлен.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Запуск командной строки</h2>
+<p>В разных UNIX-системах запуск командной строки осуществляется по-разному, но почти наверняка вам поможет иконка и ключевое слово <strong>терминал</strong> (terminal).</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/terminal.png" width="680"/></div>
+<p>В каждой ОС есть командная строка. Даже если вы ее ни разу не видели, можете быть уверены, что и в вашей системе она есть. Например, мы с вами начали ее использовать еще на первом курсе для установки библиотек, для преобразования ui-файлов в классы Python и т. д. (На самом деле вкладка python shell в Wing IDE или панель в PyCharm, куда мы вводили значения от имени пользователей нашей программы с самого первого урока, являются надстройкой над командной строкой операционной системы с запущенным интерпретатором Python).</p>
+<p>Вот примеры нескольких простых команд в ОС Windows (для запуска командной строки в Windows Вам нужно нажать Win+R, в ввести команду cmd и нажать ОК; также можно открыть командную строку непосредственно внутри PyCharm комбинацией клавиш — Alt+F12):</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/cmd.png" width="680"/></div>
+<p>Для ОС Linux «картинка» будет слегка иной, но принципы все равно сохраняются. Посмотрите сами:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/cmd_linux.png" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="4">Принципы работы с командной строкой</h2>
+<p>После запуска программы командной строки (ее еще называют терминалом, консолью или shell) на экране появляется окно (обычно черное) с приглашением ввода. Это командная оболочка, которая будет выполнять наши команды. В данный момент операционная система ждет от пользователя ввода команд.</p>
+<p>Наиболее популярная командная оболочка ОС семейства UNIX, которую вы, скорее всего, увидите, называется bash. У операционной системы Windows такой оболочкой является командная строка или cmd. В последние версии Windows внедряется новая командная оболочка, которая называется Powershell, которая хоть и поддерживает классический синтаксис cmd, но с некоторыми оговорками.</p>
+<p>Давайте рассмотрим команду вывода содержимого директории <code>ls -alh Desktop/</code>. Результат ее работы вы можете увидеть в примере выше. Аналогичной по сути командой в ОС Windows является команда <var>dir</var>.</p>
+<p>Она состоит из названия самой команды <var>ls</var> и <strong>аргументов</strong> (или параметров), передаваемых в командной строке.</p>
+<p>В нашем примере аргументами является директория Desktop и <strong>опции</strong> (их называют также флагами или ключами) <code>-a -l -h</code>.</p>
+<p>Все они влияют на результат работы команды. Например, Desktop указывает на папку, содержимое которой требуется вывести, но конкретную директорию можно и не передавать, тогда команда <var>ls</var> выведет содержимое текущей директории.</p>
+<p>С помощью опции <code>-a, --all</code> можно вывести полный список файлов (включая скрытые и начинающиеся с «.»), опция <code>-l</code> выводит информацию о каждом файле на отдельной строке вместе с мета-информацией (владелец, права доступа, размер, время обновления), а опция <code>-h,
+            --human-readable</code> приводит размеры файлов к более понятным для человека.</p>
+<p>Есть еще одна разновидность аргументов — именованные аргументы. Например, когда информацию о каком-то из файлов выводить не нужно, это можно сделать так <code>ls --ignore=Desktop</code> или даже короче <code>ls -I Desktop</code>. Так мы смогли показать, что Desktop — это элемент, который нас не интересует.</p>
+<p>Аргументы могут быть обязательными и не обязательными. Команда <var>ls</var>, например, не требует обязательных аргументов (она может быть запущена вообще без них), но так бывает не всегда. При удалении файла обязательно надо указать его имя.</p>
+<p>Чтобы выполнить команду, надо знать ее имя. В большинстве случае команда — это файл. Операционной системе надо найти его и уже потом выполнить. Поэтому у системы есть список адресов, по которым она будет искать файл с указанным именем. Хранится этот список в специальной переменной PATH. Она называется <em>переменной окружения</em>.</p>
+<p>Мы уже пользовались этой возможностью: при установке Python мы указывали, что исполняемый файл интерпретатора, а также утилиту pip надо добавить в PATH, чтобы использовать короткое название для их вызова, а не писать полный путь. Поэтому мы пишем:</p>
+<pre><code>pip install pillow
+</code></pre>
+<p>а не:</p>
+<pre><code>путь/к/pip/pip.exe install pillow
+</code></pre>
+<p>Команда <var>echo</var> позволяет вывести на экран любую информацию, в том числе и значения переменных.</p>
+<p>С помощью <var>whereis</var> (<var>where</var> для Windows) можно узнать, где в файловой системе располагается нужная нам команда.</p>
+<p>Ну и, конечно же, мы можем выполнить команду, указав полный путь к ее местонахождению.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/cmd_example.png" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="5">Базовые команды</h2>
+<p>Приведем список самых важных и часто используемых команд, которые стоит запомнить (в скобочках приведем аналогичные команды ОС Windows):</p>
+<ol>
+<li><code>ls [-al] &lt;директория&gt; (dir [-al] &lt;директория&gt;)</code> — вывод списка файлов в директории (мы уже рассмотрели)</li>
+<li><code>man &lt;команда&gt; (help &lt;команда&gt;)</code> — документация по командам. Навигация в ней осуществляется с помощью кнопок вверх/вниз (j/k или Page Up/Page Down), а выход — с помощью кнопки q</li>
+<li><code>cd &lt;директория&gt;</code> — смена каталога (от англ. Change Directory). Директорию можно указывать относительно корня (cd /tmp, cd c:\temp), относительно текущего каталога (cd dir_name), а можно вообще опустить название. В этом случае переход произойдет в домашний каталог</li>
+<li><code>mkdir &lt;директория&gt;</code> — создание новой директории (от англ. Make Directory)</li>
+<li><code>cp [-r] &lt;источник&gt; &lt;пункт назначения&gt; (copy)</code> — копирование файла/директории (для копирования директорий необходимо использовать опцию <code>-r</code>)</li>
+<li><code>mv &lt;источник&gt; &lt;пункт назначения&gt; (move)</code> — перемещение файла/директории. Работает так же, как <var>cp</var>, только после создания нового объекта старый удаляется</li>
+<li><code>rm [-rf] &lt;объект&gt;</code> — удаление файлов, каталогов (элементов файловой системы). Для удаления директории требуется флаг <code>-r, --recursive</code></li>
+<li><code>cat &lt;объект&gt; (type)</code> — вывести содержимое файла на экран</li>
+</ol>
+<p>Для работы с файловой системой можно использовать алиасы:</p>
+<ul>
+<li><code>.</code> — текущий каталог</li>
+<li><code>~</code> — домашняя директория</li>
+<li><code>..</code> — каталог на уровень выше текущего</li>
+</ul>
+</section>
+<section class="material__chapter">
+<h2 id="6">Потоки, exit-коды</h2>
+<p>Большинство программ, работающих под управлением современных операционных систем, могут принимать данные со <strong>стандартного потока ввода</strong> — stdin (мы уже с ним встречались) и выводить данные на <strong>стандартный поток вывода</strong> — stdout.</p>
+<p>Кроме этих двух потоков существует еще и стандартный поток для вывода ошибок. Он называется stderr.</p>
+<p>После завершения любой команды в bash или cmd возвращается <strong>код ответа</strong> (Exitcode).</p>
+<p>Exitcode — это число, значение которого равно нулю, если команда (да и любая программа) выполнена успешно. Если же значение Exitcode больше нуля, это означает, что в процессе возникли ошибки.</p>
+<p>Например, значение Exitcode используется, чтобы прервать выполнение последовательного набора зависящих друг от друга команд, если в процессе их работы что-то пошло не так.</p>
+<p>Получить exitcode в командной строке можно с помощью команды <code>echo $?</code>.</p>
+<p>С Exitcode мы тоже уже встречались: каждый раз после выполнения программы в PyCharm дописывается строка: <code>Process finished with exit code код_выхода</code></p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Как запустить свой скрипт?</h2>
+<p>Когда вы написали свою программу на языке Python и хотите ее выполнить в консоли (в терминале, в командной строке), то у вас есть два способа это сделать:</p>
+<ol>
+<li>Запустить интерпретатор Python и в качестве параметра передать ему имя вашего скрипта
+<p>Для ОС Linux:</p>
+<pre><code>python3 test.py 1 2 3 4
+</code></pre>
+<p>Для ОС Windows:</p>
+<pre><code>python test.py 1 2 3 4
+</code></pre>
+</li>
+<li>Добавить в начало файла заголовок <code>#!/путь/до/интерпретатора</code>, по которому shell (командная оболочка) поймет, какой интерпретатор нужно выбрать для данного скрипта. Но это еще не все. Надо сделать файл с программой исполняемым через команду <code>chmod+x &lt;имя_файла&gt;</code>. Однако стоит помнить, что такой способ работает только для ОС семейства Linux</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="8">Простой парсинг аргументов в Python</h2>
+<p>Настало время создать программу на языке Python, которая умела бы обрабатывать параметры командной строки, как это делают другие команды.</p>
+<p>Для этого нам понадобится список <var>argv</var> из модуля sys. В него Python упаковывает все аргументы командной строки, полученные при вызове программы.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"my name is {}"</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"first arg is: '{}' and last arg is '{}'"</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>
+    sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>python3 files/cmd1.py a1 b2 c3 d4
+
+my name is files/cmd1.py
+first arg is: 'a1' and last arg is 'd4'</samp></pre>
+<p>Обратите внимание, что в <code>argv[0]</code> хранится <strong>полное</strong> имя программы, а остальные элементы списка содержат уже переданные параметры.</p>
+<p>Вот только, если нет аргументов, на которые вы рассчитывали, можно легко «поймать» исключение.</p>
+<pre><samp>python3 files/cmd1.py
+
+my name is files/cmd1.py
+    ---------------------------------------------------------------------------
+
+    IndexError                                Traceback (most recent call last)
+
+    ~/Google Drive/ЯндексЛицей/Уроки/materials/additional/2 year/15/files/cmd1.py in &lt;module&gt;()
+          2 
+          3 print("my name is {}".format(sys.argv[0]))
+    ----&gt; 4 print("first arg is: '{}' and last arg is '{}'".format(sys.argv[1], sys.argv[-1]))
+
+    IndexError: list index out of range</samp></pre>
+<p>Так что не забывайте проверять аргумент перед обращением к нему. И раз дело мы имеем со списком, то самым простым способом будет подсчитать количество элементов в начале скрипта с помощью <code>len(sys.argv)</code>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"my name is {}"</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"first arg is: '{}' and last arg is '{}'"</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>
+        sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"No arguments"</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>python3 files/cmd2.py
+
+my name is files/cmd2.py
+No arguments</samp></pre>
+<p>Работа с параметрами командной строки через список <var>sys.argv</var> интуитивно понятна, поскольку сводится к простой обработке списка. Но как только у нас появляются необязательные аргументы или зависимые друг от друга аргументы, могут начаться сложности. Как с ними справиться, мы расскажем на следующем уроке, а пока познакомимся с модулем schedule.</p>
+</section>
+<section class="material__chapter">
+<h2 id="9">Периодические задачи</h2>
+<p>Мы все время писали программы, которые выполняются один раз (или до закрытия формы пользователем). Но достаточно часто встречаются задачи, для решения которых программа должна выполняться периодически, с каким-то интервалом. Это могут быть задачи, связанные с получением новой информации со стороннего ресурса, задачи резервного копирования и т. д.</p>
+<p>Эту задачу можно решать сторонними средствами: в Windows для этого есть планировщик задач, в Linux — очень гибкая и мощная утилита cron, но можно и обойтись средствами, которые предоставляет нам Python. Для создания периодических задач в Python есть несколько способов, мы рассмотрим лишь один из них, самый удобный на наш взгляд — библиотеку schedule. Этот модуль не входит в стандартную библиотеку и его надо устанавливать дополнительно:</p>
+<pre><code>pip install schedule
+</code></pre>
+<p>Работа с модулем достаточно простая. Давайте рассмотрим простое приложение, которое будет запускать на выполнение функцию каждые пять секунд:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> datetime
+
+<span class="token keyword">import</span> schedule
+
+i <span class="token operator">=</span> <span class="token number">1</span>
+
+
+<span class="token keyword">def</span> <span class="token function">job</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> i
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Запустился </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string"> раз"</span></span><span class="token punctuation">)</span>
+    i <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>datetime<span class="token punctuation">.</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">.</span>seconds<span class="token punctuation">.</span>do<span class="token punctuation">(</span>job<span class="token punctuation">)</span>
+
+<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    schedule<span class="token punctuation">.</span>run_pending<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Запустился 1 раз
+2019-11-01 12:18:27.172611
+Запустился 2 раз
+2019-11-01 12:18:32.173117
+Запустился 3 раз
+2019-11-01 12:18:37.173148</samp></pre>
+<p>Модуль можно настраивать достаточно гибко:</p>
+<pre class="language-python"><code class="language-python">schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">.</span>minutes<span class="token punctuation">.</span>do<span class="token punctuation">(</span>job<span class="token punctuation">)</span>
+<span class="token comment">#каждые 10 минут</span>
+
+schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>hour<span class="token punctuation">.</span>do<span class="token punctuation">(</span>job<span class="token punctuation">)</span>
+<span class="token comment"># каждый час</span>
+
+schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>day<span class="token punctuation">.</span>at<span class="token punctuation">(</span><span class="token string">"10:30"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>do<span class="token punctuation">(</span>job<span class="token punctuation">)</span>
+<span class="token comment"># каждый день в 10-30</span>
+
+schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>monday<span class="token punctuation">.</span>do<span class="token punctuation">(</span>job<span class="token punctuation">)</span>
+<span class="token comment"># каждый понедельник</span>
+
+schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span>wednesday<span class="token punctuation">.</span>at<span class="token punctuation">(</span><span class="token string">"13:15"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>do<span class="token punctuation">(</span>job<span class="token punctuation">)</span>
+<span class="token comment"># Каждую вторую среду в 13-15</span>
+
+schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>minute<span class="token punctuation">.</span>at<span class="token punctuation">(</span><span class="token string">":17"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>do<span class="token punctuation">(</span>job<span class="token punctuation">)</span>
+<span class="token comment"># каждую минуту в 17 секунду</span>
+</code></pre>
+<p>Кроме того, можно передавать параметры в ту функцию, которую мы хотим вызывать:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> schedule
+
+i <span class="token operator">=</span> <span class="token number">0</span>
+
+
+<span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> i
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Hello'</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+    i <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">if</span> i <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> schedule<span class="token punctuation">.</span>CancelJob <span class="token comment"># Отменяем задачу после 5 запуска</span>
+
+
+schedule<span class="token punctuation">.</span>every<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>to<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">.</span>seconds<span class="token punctuation">.</span>do<span class="token punctuation">(</span>greet<span class="token punctuation">,</span> name<span class="token operator">=</span><span class="token string">'Yandex'</span><span class="token punctuation">)</span>
+<span class="token comment"># Запускаем задачу в случайное время время от 1 до 3 секунд</span>
+
+<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    schedule<span class="token punctuation">.</span>run_pending<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section></article></section>

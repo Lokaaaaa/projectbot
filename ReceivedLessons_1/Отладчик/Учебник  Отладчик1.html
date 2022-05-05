@@ -1,0 +1,133 @@
+<section class="lesson-material__content"><article class="material"><h1>Отладчик</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Типы ошибок</a></li>
+<li><a class="material__link" href="#2">Отладка</a></li>
+<li><a class="material__link" href="#3">Точка остановки</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке рассматривается работа с отладчиком на примере программы, которую нужно исправить. Затем даются группы задач, алгоритмы решения которых требуют рассмотрения многих случаев. В этом уроке нет тестов к задачам, точно так же, как на контрольных и самостоятельных работах. Вам придется самим выяснять, на каких входных данных не работает ваша программа. Внимательно читайте условие.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Типы ошибок</h2>
+<p>Вероятно, вы уже обратили внимание, что при написании программ у вас возникали хоть и разные ошибки, но у многих из них было что-то общее. На самом деле существуют три основных типа ошибок, которые нужно научиться различать, так вы сможете без труда их исправить.</p>
+<p><strong>Синтаксическая ошибка</strong>: происходит, когда встречается код, который не соответствует правилам языка Python. Например: отсутствие кавычек вокруг строковой переменной, невыставленное двоеточие или отсутствие отступов после оператора <var>if</var>. Интерпретатор останавливается и сообщает об ошибке без дальнейшего выполнения программы.</p>
+<p><strong>Ошибка исполнения</strong>: как следует из названия, случается во время исполнения программы. Например, когда переменная ожидает работу с целыми числами, а оказывается строкой. Из-за несоответствия типов интерпретатор останавливается на ошибке.</p>
+<p><strong>Логическая ошибка (смысловая)</strong>: происходит, когда программа ведет себя не так, как было задумано. Например, порядок действий в вычисляемом выражении задан неправильно или неверно были расставлены отступы во вложенных операторах условия и т. д. Интерпретатор запускает программу и не сообщает об ошибке. Но все работает не так, как хотелось бы.</p>
+<p>С исправлением первых двух типов ошибок справиться достаточно просто, поскольку интерпретатор сообщает, где ошибка произошла, а в среде разработки чаще всего указывается строка, на которой эта ошибка возникла. А для логических ошибок требуется детальное изучение кода, чтобы найти такие ошибки, разработан специальный механизм отладки.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Отладка</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Отладка</strong></p>
+<p>Процесс изучения и исправления ошибок в работе программы (их часто называют багами, от англ. bug — жук), называется <strong>отладкой</strong>, по-английски — debugging, одно из значений — «удаление насекомых с растений». По одной из версий, именно так приходилось чинить компьютеры на заре компьютерной эпохи.</p>
+</section>
+<p>Программист всегда тестирует программу, занимается трассировкой и, конечно, размышляет над кодом, но иногда этого недостаточно. Часто (особенно когда программа длинная и сложная) невозможно обойтись без дополнительной информации. Какое значение имеет такая-то переменная в такой-то момент работы программы? В таком-то месте выполняется <var>if</var> или <var>else</var>? Выполняется ли тело такого-то цикла и, если да, сколько раз?</p>
+<p>Для ответа на такие вопросы существуют специальные инструменты отладки (<strong>отладчики</strong>). Они позволяют проходить программу пошагово и следить при этом за значениями переменных.</p>
+<p>Средства отладки есть в стандартной библиотеке функций Python, но обычно удобнее пользоваться возможностями среды программирования. Рассмотрим возможности отладчика Wing IDE на примере программы из прошлого урока.</p>
+<pre class="language-python"><code class="language-python">total <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вводите цены; для остановки введите -1.'</span><span class="token punctuation">)</span>
+price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> price <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    total <span class="token operator">=</span> total <span class="token operator">+</span> price  <span class="token comment"># можно заменить на аналогичную запись</span>
+    <span class="token comment"># total += price</span>
+    price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Общая стоимость равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+</code></pre>
+<p>Возьмем вот эту программу. Запустим ее, убедимся, что она работает. Попробуем пройти по ней в режиме отладки.</p>
+<p>Средства отладки расположены в меню <strong>Debug</strong> и выведены иконками (после кнопки запуска) в панели меню. Еще их можно запускать горячими клавишами.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-5/debug-interface.png" width="413"/></div>
+<p>В меню <strong>Debug</strong> есть такие команды (обратите внимание и на горячие клавиши, указанные справа):</p>
+<ul>
+<li>Start / Continue и Stop Debugging. Кнопки Debug и Stop выполняют те же функции. Первая команда запускает выполнение программы до ближайшего breakpoint’а, вторая полностью прерывает процесс отладки.</li>
+<li>Step Into, Step Over, Step Out, Step Out to Here. Управление пошаговым прохождением программы. Мы пока будем использовать только Step Over. Остальные пункты связаны с заходом внутрь функций и выходом из них, но мы свои функции пока не пишем, а заходить внутрь стандартных нам не нужно. Пункт Step Over (как и одноименная кнопка) доступен, когда программа запущена, но остановлена по breakpoint’у. Нажатие этой кнопки выполняет команду, записанную на текущей строчке, переходит на следующую и останавливается, ожидая еще одного Step Over либо Continue.</li>
+<li>Из следующих пунктов нам пока понадобятся только Add Breakpoint и Remove All Breakpoints. Add Breakpoint, как и кнопка Break, добавляет точку остановки на ту строчку программы, где находится курсор.</li>
+</ul>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Если вы не видите подписей под кнопками, их можно включить: Edit → Preferences... → User Interface → Toolbar → Toolbar Style → Icon and Text Below.</p>
+</section>
+<ul>
+<li>Запустим отладку, выбрав из меню команду Step Into (или одноименную кнопку или воспользуемся горячей клавишей F7). После запуска этой команды вместо окна Python Shell стало активно окно Debug I/O. В этом окне будет происходить ввод/вывод данных при отладке. Первая строка программы выделилась розовым цветом, и у номера строки появилась розовая стрелка. Таким образом будет выделяться строка, которая будет выполнена при следующем шаге отладки. На текущий момент мы только запустили отладчик, первую строку программы он еще не выполнил, а только собирается выполнить. В левом нижнем окне переключитесь с активного окна Search на окно Stack Data. В этом окне мы сможем просматривать значения переменных</li>
+<li>Теперь выполним первую команду программы (<code>total = 0</code>). Для этого выберите команду Step Over. После выполнения этой команды первая строка программы выполнилась. Посмотрите в окно Stack Data. Там в разделе Local появилась переменная <var>total</var>, которой присвоено значение 0</li>
+<li>Теперь будем выполнять строчку <code>price = float(input())</code>, в которой требуется вводить данные. Выполните команду Step Over. Перейдите в окно Debug I/O и введите любое число, например, 45. Ввод завершите клавишей Enter. Пока программа ждала от нас ввода данных, окно Stack Data было неактивно и в окне редактора не было розовой подсветки исполняемой строки. После ввода данных и нажатия Enter окно Stack Data стало снова активным, в нем появилась переменная <var>price</var> с заданным нами значением. Значение переменной <var>total</var> пока не изменилось</li>
+<li>Выполним очередной шаг отладки (Step Over) и увидим, что значение переменной <var>total</var> изменилось и стало равно значению переменной <var>price</var></li>
+</ul>
+<p>Теперь самостоятельно продолжите отладку программы, выполняя команду Step Over, когда необходимо вводя значения и наблюдая, как меняются значения переменных в окне Stack Data.</p>
+<p>Вы только что выполнили свою первую отладку программы!</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Точка остановки</h2>
+<p>А теперь при помощи отладчика поищем ошибки в другой программе. Рассмотрим вот такую программу под названием bank:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Добро пожаловать в интернет-банк!'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'У нас фантастические процентные ставки!'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Для вкладов до 10 тысяч ₽ включительно прибыль составит 10%,'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'для вкладов на сумму до 100 тысяч включительно - 20%,'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'для более 100 тысяч - 30%!'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'На какую сумму желаете сделать вклад?'</span><span class="token punctuation">)</span>
+money <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">if</span> money <span class="token operator">&lt;=</span> <span class="token number">10000</span><span class="token punctuation">:</span>
+    money <span class="token operator">*=</span> <span class="token number">1.1</span>
+<span class="token keyword">if</span> money <span class="token operator">&lt;=</span> <span class="token number">100000</span><span class="token punctuation">:</span>
+    money <span class="token operator">*=</span> <span class="token number">1.2</span>
+<span class="token keyword">if</span> money <span class="token operator">&gt;</span> <span class="token number">100000</span><span class="token punctuation">:</span>
+    money <span class="token operator">*=</span> <span class="token number">1.3</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы получаете'</span><span class="token punctuation">,</span> money<span class="token punctuation">,</span> <span class="token string">'₽, поздравляем!'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Эта программа верно выводит 1 300 000, если ввести 1 000 000, и верно выводит 24 000, если ввести 20 000. Но, если ввести 1000, программа выведет 1320 вместо 1100, а если ввести 100 000 — выведет 156 000 вместо 120 000!</p>
+<p>Выясним причины такого поведения при помощи инструментов отладки из меню Debug. Посмотрим, какие команды выполняются и как меняется значение переменной <var>money</var>.</p>
+<p>Но если мы посмотрим на программу — начальные строчки нет смысла отлаживать пошагово — в них выполняется вывод на экран. Есть смысл делать отладку только с момента получения значения <var>money</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Точка остановки</strong></p>
+<p>Если в строку, с которой начинается пошаговая отладка, поставить специальную метку — <strong>точку остановки (breakpoint)</strong>, тогда при пошаговом выполнении можно выполнить все команды до breakpoint’а в обычном режиме, а не пошагово.</p>
+</section>
+<p>Итак, отлаживаем программу bank.</p>
+<ul>
+<li>С помощью команды Add Breakpoint добавим точку остановки (breakpoint) на строчке 8, поместив туда курсор. Обратите внимание: тот же пункт меню теперь называется Remove Breakpoint (но только пока курсор на этой строчке кода), а перед строчкой появилась красная точка. Это индикатор breakpoint’а. Можно убрать breakpoint, щелкнув мышкой по красной точке, или установить его, щелкнув по этому месту на этой или на другой строчке.</li>
+<li>Запустим программу, но не кнопкой Run, а кнопкой Debug. В окне Debug I/O выведется текст из всех функций <var>print</var> и будет мигать курсор, ожидая ввода данных. Введем сумму — например, 1000. В этот момент программа доходит до строчки, на которой установлен breakpoint, и временно прерывает работу, отметив красным строку, на которой остановилась. В нижнем левом углу во вкладке Stack Data можно увидеть список переменных и их значения. Большинство — специальные системные, но в конце списка есть и переменная <var>money</var>.</li>
+<li>Если теперь выбрать в меню Start / Continue, программа продолжит работу до следующего breakpoint’а (которые можно ставить и снимать прямо во время отладки) или до конца. Но нам нужно пройти по программе построчно, чтобы понять, какие команды выполняются и чему при этом равно значение money. Чтобы продолжить выполнение программы, выберем команду Step Over.</li>
+<li>Продолжаем нажимать Step Over. Обратите внимание: когда программа выполнила строчку 9, значение <var>money</var> изменилось на 1100 — это верный итоговый ответ.</li>
+<li>Но что же дальше? После строчки 10, на которой программа проверяет условие <var>if</var>, выполняется строчка 11, после которой значение <var>money</var> увеличивается до неправильного! Неудивительно: ведь условие и правда истинно. Но программа явно должна работать по-другому</li>
+</ul>
+<p>Исправьте программу так, чтобы она работала правильно.</p>
+<p>На прошлом уроке мы смотрели, как работает цикл на примере трассировочных таблиц. А теперь давайте посмотрим в режиме отладки, как будет работать программа при вводе последовательности 12, 3, 32, 14, 0.</p>
+<pre class="language-python"><code class="language-python">count <span class="token operator">=</span> <span class="token number">0</span>
+number <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> number <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> number <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">==</span> <span class="token number">2</span> <span class="token keyword">and</span> number <span class="token operator">%</span> <span class="token number">4</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        count <span class="token operator">+=</span> <span class="token number">1</span>
+    number <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Количество искомых чисел:'</span><span class="token punctuation">,</span> count<span class="token punctuation">)</span>
+</code></pre>
+<p>Пройдитесь по программе отладчиком, вводя указанные значения. Согласитесь, что так отлаживать программы проще, чем делать это вручную на бумаге.</p>
+<p>А теперь выберите разные значения для переменных <var>a</var> и <var>b</var> и пройдитесь отладчиком по данному коду:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+b <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+<span class="token keyword">while</span> a <span class="token operator">!=</span> b<span class="token punctuation">:</span>
+    <span class="token keyword">if</span> a <span class="token operator">&gt;</span> b<span class="token punctuation">:</span>
+        a <span class="token operator">-=</span> b
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        b <span class="token operator">-=</span> a
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+</code></pre>
+<p>Посмотрите, как будут меняться переменные. Определите, что будет выводиться на экран при выбранных вами значениях. Что находит данная программа для двух чисел?</p>
+<p>Рассмотрим очередную задачу.</p>
+<p>В программу поступают значения с температурного датчика. Ввод значений прекращается сигналом остановки (число 0).</p>
+<p>Вот код этой программы:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+k <span class="token operator">=</span> <span class="token number">0</span>
+t <span class="token operator">=</span> a
+<span class="token keyword">while</span> a <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+   <span class="token keyword">if</span> a <span class="token operator">&gt;</span> t<span class="token punctuation">:</span>
+      t <span class="token operator">=</span> a
+      k <span class="token operator">=</span> <span class="token number">0</span>
+   <span class="token keyword">if</span> a <span class="token operator">==</span> t<span class="token punctuation">:</span>
+      k <span class="token operator">+=</span> <span class="token number">1</span>
+   a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span>
+</code></pre>
+<p>Ваша задача — определить, что находит и выводит данная программа относительно вводимых значений температуры?</p>
+<p>При решении задач («Псевдонимы», «Лабиринт», «Бот-говорилка») помните, что они рассчитаны на людей. Пользователь должен понимать, что и когда нужно вводить.</p>
+</section></article></section>

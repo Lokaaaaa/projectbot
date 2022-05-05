@@ -1,0 +1,365 @@
+<section class="lesson-material__content"><article class="material"><h1>Flask и sqlalchemy</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Куки и сессии</a></li>
+<li><a class="material__link" href="#2">Авторизация пользователя</a></li>
+<li><a class="material__link" href="#3">Добавление, изменение и удаление данных</a></li>
+<li><a class="material__link" href="#4">Отношение многие ко многим</a></li>
+<li><a class="material__link" href="#5">Заключение</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы доделаем процесс авторизации пользователей в веб-приложении, а также рассмотрим еще несколько важных моментов, связанных с работой с библиотеками flask и sqlalchemy.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Куки и сессии</h2>
+<p>Продолжим работать над веб-приложением, которое мы начали делать на прошлом уроке. Прежде чем писать форму логина, давайте поговорим о том, как работает процесс аутентификации в вебе. Как вы наверняка заметили, пока наше веб-приложение не запоминает никакой информации о клиенте между его запросами, то есть мы никак не проверяем, пришел ли следующий запрос от того же клиента или от другого. Чтобы удостовериться в том, что пользователь был на нашем сайте и уже делал какие-то действия, есть несколько способов.</p>
+<p>Первый из них — <a class="material__link" href="https://ru.wikipedia.org/wiki/Cookie" rel="noopener noreferrer" target="_blank">куки</a>. Куки — это небольшой фрагмент данных, который сервер устанавливает в браузере клиента. Это работает следующим образом:</p>
+<ol>
+<li>Клиент отправляет запрос на получение страницы от сервера, то есть вызывает какой-то из наших flask-обработчиков url.</li>
+<li>Сервер отвечает на запрос и вместе со страницей ответа отправляет одно или несколько куки.</li>
+<li>При всех следующих запросах клиент отправляет информацию из полученных куки серверу (пока не истечет их «срок годности»).</li>
+</ol>
+<p>Как и со всеми остальными параметрами, которые мы получаем от пользователя, работа с куки очень похожа на работу со словарями. Давайте сделаем вот такой небольшой пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">"/cookie_test"</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">cookie_test</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    visits_count <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>cookies<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"visits_count"</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> visits_count<span class="token punctuation">:</span>
+        res <span class="token operator">=</span> make_response<span class="token punctuation">(</span>
+            <span class="token string-interpolation"><span class="token string">f"Вы пришли на эту страницу </span><span class="token interpolation"><span class="token punctuation">{</span>visits_count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">}</span></span><span class="token string"> раз"</span></span><span class="token punctuation">)</span>
+        res<span class="token punctuation">.</span>set_cookie<span class="token punctuation">(</span><span class="token string">"visits_count"</span><span class="token punctuation">,</span> <span class="token builtin">str</span><span class="token punctuation">(</span>visits_count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                       max_age<span class="token operator">=</span><span class="token number">60</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">*</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">365</span> <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        res <span class="token operator">=</span> make_response<span class="token punctuation">(</span>
+            <span class="token string">"Вы пришли на эту страницу в первый раз за последние 2 года"</span><span class="token punctuation">)</span>
+        res<span class="token punctuation">.</span>set_cookie<span class="token punctuation">(</span><span class="token string">"visits_count"</span><span class="token punctuation">,</span> <span class="token string">'1'</span><span class="token punctuation">,</span>
+                       max_age<span class="token operator">=</span><span class="token number">60</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">*</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">365</span> <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> res
+</code></pre>
+<p>Сначала мы пытаемся получить куки по ключу <var>visits_count</var>, и если она не установлена у пользователя, получаем ноль. Ноль означает, что пользователь пришел на нашу страницу первый раз, о чем мы ему и сообщаем с помощью строки, которую передаем в функцию <var>flask.make_response</var>. После чего у получившегося объекта вызываем метод <var>set_cookie</var>, куда передаем имя куки, значение, а также максимальное время жизни, после которого браузер удалит куки.</p>
+<p>Если куки уже установлено, мы увеличиваем счетчик на 1 и переустанавливаем куки, обновляя срок жизни. Обратите внимание: у куки ключи могут быть типа <var>str</var>, а значения — типа <var>str</var> или <var>bytes</var>.</p>
+<p>Запустите программу, перейдите по адресу <code>http://127.0.0.1:5000/cookie_test</code> и посмотрите, как будет меняться отображаемая информация в браузере, когда вы обновляете страницу (это можно делать при помощи клавиши F5). Также значение куки можно посмотреть непосредственно в браузере, перейдя в режим разработчика при помощи клавиши F12.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/cookies.png" width="680"/></div>
+<p>Если мы хотим сделать не простой текстовый ответ, необходимо передать в функцию <var>make_response</var> результат функции <var>render_template</var>.</p>
+<p>Например, в обработчике для страницы новостей это могло выглядеть примерно вот так:</p>
+<pre class="language-python"><code class="language-python">res <span class="token operator">=</span> make_response<span class="token punctuation">(</span>render_template<span class="token punctuation">(</span><span class="token string">"index.html"</span><span class="token punctuation">,</span> news<span class="token operator">=</span>news<span class="token punctuation">)</span><span class="token punctuation">)</span>
+res<span class="token punctuation">.</span>set_cookie<span class="token punctuation">(</span><span class="token string">"visits_count"</span><span class="token punctuation">,</span> <span class="token string">'1'</span><span class="token punctuation">,</span> max_age<span class="token operator">=</span><span class="token number">60</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">*</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">365</span> <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для удаления куки достаточно установить для нее нулевое время жизни:</p>
+<pre class="language-python"><code class="language-python">res<span class="token punctuation">.</span>set_cookie<span class="token punctuation">(</span><span class="token string">"visits_count"</span><span class="token punctuation">,</span> <span class="token string">'1'</span><span class="token punctuation">,</span> max_age<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Куки классные, но у них есть недостатки:</p>
+<ol>
+<li>Вся информация, записанная в куки, хранится в открытом виде (не шифруется) и может быть доступна любому человеку для чтения и изменения. Поэтому в куки нельзя хранить пароли, данные банковских карт и другие чувствительные для потери данные.</li>
+<li>Куки можно отключить в браузере, и если пользователь их отключит, мы об об этом не узнаем.</li>
+<li>Куки не безразмерные. Каждая может хранить до 4 КБ данных, кроме того, у любого браузера есть свое ограничение на количество куки, которое может установить каждый сайт (это число всегда меньше 50).</li>
+<li>Куки отправляются с каждым запросом к серверу, поэтому, если установить большое число больших куки, запросы к серверу будут тяжелыми и сайт будет работать медленно.</li>
+</ol>
+<p>Сессии во Flask очень похожи на куки, но имеют большое преимущество: гарантируется, что содержимое сессии не может быть изменено пользователем (если у него нет нашего секретного ключа). Для работы с сессиями есть специальный объект <var>flask.session</var>, его надо импортировать. Давайте перепишем часть со счетчиком посещений на сессии:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">"/session_test"</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">session_test</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    visits_count <span class="token operator">=</span> session<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'visits_count'</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+    session<span class="token punctuation">[</span><span class="token string">'visits_count'</span><span class="token punctuation">]</span> <span class="token operator">=</span> visits_count <span class="token operator">+</span> <span class="token number">1</span>
+    <span class="token keyword">return</span> make_response<span class="token punctuation">(</span>
+        <span class="token string-interpolation"><span class="token string">f"Вы пришли на эту страницу </span><span class="token interpolation"><span class="token punctuation">{</span>visits_count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">}</span></span><span class="token string"> раз"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Сессии также хранятся в куках, но в зашифрованном виде. По умолчанию сессии существуют до тех пор, пока пользователь не закроет браузер. Чтобы продлить жизнь сессии, нужно присвоить атрибуту <var>session.permanent</var> значение True. В таком случае срок жизни сессии будет продлен до 31 дня. Если нужно еще больше (например, год) тогда после создания нашего приложения надо установить параметр PERMANENT_SESSION_LIFETIME.</p>
+<pre class="language-python"><code class="language-python">app <span class="token operator">=</span> Flask<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+app<span class="token punctuation">.</span>config<span class="token punctuation">[</span><span class="token string">'PERMANENT_SESSION_LIFETIME'</span><span class="token punctuation">]</span> <span class="token operator">=</span> datetime<span class="token punctuation">.</span>timedelta<span class="token punctuation">(</span>
+    days<span class="token operator">=</span><span class="token number">365</span>
+<span class="token punctuation">)</span>
+</code></pre>
+<p>Удаление данных из сессии происходит так же, как и удаление пары «ключ-значение» из словаря. Например, это можно сделать так:</p>
+<pre class="language-python"><code class="language-python">session<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token string">'visits_count'</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">)</span>
+</code></pre>
+<p>На использовании объекта сессии можно построить простую систему авторизации для нашего приложения. Для этого можно после правильного ввода пользователем логина и пароля записывать в его сессию некоторое сложноподбираемое значение, которое использовать как ключ доступа к личным разделам пользователя. Несмотря на то, что значение сессии нельзя изменить, злоумышленник может перехватить значение сессии и начать отправлять свои запросы, представляясь другим пользователем, так как при передаче данных от клиента до сервера и обратно по протоколу HTTP данные не шифруются. Для шифрованной передачи используется протокол HTTPS.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Авторизация пользователя</h2>
+<p>Для добавления функциональности авторизации пользователей можно воспользоваться библиотекой flask-login. Для начала установим библиотеку:</p>
+<pre><code>pip install flask-login
+</code></pre>
+<p>Выполним первоначальную настройку модуля. Сначала импортируем нужный класс:</p>
+<pre><code>from flask_login import LoginManager
+</code></pre>
+<p>Затем сразу после создания приложения flask инициализируем <var>LoginManager</var>:</p>
+<pre class="language-python"><code class="language-python">login_manager <span class="token operator">=</span> LoginManager<span class="token punctuation">(</span><span class="token punctuation">)</span>
+login_manager<span class="token punctuation">.</span>init_app<span class="token punctuation">(</span>app<span class="token punctuation">)</span>
+</code></pre>
+<p>Для верной работы flask-login у нас должна быть функция для получения пользователя, украшенная декоратором <var>login_manager.user_loader</var>. Добавим ее:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@login_manager<span class="token punctuation">.</span>user_loader</span>
+<span class="token keyword">def</span> <span class="token function">load_user</span><span class="token punctuation">(</span>user_id<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>User<span class="token punctuation">)</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>user_id<span class="token punctuation">)</span>
+</code></pre>
+<p>Кроме того, наша модель для пользователей должна содержать ряд методов для корректной работы flask-login, но мы не будем создавать их руками, а воспользуемся множественным наследованием. И помимо <var>SqlAlchemyBase</var> унаследуем <var>User</var> от <var>UserMixin</var> из модуля flask-login, то есть заголовок класса модели пользователей будет выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">User</span><span class="token punctuation">(</span>SqlAlchemyBase<span class="token punctuation">,</span> UserMixin<span class="token punctuation">)</span><span class="token punctuation">:</span>
+</code></pre>
+<p>Сделаем форму авторизации пользователя, назовем ее <var>LoginForm</var>. Она будет практически совпадать с той, что мы делали на уроке знакомства с flask-wtf:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">LoginForm</span><span class="token punctuation">(</span>FlaskForm<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    email <span class="token operator">=</span> EmailField<span class="token punctuation">(</span><span class="token string">'Почта'</span><span class="token punctuation">,</span> validators<span class="token operator">=</span><span class="token punctuation">[</span>DataRequired<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    password <span class="token operator">=</span> PasswordField<span class="token punctuation">(</span><span class="token string">'Пароль'</span><span class="token punctuation">,</span> validators<span class="token operator">=</span><span class="token punctuation">[</span>DataRequired<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    remember_me <span class="token operator">=</span> BooleanField<span class="token punctuation">(</span><span class="token string">'Запомнить меня'</span><span class="token punctuation">)</span>
+    submit <span class="token operator">=</span> SubmitField<span class="token punctuation">(</span><span class="token string">'Войти'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Сделаем к ней шаблон login.html:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> extends <span class="token string">"base.html"</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+
+<span class="token punctuation">{</span><span class="token operator">%</span> block content <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>h1<span class="token operator">&gt;</span>Авторизация<span class="token operator">&lt;</span><span class="token operator">/</span>h1<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span>form action<span class="token operator">=</span><span class="token string">""</span> method<span class="token operator">=</span><span class="token string">"post"</span><span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>hidden_tag<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span>
+        <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>email<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>email<span class="token punctuation">(</span><span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"form-control"</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token string">"email"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> error <span class="token keyword">in</span> form<span class="token punctuation">.</span>email<span class="token punctuation">.</span>errors <span class="token operator">%</span><span class="token punctuation">}</span>
+                <span class="token operator">&lt;</span>div <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"alert alert-danger"</span> role<span class="token operator">=</span><span class="token string">"alert"</span><span class="token operator">&gt;</span>
+                    <span class="token punctuation">{</span><span class="token punctuation">{</span> error <span class="token punctuation">}</span><span class="token punctuation">}</span>
+                <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+        <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>password<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>password<span class="token punctuation">(</span><span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"form-control"</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token string">"password"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> error <span class="token keyword">in</span> form<span class="token punctuation">.</span>password<span class="token punctuation">.</span>errors <span class="token operator">%</span><span class="token punctuation">}</span>
+                <span class="token operator">&lt;</span>div <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"alert alert-danger"</span> role<span class="token operator">=</span><span class="token string">"alert"</span><span class="token operator">&gt;</span>
+                    <span class="token punctuation">{</span><span class="token punctuation">{</span> error <span class="token punctuation">}</span><span class="token punctuation">}</span>
+                <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+        <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>remember_me<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span> <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>remember_me<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>submit<span class="token punctuation">(</span><span class="token builtin">type</span><span class="token operator">=</span><span class="token string">"submit"</span><span class="token punctuation">,</span> <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-primary"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> message <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>form<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endblock <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>И, наконец, сделаем обработчик адреса <code>/login</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/login'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'GET'</span><span class="token punctuation">,</span> <span class="token string">'POST'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">login</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    form <span class="token operator">=</span> LoginForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> form<span class="token punctuation">.</span>validate_on_submit<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        user <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>User<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">filter</span><span class="token punctuation">(</span>User<span class="token punctuation">.</span>email <span class="token operator">==</span> form<span class="token punctuation">.</span>email<span class="token punctuation">.</span>data<span class="token punctuation">)</span><span class="token punctuation">.</span>first<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> user <span class="token keyword">and</span> user<span class="token punctuation">.</span>check_password<span class="token punctuation">(</span>form<span class="token punctuation">.</span>password<span class="token punctuation">.</span>data<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            login_user<span class="token punctuation">(</span>user<span class="token punctuation">,</span> remember<span class="token operator">=</span>form<span class="token punctuation">.</span>remember_me<span class="token punctuation">.</span>data<span class="token punctuation">)</span>
+            <span class="token keyword">return</span> redirect<span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'login.html'</span><span class="token punctuation">,</span>
+                               message<span class="token operator">=</span><span class="token string">"Неправильный логин или пароль"</span><span class="token punctuation">,</span>
+                               form<span class="token operator">=</span>form<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'login.html'</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">'Авторизация'</span><span class="token punctuation">,</span> form<span class="token operator">=</span>form<span class="token punctuation">)</span>
+</code></pre>
+<p>(Не забудьте импортировать класс <var>LoginForm</var> и метод <var>login_user</var> из модуля flask-login.)</p>
+<p>Если форма логина прошла валидацию, мы находим пользователя с введенной почтой, проверяем, введен ли для него правильный пароль, если да, вызываем функцию <var>login_user</var> модуля flask-login и передаем туда объект нашего пользователя, а также значение галочки «Запомнить меня». После чего перенаправляем пользователя на главную страницу нашего приложения.</p>
+<p>Давайте запустим и попробуем. После ввода правильного логина и пароля нас действительно перенаправляет на главную страницу веб-приложения. Но как понять что что-то поменялось? Для этого существует атрибут <var>flask_login.current_user</var>, доступный в любом обработчике URL и в шаблонах. Если пользователь залогинен, то там содержится объект класса <var>User</var> текущего пользователя, а если никто не авторизовался — анонимного пользователя.</p>
+<p>Давайте добавим следующий код в элемент nav базового шаблона:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">if</span> current_user<span class="token punctuation">.</span>is_authenticated <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>a <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"navbar-brand"</span> href<span class="token operator">=</span><span class="token string">"/logout"</span><span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> current_user<span class="token punctuation">.</span>name <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>a<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">else</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>a <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-primary "</span> href<span class="token operator">=</span><span class="token string">"/register"</span><span class="token operator">&gt;</span>Зарегистрироваться<span class="token operator">&lt;</span><span class="token operator">/</span>a<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>a <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-success"</span> href<span class="token operator">=</span><span class="token string">"/login"</span><span class="token operator">&gt;</span>Войти<span class="token operator">&lt;</span><span class="token operator">/</span>a<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endif <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>Теперь после входа и перенаправления на главную страницу мы увидим имя залогиненного пользователя:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/flask-sql-1.png" width="680"/></div>
+<p>Теперь добавим обработчик адреса <code>/logout</code>. Для него нам не понадобится отдельный шаблон, поскольку это не отдельная страница, а действие.</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/logout'</span><span class="token punctuation">)</span>
+@login_required
+<span class="token keyword">def</span> <span class="token function">logout</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    logout_user<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> redirect<span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Тут все просто — мы «забываем» пользователя при помощи функции <var>logout_user</var> и перенаправляем его на главную страницу нашего приложения. Из интересного здесь — декоратор <var>login_required</var> (не забудьте это импортировать). Таким декоратором можно украшать обработчики страниц, на которые может попасть только авторизованный пользователь.</p>
+<p>Давайте добавим небольшое изменение в главную страницу нашего приложения, чтобы для авторизованного пользователя отображались и его личные записи.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> current_user<span class="token punctuation">.</span>is_authenticated<span class="token punctuation">:</span>
+    news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">filter</span><span class="token punctuation">(</span>
+        <span class="token punctuation">(</span>News<span class="token punctuation">.</span>user <span class="token operator">==</span> current_user<span class="token punctuation">)</span> <span class="token operator">|</span> <span class="token punctuation">(</span>News<span class="token punctuation">.</span>is_private <span class="token operator">!=</span> <span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">filter</span><span class="token punctuation">(</span>News<span class="token punctuation">.</span>is_private <span class="token operator">!=</span> <span class="token boolean">True</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Добавление, изменение и удаление данных</h2>
+<p>Чтобы далеко не ходить, давайте рассмотрим добавление, изменение и удаление данных на примере новостей. Начнем с добавления. Разумеется, добавлять новости у нас могут только авторизованные пользователи, поэтому давайте добавим в шаблон отображения списка новостей кнопку, доступную только им:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">if</span> current_user<span class="token punctuation">.</span>is_authenticated <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>a href<span class="token operator">=</span><span class="token string">"news"</span> <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-secondary"</span><span class="token operator">&gt;</span>Добавить новость<span class="token operator">&lt;</span><span class="token operator">/</span>a<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endif <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>Создадим форму добавления новости <var>NewsForm</var>, в каталог forms добавим файл news.py:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> flask_wtf <span class="token keyword">import</span> FlaskForm
+<span class="token keyword">from</span> wtforms <span class="token keyword">import</span> StringField<span class="token punctuation">,</span> TextAreaField
+<span class="token keyword">from</span> wtforms <span class="token keyword">import</span> BooleanField<span class="token punctuation">,</span> SubmitField
+<span class="token keyword">from</span> wtforms<span class="token punctuation">.</span>validators <span class="token keyword">import</span> DataRequired
+
+
+<span class="token keyword">class</span> <span class="token class-name">NewsForm</span><span class="token punctuation">(</span>FlaskForm<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    title <span class="token operator">=</span> StringField<span class="token punctuation">(</span><span class="token string">'Заголовок'</span><span class="token punctuation">,</span> validators<span class="token operator">=</span><span class="token punctuation">[</span>DataRequired<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    content <span class="token operator">=</span> TextAreaField<span class="token punctuation">(</span><span class="token string">"Содержание"</span><span class="token punctuation">)</span>
+    is_private <span class="token operator">=</span> BooleanField<span class="token punctuation">(</span><span class="token string">"Личное"</span><span class="token punctuation">)</span>
+    submit <span class="token operator">=</span> SubmitField<span class="token punctuation">(</span><span class="token string">'Применить'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Шаблон для редактирования новости news.html:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> extends <span class="token string">"base.html"</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+
+<span class="token punctuation">{</span><span class="token operator">%</span> block content <span class="token operator">%</span><span class="token punctuation">}</span>
+<span class="token operator">&lt;</span>h1<span class="token operator">&gt;</span>Добавление новости<span class="token operator">&lt;</span><span class="token operator">/</span>h1<span class="token operator">&gt;</span>
+<span class="token operator">&lt;</span>form action<span class="token operator">=</span><span class="token string">""</span> method<span class="token operator">=</span><span class="token string">"post"</span><span class="token operator">&gt;</span>
+    <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>hidden_tag<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>title<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>title<span class="token punctuation">(</span><span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"form-control"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> error <span class="token keyword">in</span> form<span class="token punctuation">.</span>title<span class="token punctuation">.</span>errors <span class="token operator">%</span><span class="token punctuation">}</span>
+            <span class="token operator">&lt;</span>p <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"alert alert-danger"</span> role<span class="token operator">=</span><span class="token string">"alert"</span><span class="token operator">&gt;</span>
+                <span class="token punctuation">{</span><span class="token punctuation">{</span> error <span class="token punctuation">}</span><span class="token punctuation">}</span>
+            <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>content<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>content<span class="token punctuation">(</span><span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"form-control"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> error <span class="token keyword">in</span> form<span class="token punctuation">.</span>content<span class="token punctuation">.</span>errors <span class="token operator">%</span><span class="token punctuation">}</span>
+            <span class="token operator">&lt;</span>p content<span class="token operator">=</span><span class="token string">"alert alert-danger"</span> role<span class="token operator">=</span><span class="token string">"alert"</span><span class="token operator">&gt;</span>
+                <span class="token punctuation">{</span><span class="token punctuation">{</span> error <span class="token punctuation">}</span><span class="token punctuation">}</span>
+            <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>is_private<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span> <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>is_private<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>submit<span class="token punctuation">(</span><span class="token builtin">type</span><span class="token operator">=</span><span class="token string">"submit"</span><span class="token punctuation">,</span> <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-primary"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+    <span class="token punctuation">{</span><span class="token punctuation">{</span>message<span class="token punctuation">}</span><span class="token punctuation">}</span>
+<span class="token operator">&lt;</span><span class="token operator">/</span>form<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endblock <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>И обработчик:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/news'</span><span class="token punctuation">,</span>  methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'GET'</span><span class="token punctuation">,</span> <span class="token string">'POST'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+@login_required
+<span class="token keyword">def</span> <span class="token function">add_news</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    form <span class="token operator">=</span> NewsForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> form<span class="token punctuation">.</span>validate_on_submit<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news <span class="token operator">=</span> News<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news<span class="token punctuation">.</span>title <span class="token operator">=</span> form<span class="token punctuation">.</span>title<span class="token punctuation">.</span>data
+        news<span class="token punctuation">.</span>content <span class="token operator">=</span> form<span class="token punctuation">.</span>content<span class="token punctuation">.</span>data
+        news<span class="token punctuation">.</span>is_private <span class="token operator">=</span> form<span class="token punctuation">.</span>is_private<span class="token punctuation">.</span>data
+        current_user<span class="token punctuation">.</span>news<span class="token punctuation">.</span>append<span class="token punctuation">(</span>news<span class="token punctuation">)</span>
+        db_sess<span class="token punctuation">.</span>merge<span class="token punctuation">(</span>current_user<span class="token punctuation">)</span>
+        db_sess<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> redirect<span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'news.html'</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">'Добавление новости'</span><span class="token punctuation">,</span> 
+                           form<span class="token operator">=</span>form<span class="token punctuation">)</span>
+</code></pre>
+<p>Тут нет ничего такого, что мы уже не делали. Единственный интересный момент — сказать сессии, что мы изменили текущего пользователя с помощью метода <var>merge</var>.</p>
+<p>Сделаем редактирование новости. Будем использовать уже созданную форму и шаблон, напишем только другой обработчик:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/news/&lt;int:id&gt;'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'GET'</span><span class="token punctuation">,</span> <span class="token string">'POST'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+@login_required
+<span class="token keyword">def</span> <span class="token function">edit_news</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    form <span class="token operator">=</span> NewsForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> request<span class="token punctuation">.</span>method <span class="token operator">==</span> <span class="token string">"GET"</span><span class="token punctuation">:</span>
+        db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">filter</span><span class="token punctuation">(</span>News<span class="token punctuation">.</span><span class="token builtin">id</span> <span class="token operator">==</span> <span class="token builtin">id</span><span class="token punctuation">,</span>
+                                          News<span class="token punctuation">.</span>user <span class="token operator">==</span> current_user
+                                          <span class="token punctuation">)</span><span class="token punctuation">.</span>first<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> news<span class="token punctuation">:</span>
+            form<span class="token punctuation">.</span>title<span class="token punctuation">.</span>data <span class="token operator">=</span> news<span class="token punctuation">.</span>title
+            form<span class="token punctuation">.</span>content<span class="token punctuation">.</span>data <span class="token operator">=</span> news<span class="token punctuation">.</span>content
+            form<span class="token punctuation">.</span>is_private<span class="token punctuation">.</span>data <span class="token operator">=</span> news<span class="token punctuation">.</span>is_private
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            abort<span class="token punctuation">(</span><span class="token number">404</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> form<span class="token punctuation">.</span>validate_on_submit<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">filter</span><span class="token punctuation">(</span>News<span class="token punctuation">.</span><span class="token builtin">id</span> <span class="token operator">==</span> <span class="token builtin">id</span><span class="token punctuation">,</span>
+                                          News<span class="token punctuation">.</span>user <span class="token operator">==</span> current_user
+                                          <span class="token punctuation">)</span><span class="token punctuation">.</span>first<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> news<span class="token punctuation">:</span>
+            news<span class="token punctuation">.</span>title <span class="token operator">=</span> form<span class="token punctuation">.</span>title<span class="token punctuation">.</span>data
+            news<span class="token punctuation">.</span>content <span class="token operator">=</span> form<span class="token punctuation">.</span>content<span class="token punctuation">.</span>data
+            news<span class="token punctuation">.</span>is_private <span class="token operator">=</span> form<span class="token punctuation">.</span>is_private<span class="token punctuation">.</span>data
+            db_sess<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> redirect<span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            abort<span class="token punctuation">(</span><span class="token number">404</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'news.html'</span><span class="token punctuation">,</span>
+                           title<span class="token operator">=</span><span class="token string">'Редактирование новости'</span><span class="token punctuation">,</span>
+                           form<span class="token operator">=</span>form
+                           <span class="token punctuation">)</span>
+</code></pre>
+<p>Если мы запросили страницу записи, ищем ее в базе по <var>id</var>, причем автор новости должен совпадать с текущим пользователем. Если что-то нашли, предзаполняем форму, иначе показываем пользователю страницу 404. Такую же проверку на всякий случай делаем перед изменением новости.</p>
+<p>Добавим кнопки «Изменить» и «Удалить» к каждой новости в списке новостей, но только для тех записей, автором которых является <var>current_user</var>. Немного изменим шаблон index.html.</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">if</span> current_user<span class="token punctuation">.</span>is_authenticated <span class="token keyword">and</span> current_user <span class="token operator">==</span> item<span class="token punctuation">.</span>user <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>a href<span class="token operator">=</span><span class="token string">"/news/{{ item.id }}"</span> <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-warning"</span><span class="token operator">&gt;</span>
+            Изменить
+        <span class="token operator">&lt;</span><span class="token operator">/</span>a<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>a href<span class="token operator">=</span><span class="token string">"/news_delete/{{ item.id }}"</span> <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-danger"</span><span class="token operator">&gt;</span>
+            Удалить
+        <span class="token operator">&lt;</span><span class="token operator">/</span>a<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endif <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>В адреса каждой из ссылок допишем <var>id</var> новости.</p>
+<p>У нас получится что-то вроде:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/flask-sql-2.png" width="680"/></div>
+<p>Добавим еще обработчик удаления записи:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/news_delete/&lt;int:id&gt;'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'GET'</span><span class="token punctuation">,</span> <span class="token string">'POST'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+@login_required
+<span class="token keyword">def</span> <span class="token function">news_delete</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">filter</span><span class="token punctuation">(</span>News<span class="token punctuation">.</span><span class="token builtin">id</span> <span class="token operator">==</span> <span class="token builtin">id</span><span class="token punctuation">,</span>
+                                      News<span class="token punctuation">.</span>user <span class="token operator">==</span> current_user
+                                      <span class="token punctuation">)</span><span class="token punctuation">.</span>first<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> news<span class="token punctuation">:</span>
+        db_sess<span class="token punctuation">.</span>delete<span class="token punctuation">(</span>news<span class="token punctuation">)</span>
+        db_sess<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        abort<span class="token punctuation">(</span><span class="token number">404</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> redirect<span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Итак, у нас получилось достаточно функциональное рабочее приложение. Давайте добавим еще пару штрихов.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Отношение многие ко многим</h2>
+<p>Когда вы создавали базы данных, наверняка обратили внимание, что когда сущности связаны <strong>одна ко многим</strong> (у одного пользователя есть несколько записей, в одном жанре есть несколько фильмов), то проблем с проектированием базы данных не возникает. Трудности начинаются, когда сущности связаны <strong>многие ко многим</strong> (в одном заказе может быть несколько наименований товаров, но эти же товары могут быть во многих заказах). Те, кто столкнулся с этой проблемой, вероятно, провели исследования и уже знают, что в SQL такая ситуация решается созданием промежуточной таблицы. Давайте посмотрим, как связь <strong>многие ко многим</strong> можно реализовать с помощью sqlalchemy.</p>
+<p>Давайте представим, что наши записи могут принадлежать к одной или нескольким категориям, чтобы можно было проще их фильтровать по интересующей пользователя теме.</p>
+<p>Добавим модель <var>Category</var>, сделаем для этого новый файл category.py в папке data:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sqlalchemy
+<span class="token keyword">from</span> <span class="token punctuation">.</span>db_session <span class="token keyword">import</span> SqlAlchemyBase
+   
+   
+<span class="token keyword">class</span> <span class="token class-name">Category</span><span class="token punctuation">(</span>SqlAlchemyBase<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    __tablename__ <span class="token operator">=</span> <span class="token string">'category'</span>
+    <span class="token builtin">id</span> <span class="token operator">=</span> sqlalchemy<span class="token punctuation">.</span>Column<span class="token punctuation">(</span>sqlalchemy<span class="token punctuation">.</span>Integer<span class="token punctuation">,</span> primary_key<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> 
+                           autoincrement<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+    name <span class="token operator">=</span> sqlalchemy<span class="token punctuation">.</span>Column<span class="token punctuation">(</span>sqlalchemy<span class="token punctuation">.</span>String<span class="token punctuation">,</span> nullable<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Кроме того, добавим перед моделью с категориями информацию о промежуточной таблице:</p>
+<pre class="language-python"><code class="language-python">association_table <span class="token operator">=</span> sqlalchemy<span class="token punctuation">.</span>Table<span class="token punctuation">(</span>
+    <span class="token string">'association'</span><span class="token punctuation">,</span>
+    SqlAlchemyBase<span class="token punctuation">.</span>metadata<span class="token punctuation">,</span>
+    sqlalchemy<span class="token punctuation">.</span>Column<span class="token punctuation">(</span><span class="token string">'news'</span><span class="token punctuation">,</span> sqlalchemy<span class="token punctuation">.</span>Integer<span class="token punctuation">,</span>
+                      sqlalchemy<span class="token punctuation">.</span>ForeignKey<span class="token punctuation">(</span><span class="token string">'news.id'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    sqlalchemy<span class="token punctuation">.</span>Column<span class="token punctuation">(</span><span class="token string">'category'</span><span class="token punctuation">,</span> sqlalchemy<span class="token punctuation">.</span>Integer<span class="token punctuation">,</span>
+                      sqlalchemy<span class="token punctuation">.</span>ForeignKey<span class="token punctuation">(</span><span class="token string">'category.id'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+</code></pre>
+<p>Тут мы говорим sqlalchemy, что нам нужна вспомогательная таблица <var>association</var> (не обязательно такое имя, часто их называют <code>имя_сущности1_to_имя_сущности2</code>, то есть в нашем случае <code>news_to_category</code>), которая будет содержать только несколько внешних ключей на каждую из таблиц.</p>
+<p>Немного обновим модель <var>News</var>, чтобы можно было получать доступ к категориям новости как к списку:</p>
+<pre class="language-python"><code class="language-python">categories <span class="token operator">=</span> orm<span class="token punctuation">.</span>relation<span class="token punctuation">(</span><span class="token string">"Category"</span><span class="token punctuation">,</span>
+                          secondary<span class="token operator">=</span><span class="token string">"association"</span><span class="token punctuation">,</span>
+                          backref<span class="token operator">=</span><span class="token string">"news"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>К сожалению, чтобы sqlalchemy применил изменения, надо удалить уже существующие таблицы в базе данных, которые затрагивают эти изменения. В данном случае необходимо удалить таблицу <var>news</var>. После перезапуска приложения таблицы будут созданы уже с правильной структурой. Такое поведение не очень удобно, скоро мы узнаем, как с этим можно справиться.</p>
+<p>Не забудьте добавить в файл __all_models.py импорт новой модели:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> <span class="token punctuation">.</span> <span class="token keyword">import</span> category
+</code></pre>
+<p>Если мы все сделали правильно, наша база данных станет выглядеть примерно вот так:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/flask-sql-3.png" width="680"/></div>
+<p>Теперь, когда мы будем вызывать метод <code>новость.category.append</code> и передавать туда объект типа <var>Category</var>, у нас будет создаваться запись именно в промежуточной таблице.</p>
+<p>Чтобы удалить категорию у новости, достаточно сделать:</p>
+<pre class="language-python"><code class="language-python">news<span class="token punctuation">.</span>categories<span class="token punctuation">.</span>remove<span class="token punctuation">(</span>category<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Заключение</h2>
+<p>На этом мы завершаем рассмотрение функциональности SQLalchemy, хотя в следующих темах будем использовать полученные знания (и еще вернемся к ней, когда будем рассматривать механизм миграций), а теперь нас ждет создание своего собственного API.</p>
+</section></article></section>

@@ -1,0 +1,216 @@
+<section class="lesson-material__content"><article class="material"><h1>Библиотеки Python. Часть 4. Морфология</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Библиотека pymorphy2</a></li>
+<li><a class="material__link" href="#2">Морфологический анализ</a></li>
+<li><a class="material__link" href="#3">Работа с тегами</a></li>
+<li><a class="material__link" href="#4">Постановка слов в начальную форму</a></li>
+<li><a class="material__link" href="#5">Согласование с числительными</a></li>
+<li><a class="material__link" href="#6">Итоги</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Мы уже говорили, что в Python имеется множество библиотек, реализующих абстракции для различных предметных областей. Поэтому мы занимаемся в основном верхним «этажом» логики. Сегодня речь пойдет о библиотеке, позволяющей работать с текстами.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Библиотека pymorphy2</h2>
+<p>Вы уже знаете стандартные строковые функции и пользовались ими. Мы умеем работать со строками посимвольно и знаем, как представляется текстовая информация. Давайте перейдем на уровень выше. Строка и текст в общем случае состоят не из набора букв, а из слов, и иногда нужно работать именно со словами, а не просто с последовательностями байтов.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-28/16.svg" width="680"/></div>
+<p>Возьмем для примера склонение существительных с числительными. Например, на форуме надо написать, что в теме «21 комментарий», но «24 комментария». То же самое нужно делать и для других слов: например, «новость», «пользователь». Иногда на сайтах обходят эту проблему и вставляют машинное «комментариев: 21».</p>
+<p>Давайте посмотрим, какие средства работы со словами есть в Python, и познакомимся с библиотекой pymorphy2 (морфология).</p>
+<p>Если эта библиотека отсутствует в вашем Python, ее надо установить с помощью утилиты pip.</p>
+<pre><code>pip install pymorphy2
+</code></pre>
+<p>Словари распространяются отдельными пакетами. Для русского языка используется pymorphy2-dicts-ru.</p>
+<p>Они обновляются время от времени, для обновления используйте команду</p>
+<pre><code>pip install -U pymorphy2-dicts-ru
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Морфологический анализ</h2>
+<p>В pymorphy2 для морфологического анализа слов есть класс <var>MorphAnalyzer</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Морфологический анализ</strong></p>
+<p>Морфологический анализ — определение характеристик слова на основе того, как оно пишется. При морфологическом анализе не учитываются соседние слова.</p>
+<p>Для любого слова библиотека делает несколько предположений, что оно может означать, и обозначает свою уверенность в этом предположении.</p>
+</section>
+<p>Метод <code>MorphAnalyzer.parse()</code> возвращает один или несколько объектов типа <var>Parse</var> с информацией о том, как слово может быть разобрано.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pymorphy2
+morph <span class="token operator">=</span> pymorphy2<span class="token punctuation">.</span>MorphAnalyzer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'Ваня'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[Parse(word='ваня', tag=OpencorporaTag('NOUN,anim,masc,Name sing,nomn'), 
+       normal_form='ваня', score=1.0, 
+       methods_stack=((&lt;DictionaryAnalyzer&gt;, 'ваня', 407, 0),))]</samp></pre>
+<p>В данном случае предположение одно с уверенностью score=1.0. Итак, мы имеем дело с существительным NOUN, именем собственным, одушевленным, мужского рода.</p>
+<p>Конечно, предположений может быть несколько:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pymorphy2
+<span class="token keyword">import</span> pprint
+
+morph <span class="token operator">=</span> pymorphy2<span class="token punctuation">.</span>MorphAnalyzer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+res <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'пила'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">)</span>
+pprint<span class="token punctuation">.</span>pprint<span class="token punctuation">(</span>res<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>4
+[Parse(word='пила', tag=OpencorporaTag('NOUN,inan,femn sing,nomn'), 
+       normal_form='пила', score=0.428571, 
+       methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 55, 0),)),
+ Parse(word='пила', tag=OpencorporaTag('VERB,impf,tran femn,sing,past,indc'), 
+       normal_form='пить', score=0.285714, 
+       methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 444, 8),)),
+ Parse(word='пила', tag=OpencorporaTag('NOUN,anim,masc,Name sing,gent'), 
+       normal_form='пил', score=0.142857, 
+       methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 1124, 1),)),
+ Parse(word='пила', tag=OpencorporaTag('NOUN,anim,masc,Name sing,accs'), 
+       normal_form='пил', score=0.142857, 
+       methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 1124, 3),))]</samp></pre>
+<p>У каждого разбора есть тег:</p>
+<pre class="language-python"><code class="language-python">p <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'пила'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>p<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Parse(word='пила', tag=OpencorporaTag('VERB,impf,tran femn,sing,past,indc'), 
+      normal_form='пить', score=0.285714, 
+      methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 444, 8),))</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Тег</strong></p>
+<p>Тег — набор граммем (грамматических признаков), характеризующих данное слово.</p>
+<p>Например, тег <code>'VERB,impf, tran femn, sing,past,indc'</code> означает, что слово — глагол (VERB) несовершенного вида (impf), переходный (tran), женского рода (femn), единственного числа (sing), прошедшего времени (past), изъявительного наклонения (indc).</p>
+<p>Полный список граммем (грамматических единиц) можно посмотреть <a class="material__link" href="http://opencorpora.org/dict.php?act=gram" rel="noopener noreferrer" target="_blank">тут</a> и <a class="material__link" href="https://pymorphy2.readthedocs.io/en/latest/user/grammemes.html#grammeme-docs" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="3">Работа с тегами</h2>
+<p>Чтобы проверить, есть ли в данном теге отдельная граммема (или все граммемы из указанного множества), используйте оператор <var>in</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token string">'NOUN'</span> <span class="token keyword">in</span> p<span class="token punctuation">.</span>tag <span class="token comment"># =&gt; False</span>
+</code></pre>
+<p>Пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pymorphy2
+
+morph <span class="token operator">=</span> pymorphy2<span class="token punctuation">.</span>MorphAnalyzer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+res <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'питона'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> 
+<span class="token comment"># В нулевом предположении будет родительный падеж - он чаще встречается</span>
+<span class="token comment"># проверка на глагол</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"VERB"</span> <span class="token keyword">in</span> res<span class="token punctuation">.</span>tag<span class="token punctuation">)</span>
+<span class="token comment"># проверка на винительный падеж</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"accs"</span> <span class="token keyword">in</span> res<span class="token punctuation">.</span>tag<span class="token punctuation">)</span>
+<span class="token comment"># cуществительное в винительном падеже?</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">"NOUN"</span><span class="token punctuation">,</span> <span class="token string">'accs'</span><span class="token punctuation">}</span> <span class="token keyword">in</span> res<span class="token punctuation">.</span>tag<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>False
+True
+True</samp></pre>
+<p>Кроме того, у каждого тега есть атрибуты, через которые можно получить часть речи, число и другие характеристики:</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Например, для глагола бывают теги:</strong></p>
+<pre class="language-python"><code class="language-python">p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>POS           <span class="token comment"># часть речи</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>animacy       <span class="token comment"># одушевленность</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>aspect        <span class="token comment"># вид: совершенный или несовершенный</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>gender        <span class="token comment"># род (мужской, женский, средний)</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>involvement   <span class="token comment"># включенность говорящего в действие</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>mood          <span class="token comment"># наклонение (повелительное, изъявительное)</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>number        <span class="token comment"># число (единственное, множественное)</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>person        <span class="token comment"># лицо (1, 2, 3)</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>tense         <span class="token comment"># время (настоящее, прошедшее, будущее)</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>transitivity  <span class="token comment"># переходность (переходный, непереходный)</span>
+p<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>voice         <span class="token comment"># залог (действительный, страдательный)</span>
+</code></pre>
+</section>
+<p>Если мы попытаемся получить доступ к граммеме, которой нет для слова данной части речи, получим None.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pymorphy2
+
+morph <span class="token operator">=</span> pymorphy2<span class="token punctuation">.</span>MorphAnalyzer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+res <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'писал'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>mood<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>tense<span class="token punctuation">)</span>
+<span class="token comment"># попытка доступа к граммеме, которой нет для этой части речи</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span>tag<span class="token punctuation">.</span>case<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>indc
+past
+None</samp></pre>
+<p>Итак, мы можем разбирать большие тексты на части и узнавать информацию о словах: например, искать глаголы, подсчитывать имена и т. д.</p>
+<p>Для изменения слов (к примеру, склонения существительных) можно использовать метод <var>inflect</var>:</p>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'случай'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">.</span>inflect<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'gent'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>Parse(word='случая', tag=OpencorporaTag('NOUN,inan,masc sing,gent'), 
+      normal_form='случай', score=1.0, 
+      methods_stack=((&lt;DictionaryAnalyzer&gt;, 'случая', 175, 1),))</samp></pre>
+<p>И во множественном числе:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">.</span>inflect<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'gent'</span><span class="token punctuation">,</span> <span class="token string">'plur'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>Parse(word='случаев', tag=OpencorporaTag('NOUN,inan,masc plur,gent'), 
+      normal_form='случай', score=1.0, 
+      methods_stack=((&lt;DictionaryAnalyzer&gt;, 'случаев', 175, 7),))</samp></pre>
+<p>Метод <var>inflect</var> работает и с другими частями речи — например, глаголами:</p>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'программировать'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">.</span>inflect<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'VERB'</span><span class="token punctuation">,</span> <span class="token string">'impf'</span><span class="token punctuation">,</span> <span class="token string">'masc'</span><span class="token punctuation">,</span> <span class="token string">'sing'</span><span class="token punctuation">,</span> <span class="token string">'past'</span><span class="token punctuation">,</span> <span class="token string">'indc'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Parse(word='программировал', tag=OpencorporaTag('VERB,impf,tran masc,sing,past,indc'), 
+      normal_form='программировать', score=1.0, 
+      methods_stack=((&lt;DictionaryAnalyzer&gt;, 'программировал', 168, 7),))</samp></pre>
+<p>Вернемся к параметру <var>score</var>.</p>
+<pre class="language-python"><code class="language-python">morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'пила'</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [Parse(word='пила', tag=OpencorporaTag('NOUN,inan,femn sing,nomn'), </span>
+<span class="token comment"># normal_form='пила', score=0.428571, </span>
+<span class="token comment"># methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 55, 0),)),</span>
+
+<span class="token comment"># =&gt; Parse(word='пила', tag=OpencorporaTag('VERB,impf,tran femn,sing,past,indc'), </span>
+<span class="token comment"># normal_form='пить', score=0.285714, </span>
+<span class="token comment"># methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 444, 8),)),</span>
+
+<span class="token comment"># =&gt; Parse(word='пила', tag=OpencorporaTag('NOUN,anim,masc,Name sing,gent'), </span>
+<span class="token comment"># normal_form='пил', score=0.142857, </span>
+<span class="token comment"># methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 1124, 1),)),</span>
+
+<span class="token comment"># =&gt; Parse(word='пила', tag=OpencorporaTag('NOUN,anim,masc,Name sing,accs'), </span>
+<span class="token comment"># normal_form='пил', score=0.142857, </span>
+<span class="token comment"># methods_stack=((&lt;DictionaryAnalyzer&gt;, 'пила', 1124, 3),))]</span>
+</code></pre>
+<p>Мы видим, что предложенные четыре варианта разбора имеют параметр <var>score</var>, который говорит нам о том, какой вариант предпочтительнее. Pymorphy2 использует статистические методы и ориентируется на данные проекта <a class="material__link" href="http://opencorpora.org/" rel="noopener noreferrer" target="_blank">OpenCorpora</a>, чтобы вычислить значение параметра <var>score</var>. Мы не будем останавливаться на этом подробно. Интересующиеся могут прочитать о внутренней кухне на странице документации по Pymorphy2. Скажем только, что эти вычисления не всегда точны.</p>
+<p>Разборы сортируются по убыванию <var>score</var>, поэтому почти везде в примерах берется первый вариант разбора из возможных (например, <code>morph.parse('пила')[0]</code>).</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Постановка слов в начальную форму</h2>
+<p>Нормальную (начальную) форму слова можно получить через атрибуты <var>Parse.normal_form</var> и <var>Parse.normalized</var>. Например, для глаголов в нем будет храниться инфинитив. Таким образом, можно привести любую форму глагола к единому виду.</p>
+<p>Но что считается за нормальную форму у других слов? Например, возьмем слово «изучающим». Иногда мы захотим нормализовать его в «изучать», иногда — в «изучающий», иногда — в «изучающая».</p>
+<p>Посмотрим на примере, что сделает pymorphy2:</p>
+<pre class="language-python"><code class="language-python">morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'изучающим'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>normal_form
+<span class="token comment"># =&gt; 'изучать'</span>
+</code></pre>
+<p>Pymorphy2 сейчас использует алгоритм нахождения нормальной формы, который работает наиболее быстро (берется первая форма в лексеме) — именно поэтому, например, все причастия сейчас нормализуются в инфинитивы. Это можно считать деталью реализации.</p>
+<p>Если требуется нормализовать слова иначе, можно воспользоваться методом <code>Parse.inflect()</code>:</p>
+<pre class="language-python"><code class="language-python">morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'изучающим'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>inflect<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'sing'</span><span class="token punctuation">,</span> <span class="token string">'nomn'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span>word
+<span class="token comment"># =&gt; 'изучающий'</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Согласование с числительными</h2>
+<p>Помимо разбора слов, библиотека может их изменять — например, сопоставлять с числами. Давайте посмотрим, как можно решить задачу с подсчетом и выводом количества комментариев на форуме:</p>
+<pre class="language-python"><code class="language-python">comment <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'комментарий'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+comment<span class="token punctuation">.</span>make_agree_with_number<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>word <span class="token comment"># =&gt; 'комментарий'</span>
+comment<span class="token punctuation">.</span>make_agree_with_number<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span>word <span class="token comment"># =&gt; 'комментария'</span>
+comment<span class="token punctuation">.</span>make_agree_with_number<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">.</span>word <span class="token comment"># =&gt; 'комментариев'</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Интересно, что библиотека пытается работать даже со словами, которых не знает, обращаясь к <em>оракулу</em>:</p>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> morph<span class="token punctuation">.</span>parse<span class="token punctuation">(</span><span class="token string">'Мегатрон'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+word<span class="token punctuation">.</span>make_agree_with_number<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">.</span>word <span class="token comment"># =&gt; 'мегатронов'</span>
+word<span class="token punctuation">.</span>make_agree_with_number<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span>word <span class="token comment"># =&gt; 'мегатрона'</span>
+</code></pre>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="6">Итоги</h2>
+<p>Мы выяснили, что работа со словами в Python довольно проста. Сторонние библиотеки позволяют упростить работу с морфологией языков.</p>
+<p>Мы не рассматривали средства и библиотеки для извлечения знаний и фактов из текстов на естественных языках. Например, по тексту новости (цитируется портал lenta.ru):</p>
+<p><em>Россиянка Дарья Виролайнен досрочно стала обладательницей Большого Хрустального глобуса, вручаемого победительнице общего зачета Кубка Международного союза биатлонистов (IBU). Об этом сообщается на <a class="material__link" href="http://www.biathlonworld.com/news/detail/alexander-loginov-wins-ibu-cup-pursuit" rel="noopener noreferrer" target="_blank">OpenCorpora</a> IBU.</em></p>
+<p><em>На всех этапах Виролайнен набрала 684 очка, ее соотечественница Анна Никулина, идущая второй, — 526 баллов. На последнем этапе Кубка IBU в Эстонии россиянка не выступит: она вызвана в основной состав сборной России на этап Кубка мира. Тем не менее, Никулина не сумеет догнать ее.</em></p>
+<p><em>Виролайнен стала обладательницей и Малого Хрустального глобуса в зачете гонок преследования.</em></p>
+<p><em>На чемпионате мира по биатлону, прошедшем с 8 по 19 февраля в австрийском Хохфильцене, спортсменка была в составе сборной России, однако не провела ни одной гонки.</em></p>
+<p>Можно узнать, что речь идет о конкретном человеке, странах и датах, что тут упоминается вид спорта и т. д. Со временем вы усвоите и эти возможности библиотек Python.</p>
+</section></article></section>

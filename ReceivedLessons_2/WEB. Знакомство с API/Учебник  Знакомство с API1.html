@@ -1,0 +1,324 @@
+<section class="lesson-material__content"><article class="material"><h1>Знакомство с API</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Что такое API</a></li>
+<li><a class="material__link" href="#2">Зачем нужен API?</a></li>
+<li><a class="material__link" href="#3">Варианты реализации API</a></li>
+<li><a class="material__link" href="#4">Немного о протоколах взаимодействия</a></li>
+<li><a class="material__link" href="#5">Подробнее о протоколе HTTP</a></li>
+<li><a class="material__link" href="#6">Знакомство с Yandex.Maps API</a></li>
+<li><a class="material__link" href="#7">Yandex.Maps Static API</a></li>
+<li><a class="material__link" href="#8">Геокодер (поиск топонимических объектов)</a></li>
+<li><a class="material__link" href="#9">Обращение к HTTP-сервису на языке Python</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке рассказывается о том, что такое API, почему и для чего создается API, как изучать новый API и работать с ним. Разбирается HTTP-API на базе StaticMapsAPI и Geocoder API. Изучается принцип работы с HTTP-API на языке Python.</p>
+<p>На этом и последующих уроках для работы всех примеров необходимо подключение к сети Интернет.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Что такое API</h2>
+<p>Давайте представим себе, что мы с вами разработали какую-нибудь очень полезную программу. Например, электронную карту города. Программой пользуется все большее количество людей. У нас, конечно же, есть канал обратной связи, по которому пользователи сообщают нам об ошибках в программе и каких функций им не хватает. Мы исправляем ошибки и стараемся расширять функциональность. Но силы наши конечны, а пожеланий с ростом популярности программы становится все больше и больше. Делать все мы не успеваем. Да и нет смысла выполнять каждое пожелание, если мы понимаем, что данная функция нужна лишь очень небольшой аудитории. Но любым отказом мы расстраиваем наших пользователей, а это делать совсем не хочется. Как быть?</p>
+<p>Вот одно из решений. Давайте вместо того, чтобы выполнять пожелания пользователей, дадим им инструмент, с помощью которого они сами смогут воплотить свои идеи. Например, можно написать библиотеку (вы ведь знакомы с библиотеками), в которой будут функции, если мы говорим про карты:</p>
+<ul>
+<li>Нарисовать карту</li>
+<li>Нарисовать на ней точки, линии или какие-нибудь картинки</li>
+<li>Построить маршрут по карте</li>
+<li>Найти координаты какого-либо объекта и тому подобное</li>
+</ul>
+<p>Понятно, что таким образом мы дадим инструмент только программистам, но программиста можно нанять, и это уже не обязательно должен быть наш сотрудник. Если мы, помимо библиотеки, напишем инструкцию к ней, опишем ее функции, как ими пользоваться и как построить приложение на основе нашей библиотеки, то сторонний программист вполне сможет разобраться с ней и решить задачу заказчика.</p>
+<p>И вот так мы как бы строим мостик между нашей <strong>очень полезной программой</strong> и программистом, который хочет пользоваться ее возможностями. Мостик — это интерфейс. В англоязычной терминологии это называется Application Programming Interface или сокращенно API [эй-пи-ай].</p>
+<p>API существует у большого количества программных продуктов: от операционной системы до интернет-сервисов. API — это обычный этап развития программных продуктов.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Зачем нужен API?</h2>
+<p>Как правило, API появляется, когда аудитория, использующая программный продукт, разрастается настолько, что своими силами команда-разработчик уже не успевает реализовывать все запросы пользователей.</p>
+<p>Естественно, в коммерческом рабочем процессе ничто не делается просто так. Создавая API, разработчики обязательно понимают, какие коммерческие цели они преследуют.</p>
+<p>Можно просто предоставлять API за деньги: продавать разовую лицензию или брать плату за обращение к функциям. Часто API — это средство развития платформы. Например, Windows API. Все пишут программы под ОС Windows, в результате чего выигрывает вся платформа. API может решать и репутационные задачи — создавать лояльную пользовательскую аудиторию.</p>
+<p>Встречаются и смешанные решения: одновременно существует бесплатное API с определенными ограничениями (использование только в бесплатных открытых продуктах, с ограничением по количеству обращений) и его платная версия без таковых. На этом принципе построено большинство API в Яндексе.</p>
+<p>Если это технически реально и логически осмысленно, то в интерфейс можно встраивать рекламу, которая добавляет заработок команде.</p>
+<p>Полезно помнить, что API выпускается не просто так, и соотносить свои задачи с используемым инструментом. Особенно важно не забывать про возможные технические (по скорости работы, количеству запросов и т. п.) и юридические (лицензионные) ограничения использования того или иного API.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Варианты реализации API</h2>
+<p>Давайте посмотрим, как может выглядеть API. Один из вариантов — это библиотека, собранная под одну или несколько платформ. Она может либо содержать нужные нам функции или объекты непосредственно в себе, либо использовать Интернет для доступа к удаленному серверу с работающим на нем сервисом. Чтобы начать пользоваться такой библиотекой, надо ее получить (скачать, например), бесплатно или заплатив ее стоимость, установить и дальше применять, как и любую другую библиотеку. Иногда при оплате или регистрации к библиотеке прилагается уникальный ключ для того, чтобы она работала.</p>
+<p>Ключ — это хитрая последовательность символов, для которой выполняется какое-то неизвестное нам, но известное авторам ключа условие. Случайно сгенерировать или подобрать ключ очень сложно. Обычно достаточно сложно для того, чтобы проще и дешевле было получить ключ легальным способом.</p>
+<p>Есть вариант, при котором скачивать не требуется ничего. Это возможно, если сервис реализован как удаленный, использующий для доступа какой-либо стандартный протокол. Например, HTTP. Обычно для доступа к такому сервису требуется иметь ключ и передавать его при каждом обращении к сервису. Ключ можно получить либо в автоматическом, либо в полуавтоматическом режиме, как правило, заполнив форму и выразив согласие с лицензионными соглашениями.</p>
+<p>Протокол состоит из набора запросов и форматов ответов, предоставляемых сервисом.</p>
+<p>HTTP-сервисы можно «пощупать» просто из браузера, поскольку протокол состоит из HTTP-запросов и ответов в форматах, поддерживаемых браузерами.</p>
+<p>Пусть для нас изучение HTTP не является самоцелью, но остановиться на нем необходимо. Это тот инструмент, через который мы дальше будем взаимодействовать с различными API.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Немного о протоколах взаимодействия</h2>
+<p>Мы уже много-много раз писали программы, которые работают только на одном компьютере и никак не взаимодействуют с внешним миром. В последние годы приложения, которые функционируют в пределах только одной машины и не смотрят «по сторонам», стали достаточно большой редкостью. Практически в каждую, даже самую маленькую, утилиту автор или авторы старается встроить как минимум механизм автоматического обновления, который поможет быстро доставлять пользователям модули, в которых добавлены новые функции или исправлены ошибки. Самыми массовыми приложениями для взаимодействия в сети Интернет и корпоративных сетях Интранетах являются веб-приложения, от небольших сайтов, до огромных порталов, которые обрабатывают информацию из сотен источников. Но прежде чем мы начнем обращаться к стороннему HTTP API (а затем и создавать свой), сделаем небольшое «лирическое отступление».</p>
+<p>Все из вас наверняка знают, что такое компьютерная сеть, но не все задумывались о механизмах взаимодействия устройств внутри сети, ведь даже физическая среда распространения сигналов может быть сильно различна:</p>
+<ul>
+<li>Беспроводная среда (WiFi, 4G, Bluetooth)</li>
+<li>Обычные провода</li>
+<li>Телефонные провода</li>
+<li>Оптические кабели и т. д.</li>
+</ul>
+<p>Разумеется, при написании своего приложения большинство программистов не задумывается о том, по каким физическим каналам будет происходить взаимодействие. Это стало возможным благодаря стандартизации в этой области и четкому разделению уровней взаимодействия. Сетевая модель OSI (Open systems interconnection basic reference model) представляет собой набор протоколов (стандартов, описывающих правила взаимодействия разных частей систем при передаче данных), каждый из которых отвечает за определенный уровень взаимодействия. Модель имеет семь уровней:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/api-1/OSI.svg" width="680"/></div>
+<ol>
+<li>Физический, на котором происходит преобразование двоичных данных в вид, пригодный для передачи в среде (USB, витая пара, WiFi)</li>
+<li>Канальный, на котором происходит физическая адресация, например, с использованием MAC-адресов сетевой платы</li>
+<li>Сетевой, на котором происходит логическая адресация. Сюда относятся хорошо известные IPv4 и IPv6</li>
+<li>Транспортный — для обеспечения связи между конечными точками и обеспечения надежности</li>
+<li>Сеансовый — для обеспечения сеанса связи</li>
+<li>Представительский (представления) для представления и шифрования/дешифрования данных.На вышеперечисленные уровни разработчики прикладных программ забираются нечасто, обычно при написании специализированного программного обеспечения и сетевых игр. Протоколы же последнего, седьмого, уровня нужны в повседневной работе гораздо чаще</li>
+<li>Прикладной, на котором происходит доступ к сетевым службам (SMTP, FTP, HTTP). Именно с использованием протоколов прикладного уровня построен «видимый» интернет, хотя при открытии любой странички по протоколу HTTP ваш запрос проходит по всем уровням модели, превращаясь из данных в физические сигналы, затем собираясь в точке приема обратно для прикладного уровня. Ответ на запрос ждет такая же нелегкая судьба</li>
+</ol>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/api-1/OSI-2.svg" width="680"/></div>
+<p>Более подробно про модель OSI можете почитать, например, на <a class="material__link" href="https://ru.wikipedia.org/wiki/Сетевая_модель_OSI" rel="noopener noreferrer" target="_blank">Википедии</a>.</p>
+<p>Вообще история Интернета довольно увлекательна сама по себе, рекомендуем вам ознакомиться с ней самостоятельно, начать можно, например, на <a class="material__link" href="https://ru.wikipedia.org/wiki/История_Интернета" rel="noopener noreferrer" target="_blank">Википедии</a>. Мы в нее вдаваться не будем, отметим лишь, что самый первый веб-сайт появился 6 августа 1991 года с доменным именем info.cern.ch. На этом сайте его создатель, Тим Бернерс-Ли, разместил описание новой технологии World Wide Web, основанной на протоколе HTTP, системе адресации URI и языке гипертекстовой разметки HTML.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Подробнее о протоколе HTTP</h2>
+<p>Что же такое HTTP? Это протокол, позволяющий отправлять запросы Интернет-сервису и получать на них ответы.</p>
+<p>В протоколе есть несколько разного вида запросов: GET, POST, HEAD, DELETE и т. д.</p>
+<p>Как правило, запросы используются следующим образом:</p>
+<ul>
+<li>GET — для получения каких-либо данных с сервера</li>
+<li>POST — для передачи большого объема данных на сервер и получения ответа</li>
+<li>HEAD — для получения информации о данных с сервера</li>
+<li>DELETE — для удаления данных с сервера</li>
+</ul>
+<p>Помимо вида запроса обычно требуется указать:</p>
+<ul>
+<li>Адрес сервера, которому запрос направлен</li>
+<li>Путь к конкретной странице на сервере, которую необходимо получить, или к скрипту, который должен обработать запрос</li>
+<li>Дополнительные параметры запроса</li>
+<li>Вид ожидаемого ответа</li>
+</ul>
+<p>Протокол HTTP используется браузерами при просмотре интернет-страниц. По умолчанию применяется метод GET, формат ответа — html, json или какой-либо еще стандартный формат, и указывать это при каждом запросе не требуется. Остальная часть запроса записывается в виде:</p>
+<pre><code>http://static-maps.yandex.ru/1.x/?ll=37.677751,55.757718&amp;spn=0.016457,0.00619&amp;l=map
+</code></pre>
+<p>Здесь указаны:</p>
+<ul>
+<li>Название протокола (http)</li>
+<li>Адрес сервера, к которому мы обращаемся (static-maps.yandex.ru)</li>
+<li>Путь к странице на этом сервере (до знака «?») (/1.x/)</li>
+<li>Параметры вида <strong>ключ=значение</strong>, разделенные амперсандом (например, ll=37.677751,55.757718)</li>
+</ul>
+<p>Запросы такого вида можно задавать в адресной строке браузера.</p>
+<p>Кликните на приведенную ссылку и посмотрите на ответ: <a class="material__link" href="http://static-maps.yandex.ru/1.x/?ll=37.677751,55.757718&amp;spn=0.016457,0.00619&amp;l=map" rel="noopener noreferrer" target="_blank">http://static-maps.yandex.ru/1.x/?ll=37.677751,55.757718&amp;spn=0.016457,0.00619&amp;l=map</a></p>
+<p>В браузере Chrome для этого нажмите клавишу F12.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-2-request.png" width="680"/></div>
+<p>Ответ состоит из заголовка, в котором указан формат ответа, статус выполнения запроса и сам ответ. Вы наверняка слышали про коды состояния HTTP:</p>
+<ul>
+<li>200 означает, что все прошло успешно</li>
+<li>3xx — ошибки, связанные с перемещением страницы и т. п.</li>
+<li>4xx — ошибки клиента (например, 403 — не хватает прав, 404 — файл не найден)</li>
+<li>5xx — ошибки уровня приложения (запрос получен, а скрипт, который должен выдать ответ, ответа не выдал)</li>
+</ul>
+<p>Если возвращаться к браузеру, то из всего этого пользователю показывается только содержимое ответа в основном окне браузера. При ошибке показывается код и расшифровка ошибки.</p>
+<p>Про другие запросы, а также про коды ошибок можно самостоятельно почитать на этой <a class="material__link" href="https://ru.wikipedia.org/wiki/HTTP" rel="noopener noreferrer" target="_blank">странице</a>.</p>
+<p>Кстати, среди кодов HTTP-ошибок есть код <strong>418</strong>. Узнайте на досуге, как он расшифровывается и что обозначает, это забавно.</p>
+<p>Но давайте от слов перейдем к делу и попробуем пощупать Static API Яндекс.Карт.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Знакомство с Yandex.Maps API</h2>
+<p>Вопрос: откуда нам знать про пути, ключи и их значения, из которых состоят запросы к API? Как понять, в каком формате придет ответ, и что он означает?</p>
+<p>На все эти вопросы как раз и отвечает документация API. Страницу с документацией обычно можно обнаружить Поиском. Что же нужно там искать? Давайте посмотрим на содержание этого <a class="material__link" href="https://tech.yandex.ru/maps/mapsapi/" rel="noopener noreferrer" target="_blank">ресурса</a>.</p>
+<p>Здесь описываются состав, правила работы и протокол API Yandex.Maps.</p>
+<p>HTTP-API состоит из трех частей:</p>
+<ul>
+<li>Static API Карт (получить картинку с картой какой-то области с заданными параметрами)</li>
+<li>Геокодер (поиск топонимов, то есть картографических объектов)</li>
+<li>ППО (Поиск По Организациям)</li>
+</ul>
+<p>Кроме того, в документации указано, что ключ для доступа <strong>не нужен</strong>. Лицензионное соглашение предписывает использование API в некоммерческих общедоступных <strong>веб-приложениях</strong>.</p>
+<p>Здесь необходимо оговориться, что в рамках данного курса мы рассматриваем серверное программирование. Для того чтобы не нарушать лицензионное соглашение, необходимо, чтобы итоговое приложение имело и веб-составляющую. Понятно, что во время разработки показывать результаты каждого запроса в веб невозможно. Никто этого и не требует. Но в итоговом приложении веб-составляющая должна быть. Пока же мы только изучаем API и не создаем программных продуктов как таковых — это требование нас не затрагивает. Но если в будущем вам предстоит им воспользоваться, учтите это требование сразу и потрудитесь его выполнить. Иначе придется использовать платную версию API.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Yandex.Maps Static API</h2>
+<p>Static API позволяет получить изображение нужного фрагмента карты, которое можно разместить на сайте или в приложении. Такое изображение оптимизировано, «весит» не очень много и загружается быстро даже при медленном Интернете.</p>
+<p>Static API возвращает изображение карты в ответ на HTTPS-запрос (HTTPS — защищенная разновидность HTTP). Добавляя в URL разные параметры и задавая их значения, вы можете определить центр карты, ее размер и область показа, отметить нужные объекты и даже отобразить пробки. При этом при каждом новом запросе будет возвращаться изображение с актуальными данными.</p>
+<p>Документация для Static API находится на странице: <a class="material__link" href="https://tech.yandex.ru/maps/doc/staticapi/1.x/dg/concepts/input_params-docpage/" rel="noopener noreferrer" target="_blank">https://tech.yandex.ru/maps/doc/staticapi/1.x/dg/concepts/input_params-docpage/</a></p>
+<p>Здесь можно почитать про то, какие параметры могут быть в запросе, и что они означают.</p>
+<p>Пример запроса: <a class="material__link" href="https://static-maps.yandex.ru/1.x/?ll=37.677751,55.757718&amp;spn=0.016457,0.00619&amp;l=map" rel="noopener noreferrer" target="_blank">https://static-maps.yandex.ru/1.x/?ll=37.677751,55.757718&amp;spn=0.016457,0.00619&amp;l=map</a></p>
+<p>В ответ придет картинка с картой запрошенной области.</p>
+<p>Посмотрите, что означают параметры <var>ll</var>, <var>spn</var>, <var>l</var> и поработайте с ними.</p>
+<p><strong>Тренировочное задание 1</strong>. C помощью запросов к API через браузер получить:</p>
+<ol>
+<li>Крупномасштабную схему с МГУ им. Ломоносова</li>
+<li>Спутниковый снимок Эйфелевой башни</li>
+<li>Спутниковый снимок Авачинского вулкана</li>
+<li>Спутниковый снимок космодрома Байконур</li>
+</ol>
+<p><em>Подсказка:</em> для решения задачи можно открыть в браузере Я.Карты, найти объекты через поиск, щелкнуть мышкой на карте и получить координаты для параметра <var>ll</var>. Параметр <var>spn</var> можно подобрать экспериментально.</p>
+</section>
+<section class="material__chapter">
+<h2 id="8">Геокодер (поиск топонимических объектов)</h2>
+<p>Геокодер помогает определить координаты объекта по его адресу или, наоборот, установить адрес по координатам. К геокодеру можно также обращаться по протоколу HTTPS.</p>
+<p>Для обращения к этому API нужен ключ, бесплатный ключ имеет ряд <a class="material__link" href="https://tech.yandex.ru/maps/geocoder/doc/desc/concepts/limits-docpage/" rel="noopener noreferrer" target="_blank">ограничений</a>, но он полностью подойдет для наших целей, получить его можно <a class="material__link" href="https://developer.tech.yandex.ru/" rel="noopener noreferrer" target="_blank">тут</a>. Кроме того мы сделали ключ, который может использоваться в рамках нашего курса всеми учащимися проекта, вот он:</p>
+<p><strong>apikey = "40d1649f-0493-4b70-98ba-98533de7710b"</strong></p>
+<p>Мы предлагаем вам самостоятельно ознакомиться с <a class="material__link" href="https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/About-docpage/" rel="noopener noreferrer" target="_blank">документацией</a>, попробовать сделать запросы, понять, что означают ответы геокодера, и ответить на вопрос второго тренировочного задания.</p>
+<p><strong>Тренировочное задание 2</strong>. Получите координаты Якутска и Магадана в формате JSON. Выясните, какой город находится севернее: Якутск или Магадан?</p>
+</section>
+<section class="material__chapter">
+<h2 id="9">Обращение к HTTP-сервису на языке Python</h2>
+<p>Поиграли? Замечательно. Теперь вспомните, что мы программируем на языке Python. Что же нужно для того, чтобы общаться с API Yandex.Карт из программы на Python?</p>
+<p>Нужно написать программу, которая выполнит ровно те действия, которые вы только что совершили в браузере руками. Но как?</p>
+<p>Нам потребуется библиотека для работы с протоколами http/https. Таких библиотек существует несколько. Все они позволяют передавать запросы и получать ответы от удаленных серверов. Одной из самых популярных библиотек для этого (ее мы и рассмотрим) является библиотека <a class="material__link" href="https://pypi.python.org/pypi/requests" rel="noopener noreferrer" target="_blank">requests</a>. Девиз этой библиотеки — HTTP for Humans (HTTP для людей). Она простая в освоении и при этом обладает очень-очень широкой функциональностью.</p>
+<p>Библиотека requests не входит в стандартную библиотеку Python, поэтому перед использованием ее надо установить:</p>
+<pre><code>pip install requests
+</code></pre>
+<p>Для выполнения запроса GET (вспоминаем протокол HTTP) используется функция <code>get()</code>. Разумеется, предварительно надо импортировать библиотеку :)</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> requests
+
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&amp;geocode=Якутск&amp;format=json"</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>response<span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token punctuation">(</span>response<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>&lt;Response [200]&gt; &lt;class 'requests.models.Response'&gt;</samp></pre>
+<p>Если вместо «красивого» результата вы увидите много-много текста с исключениями, то, скорее всего, вы не смогли подключиться к серверу и получить ответ. В этом случае надо посмотреть на самую последнюю часть ответа и попытаться понять, в чем заключается проблема.</p>
+<p>Функция <code>get()</code> возвращает объект класса <var>requests.models.Response</var>, который среди прочих содержит поля:</p>
+<ul>
+<li><var>status_code</var> — код статуса (200 означает, что запрос выполнен успешно)</li>
+<li><var>reason</var> — текстовая расшифровка статуса на английском языке (например, «Ok» или «Not Found»)</li>
+<li><var>content</var> — ответ сервера</li>
+</ul>
+<p>У класса есть метод <code>_bool_()</code>, возвращающий True в случае успешного запроса и False в случае ошибки. Если произошла ошибка, то ответ сервера будет пустым. Таким образом, мы можем очень элегантно проверять успешность запроса.</p>
+<p>Соберем полученные знания воедино.</p>
+<p>Простейшая программа, выполняющая запрос к серверу, анализирующая код ответа и в случае успешного запроса печатающая полученную страницу, выглядит следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> requests
+
+<span class="token comment"># Готовим запрос.</span>
+geocoder_request <span class="token operator">=</span> <span class="token string">"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&amp;geocode=Якутск&amp;format=json"</span>
+
+<span class="token comment"># Выполняем запрос.</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>geocoder_request<span class="token punctuation">)</span>
+<span class="token keyword">if</span> response<span class="token punctuation">:</span>
+    <span class="token comment"># Запрос успешно выполнен, печатаем полученные данные.</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>response<span class="token punctuation">.</span>content<span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token comment"># Произошла ошибка выполнения запроса. Обрабатываем http-статус.</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Ошибка выполнения запроса:"</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>geocoder_request<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Http статус:"</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>status_code<span class="token punctuation">,</span> <span class="token string">"("</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>reason<span class="token punctuation">,</span> <span class="token string">")"</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>b'{"response":{"GeoObjectCollection":{"metaDataProperty":{"GeocoderResponseMetaData":{"request":"\xd0\xaf\xd0\xba\xd1\x83\xd1\x82\xd1\x81\xd0\xba","found":"3","results":"10"}},"featureMember":[{"GeoObject":{"metaDataProperty":{"GeocoderMetaData":{"kind":"locality","text":"\xd0\xa0\xd0\xbe\xd1\x81\xd1\x81\xd0\xb8\xd1\x8f, \xd0\xa0\xd0\xb5\xd1\x81\xd0\xbf\xd1\x83\xd0\xb1\xd0\xbb\xd0\xb8\xd0\xba\xd0\xb0 \xd0\xa1\xd0\xb0\xd1\x85\xd0\xb0 (\xd0\xaf\xd0\xba\xd1\x83\xd1\x82\xd0\xb8\xd1\x8f), \xd0\xaf\xd0\xba\xd1\x83\xd1\x82\xd1\x81\xd0\xba","precision":"other","Address":{"country_code":"RU","formatted":"\xd0\xa0\xd0\xb5\xd1\x81\xd0\xbf\xd1\x83\xd0\xb1\xd0\xbb\xd0\xb8\xd0\xba\xd0\xb0 \xd0\xa1\xd0\xb0\xd1\x85\xd0\xb0 (\xd0\xaf\xd0\xba\xd1\x83\xd1\x82\xd0\xb8\xd1\x8f), \xd0\xaf\xd0\xba\xd1\x83\xd1\x82\xd1\x81\xd0\xba","Components":...</samp></pre>
+<p><strong>Тренировочное задание 3</strong>. Попробуйте «испортить» запрос (например, заменив 1.x на 1.x.1), чтобы увидеть, как обрабатывается ошибка запроса.</p>
+<p>Если мы передадим в программу строку, содержащую правильно сформулированный запрос к API, то полученный ответ сможем дальше обработать в программе.</p>
+<p>Например, из ответа геокодера сможем выбрать и отобразить отдельные поля так, чтобы ответ стал удобочитаемым для пользователя.</p>
+<p>Поскольку json — это одним из популярнейших форматов обмена данными, у объекта <var>requests.Response</var> уже есть готовый метод <code>json()</code>, конструирующий json-объект из текста полученного ответа.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> requests
+
+geocoder_request <span class="token operator">=</span> <span class="token string">"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&amp;geocode=Якутск&amp;format=json"</span>
+
+<span class="token comment"># Выполняем запрос.</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>geocoder_request<span class="token punctuation">)</span>
+<span class="token keyword">if</span> response<span class="token punctuation">:</span>
+    <span class="token comment"># Преобразуем ответ в json-объект</span>
+    json_response <span class="token operator">=</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># Получаем первый топоним из ответа геокодера.</span>
+    <span class="token comment"># Согласно описанию ответа, он находится по следующему пути:</span>
+    toponym <span class="token operator">=</span> json_response<span class="token punctuation">[</span><span class="token string">"response"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"GeoObjectCollection"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"featureMember"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"GeoObject"</span><span class="token punctuation">]</span>
+    <span class="token comment"># Полный адрес топонима:</span>
+    toponym_address <span class="token operator">=</span> toponym<span class="token punctuation">[</span><span class="token string">"metaDataProperty"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"GeocoderMetaData"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"text"</span><span class="token punctuation">]</span>
+    <span class="token comment"># Координаты центра топонима:</span>
+    toponym_coodrinates <span class="token operator">=</span> toponym<span class="token punctuation">[</span><span class="token string">"Point"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"pos"</span><span class="token punctuation">]</span>
+    <span class="token comment"># Печатаем извлечённые из ответа поля:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>toponym_address<span class="token punctuation">,</span> <span class="token string">"имеет координаты:"</span><span class="token punctuation">,</span> toponym_coodrinates<span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Ошибка выполнения запроса:"</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>geocoder_request<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Http статус:"</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>status_code<span class="token punctuation">,</span> <span class="token string">"("</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>reason<span class="token punctuation">,</span> <span class="token string">")"</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Россия, Республика Саха (Якутия), Якутск имеет координаты: 129.731235 62.027757</samp></pre>
+<p>Запросив изображение карты через Static API, мы можем отрисовать его в окне программы.</p>
+<p>Если посмотреть в браузере информацию о странице-картинке, полученной от Static API, то можно найти формат этой картинки. Это PNG. Для того чтобы отобразить картинку на экране, запишем ее в файл c расширением .png и отрисуем файл с помощью библиотеки pygame. Давайте посмотрим, как будет выглядеть такая программа.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">import</span> pygame
+<span class="token keyword">import</span> requests
+
+map_request <span class="token operator">=</span> <span class="token string">"http://static-maps.yandex.ru/1.x/?ll=37.530887,55.703118&amp;spn=0.002,0.002&amp;l=map"</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>map_request<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> <span class="token keyword">not</span> response<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Ошибка выполнения запроса:"</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>map_request<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Http статус:"</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>status_code<span class="token punctuation">,</span> <span class="token string">"("</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>reason<span class="token punctuation">,</span> <span class="token string">")"</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Запишем полученное изображение в файл.</span>
+map_file <span class="token operator">=</span> <span class="token string">"map.png"</span>
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>map_file<span class="token punctuation">,</span> <span class="token string">"wb"</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+    <span class="token builtin">file</span><span class="token punctuation">.</span>write<span class="token punctuation">(</span>response<span class="token punctuation">.</span>content<span class="token punctuation">)</span>
+
+<span class="token comment"># Инициализируем pygame</span>
+pygame<span class="token punctuation">.</span>init<span class="token punctuation">(</span><span class="token punctuation">)</span>
+screen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_mode<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">600</span><span class="token punctuation">,</span> <span class="token number">450</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># Рисуем картинку, загружаемую из только что созданного файла.</span>
+screen<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>image<span class="token punctuation">.</span>load<span class="token punctuation">(</span>map_file<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># Переключаем экран и ждем закрытия окна.</span>
+pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>wait<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">!=</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+pygame<span class="token punctuation">.</span>quit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Удаляем за собой файл с изображением.</span>
+os<span class="token punctuation">.</span>remove<span class="token punctuation">(</span>map_file<span class="token punctuation">)</span>
+</code></pre>
+<p>Нам уже встречалась функция <code>sys.exit()</code>, когда мы разрабатывали приложения для PyQt. Она прекращает работу программы и возвращает результатом значение, переданное в нее в качестве параметра, в блоке по PyQt мы возвращали код ошибки Qt, но никто не запрещает нам возвращать информацию, которая поможет нам в отладке программы и выявлении причины завершения приложения.</p>
+<p>Разумеется, отображение результатов запроса можно делать не только с помощью PyGame, но и с использованием виджетов PyQt. Давайте перепишем этот же пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">import</span> requests
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtGui <span class="token keyword">import</span> QPixmap
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QLabel
+
+SCREEN_SIZE <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">600</span><span class="token punctuation">,</span> <span class="token number">450</span><span class="token punctuation">]</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>getImage<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">getImage</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        map_request <span class="token operator">=</span> <span class="token string">"http://static-maps.yandex.ru/1.x/?ll=37.530887,55.703118&amp;spn=0.002,0.002&amp;l=map"</span>
+        response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>map_request<span class="token punctuation">)</span>
+
+        <span class="token keyword">if</span> <span class="token keyword">not</span> response<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Ошибка выполнения запроса:"</span><span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>map_request<span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Http статус:"</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>status_code<span class="token punctuation">,</span> <span class="token string">"("</span><span class="token punctuation">,</span> response<span class="token punctuation">.</span>reason<span class="token punctuation">,</span> <span class="token string">")"</span><span class="token punctuation">)</span>
+            sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># Запишем полученное изображение в файл.</span>
+        self<span class="token punctuation">.</span>map_file <span class="token operator">=</span> <span class="token string">"map.png"</span>
+        <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>map_file<span class="token punctuation">,</span> <span class="token string">"wb"</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+            <span class="token builtin">file</span><span class="token punctuation">.</span>write<span class="token punctuation">(</span>response<span class="token punctuation">.</span>content<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token operator">*</span>SCREEN_SIZE<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Отображение карты'</span><span class="token punctuation">)</span>
+
+        <span class="token comment">## Изображение</span>
+        self<span class="token punctuation">.</span>pixmap <span class="token operator">=</span> QPixmap<span class="token punctuation">(</span>self<span class="token punctuation">.</span>map_file<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>resize<span class="token punctuation">(</span><span class="token number">600</span><span class="token punctuation">,</span> <span class="token number">450</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>setPixmap<span class="token punctuation">(</span>self<span class="token punctuation">.</span>pixmap<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">closeEvent</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""При закрытии формы подчищаем за собой"""</span>
+        os<span class="token punctuation">.</span>remove<span class="token punctuation">(</span>self<span class="token punctuation">.</span>map_file<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Выполните примеры. Попробуйте задать другие параметры запроса. Подумайте, можно ли обойтись без сохранения полученного контента в файл, а сразу передать его в окно pygame/PyQt?</p>
+</section></article></section>

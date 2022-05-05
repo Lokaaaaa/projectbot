@@ -1,0 +1,64 @@
+from yandex_testing_lesson import is_under_queen_attack
+import pytest
+import inspect
+
+
+class Test:
+    def test_valueerror_cell_wrongformat(self):
+        with pytest.raises(ValueError):
+            is_under_queen_attack("abc", "e2")
+    
+    def test_valueerror_cell_wrongcell(self):
+        with pytest.raises(ValueError):
+            is_under_queen_attack("j5", "e2")
+
+    def test_valueerror_cell_empty(self):
+        with pytest.raises(ValueError):
+            is_under_queen_attack("", "e2")
+
+    def test_typeerror_cell_int(self):
+        with pytest.raises(TypeError):
+            is_under_queen_attack(6, "e2")
+
+    def test_typeerror_cell_list(self):
+        with pytest.raises(TypeError):
+            is_under_queen_attack([4, 5], "e2")
+
+    def test_valueerror_queen_wrongformat(self):
+        with pytest.raises(ValueError):
+            is_under_queen_attack("e2", "abc")
+
+    def test_valueerror_queen_wrongcell(self):
+        with pytest.raises(ValueError):
+            is_under_queen_attack("e2", "j5")
+
+    def test_valueerror_queen_empty(self):
+        with pytest.raises(ValueError):
+            print(inspect.getsource(is_under_queen_attack))
+            is_under_queen_attack("e2", "")
+
+    def test_typeerror_queen_int(self):
+        with pytest.raises(TypeError):
+            is_under_queen_attack("e2", 6)
+
+    def test_typeerror_queen_list(self):
+        with pytest.raises(TypeError):
+            is_under_queen_attack("e2", [4, 5])
+
+    def test_cell_is_not_under_attack(self):
+        assert is_under_queen_attack("a2", "b8") is False
+
+    def test_cell_is_under_vertical_attack(self):
+        assert is_under_queen_attack("a2", "a8") is True
+
+    def test_cell_is_under_horizontal_attack(self):
+        assert is_under_queen_attack("a3", "d3") is True
+
+    def test_cell_is_under_oblique_attack_lrd(self):
+        assert is_under_queen_attack("f1", "c4") is True
+
+    def test_cell_is_under_oblique_attack_lru(self):
+        assert is_under_queen_attack("a2", "d5") is True
+
+    def test_queens_cell_under_attack(self):
+        assert is_under_queen_attack("d6", "d6") is True

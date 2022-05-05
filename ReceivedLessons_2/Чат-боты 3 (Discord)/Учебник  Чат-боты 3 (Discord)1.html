@@ -1,0 +1,294 @@
+<section class="lesson-material__content"><article class="material"><h1>Чат-боты 3</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение</a></li>
+<li><a class="material__link" href="#2">Асинхронное программирование</a></li>
+<li><a class="material__link" href="#3">Подготовка</a></li>
+<li><a class="material__link" href="#4">Простой бот</a></li>
+<li><a class="material__link" href="#5">Объектно-ориентированный подход</a></li>
+<li><a class="material__link" href="#6">Команды</a></li>
+<li><a class="material__link" href="#7">Заключение</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На заключительном уроке по созданию чат-ботов мы создадим бота для Discord, а также немного поговорим о таком понятии, как параллельное программирование.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Введение</h2>
+<p>Сегодня мы создадим бота для Discord. Discord — бесплатный голосовой и текстовый чат, ориентированный в первую очередь на тех, кто играет в компьютерные игры. Однако его удобство, надежность и поддержка разных платформ позволяет использовать его не только в целях организации совместной игры. Есть много небольших команд разработчиков, которые используют Discord в рабочем процессе, в том числе и для автоматизации различных задач.</p>
+<p>Для начала работы необходимо скачать клиент Discord с <a class="material__link" href="https://discordapp.com/" rel="noopener noreferrer" target="_blank">официального сайта</a>, установить его и зарегистрировать учетную запись, если ее еще нет.</p>
+<p>Для работы с API Discord мы будем использовать библиотеку discord.py, которую сначала надо установить:</p>
+<pre><code>pip install discord.py
+</code></pre>
+<p>discord.py полностью реализует API Discord, и предоставляет возможность создавать собственных ботов как с использованием декораторов (как при создании своих обработчиков во flask), так и с использованием объектно-ориентированного подхода.</p>
+<p>Документацию на библиотеку можно найти <a class="material__link" href="https://discordpy.readthedocs.io/en/latest/" rel="noopener noreferrer" target="_blank">тут</a>, а описание самого API — вот <a class="material__link" href="https://discordapp.com/developers/docs/intro" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>Но прежде чем мы продолжим, надо упомянуть важный момент: discord.py — асинхронная библиотека. Это будет накладывать некоторый отпечаток на процесс разработки программ с ее использованием.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Асинхронное программирование</h2>
+<p>Все время до этого момента мы писали <strong>синхронные</strong> программы, то есть такие, которые выполняются поэтапно. Если в коде написан последовательный вызов двух функций, то в синхронной программе интерпретатор вызовет первую, дождется завершения ее выполнения, а только затем вызовет вторую.</p>
+<p>Такой подход достаточно понятен в написании программы: у нас есть гарантия того, какой кусок кода выполнится после какого, гарантия, что какие-то ресурсы (например, стандартный поток ввода <var>stdin</var>) будут использованы именно теми функциями, от которых мы этого ожидаем в каждый конкретный момент времени. Однако такой подход далеко не всегда удобен.</p>
+<p>Давайте представим, что операционная система нашего компьютера работает полностью синхронно. Мы выбрали файл и начали копировать его из одной папки в другую. При синхронном подходе на время копирования файлов наша работа с операционной системой заблокирована до завершения текущей операции. Согласитесь, звучит не очень.</p>
+<p>Когда мы говорим об асинхронном программировании, то подразумеваем создание такого кода, который позволяет программе не ждать завершения некоторого процесса, а продолжать работу не зависимо от него. Например, мы начали скачивать в браузере какой-то файл и после этого переключились на другую вкладку и продолжили заниматься своими делами.</p>
+<p>Изначально в Python для решения задач асинхронного программирования использовались <strong>корутины</strong>, основанные на генераторах. Но, начиная с Python 3.4, появился модуль asyncio, в котором реализованы механизмы асинхронного программирования. А в Python 3.5 появилась конструкция <code>async/await</code>.</p>
+<p>С помощью ключевого слова <var>async</var> при создании функции можно указать интерпретатору, что она является корутиной и может выполняться асинхронно. С помощью ключевого слова <var>await</var> мы можем вызвать такую функцию. Давайте рассмотрим очень простой пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> asyncio
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">work</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string"> задача началась'</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string"> задача завершилась'</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>gather<span class="token punctuation">(</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>work<span class="token punctuation">(</span><span class="token string">'Первая'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>work<span class="token punctuation">(</span><span class="token string">'Вторая'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если мы запустим этот код, увидим такой вывод:</p>
+<pre><samp>Первая задача началась
+Вторая задача началась
+Первая задача завершилась
+Вторая задача завершилась</samp></pre>
+<p>Внутри модуля asyncio много всего интересного, о чем можно почитать в <a class="material__link" href="https://docs.python.org/3/library/asyncio.html" rel="noopener noreferrer" target="_blank">документации</a>, но для написания ботов для Discord нам будет достаточно этого небольшого введения.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Подготовка</h2>
+<p>Чтобы получить доступ к API Discord, необходимо проделать несколько шагов и получить несколько токенов доступа. Во-первых, необходимо зарегистрироваться на самой платформе и подтвердить почту, которая была указана при регистрации.</p>
+<p>После этого надо зайти на <a class="material__link" href="https://discordapp.com/developers/" rel="noopener noreferrer" target="_blank">портал для разработчиков</a>, авторизоваться там и нажать кнопку New application. Discord устроен так, что для создания бота необходимо сначала создать приложение для получения доступа к API, а потом к этому приложению можно будет добавить бота.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-3/discord-1.png" width="680"/></div>
+<p>После ввода имени приложения мы перейдем в настройки приложения.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-3/discord-2.png" width="680"/></div>
+<p>Затем для добавления к своему приложению бота перейдите на вкладку Bot и нажмите кнопку Add Bot. Можно сделать публичного бота, которого смогут добавлять все желающие, либо приватного, которого сможете добавлять только вы.</p>
+<p>Остался последний штрих — добавить боту прав. Для этого воспользуемся вкладкой OAuth2. Выберем URL Generator — Scopes — Bot, а в Bot Permissions — Administrator.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-3/discord-3.png" width="680"/></div>
+<p>После этого перейдите по ссылке из поля GENERATED URL и добавьте бота на сервер. Это может быть личный сервер или любой, который вы создали в приложении Discord.</p>
+<p>Бот добавился и написал автоматическое приветственное сообщение:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-3/discord-4.png" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="4">Простой бот</h2>
+<p>Самый простой бот для Discord выглядит следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> discord
+
+TOKEN <span class="token operator">=</span> <span class="token string">"BOT_TOKEN"</span>
+client <span class="token operator">=</span> discord<span class="token punctuation">.</span>Client<span class="token punctuation">(</span><span class="token punctuation">)</span>
+client<span class="token punctuation">.</span>run<span class="token punctuation">(</span>TOKEN<span class="token punctuation">)</span>
+</code></pre>
+<p>Чтобы эта программа заработала, надо получить для своего бота token.<img alt="" src="https://yastatic.net/s3/lyceum/content/presentation/photo_2022-03-27%2019.36.56.jpeg"/></p>
+<p>Этот бот, конечно, ничего не делает, но можно явно посмотреть на ту структуру, которую предлагает нам модуль. Согласитесь, она очень похожа на flask. Так же, как и во flask, обработчики событий можно создавать с использованием декоратора. Тут это декоратор <code>client.event</code>.</p>
+<p>Давайте добавим между созданием клиента и его запуском обработчик события <var>on_ready</var>, который выполнится после того, как бот будет запущен и подключится к Discord, то есть появится «В сети».</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@client<span class="token punctuation">.</span>event</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_ready</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>client<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> подключен к Discord!'</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> guild <span class="token keyword">in</span> client<span class="token punctuation">.</span>guilds<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>
+            <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>client<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> подключились к чату:\n'</span></span>
+            <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span>name<span class="token punctuation">}</span></span><span class="token string">(id: </span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span><span class="token builtin">id</span><span class="token punctuation">}</span></span><span class="token string">)'</span></span>
+        <span class="token punctuation">)</span>
+</code></pre>
+<p>Этот обработчик пройдет по всем гильдиям (чатам), в которые добавлен бот, и выведет информацию об этом. Обратите внимание: наша функция асинхронная и определена с использованием ключевого слова <var>async</var>. Собственно, на этом все особенности в данном случае и заканчиваются.</p>
+<p>В принципе, можно продолжать писать ботов с использованием декораторов, но библиотека discord.py позволяет использовать и объектно-ориентированный подход.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Объектно-ориентированный подход</h2>
+<p>Давайте перепишем этот простой пример с использованием объектно-ориентированного подхода:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> discord
+
+TOKEN <span class="token operator">=</span> <span class="token string">"BOT_TOKEN"</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">YLBotClient</span><span class="token punctuation">(</span>discord<span class="token punctuation">.</span>Client<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_ready</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> has connected to Discord!'</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> guild <span class="token keyword">in</span> self<span class="token punctuation">.</span>guilds<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>
+                <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> подключились к чату:\n'</span></span>
+                <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span>name<span class="token punctuation">}</span></span><span class="token string">(id: </span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span><span class="token builtin">id</span><span class="token punctuation">}</span></span><span class="token string">)'</span></span><span class="token punctuation">)</span>
+
+
+client <span class="token operator">=</span> YLBotClient<span class="token punctuation">(</span><span class="token punctuation">)</span>
+client<span class="token punctuation">.</span>run<span class="token punctuation">(</span>TOKEN<span class="token punctuation">)</span>
+</code></pre>
+<p>Код получился еще проще и понятнее.</p>
+<p>Добавим еще несколько штрихов к нашей программе, чтобы получилось как в настоящих промышленных системах. Надо добавить в нашу программу логирование. В саму библиотеку <strong>discord.py</strong> уже встроен стандартный логгер, надо только его настроить. Добавьте в начало программы следующий код.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> logging
+
+logger <span class="token operator">=</span> logging<span class="token punctuation">.</span>getLogger<span class="token punctuation">(</span><span class="token string">'discord'</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>setLevel<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>DEBUG<span class="token punctuation">)</span>
+handler <span class="token operator">=</span> logging<span class="token punctuation">.</span>StreamHandler<span class="token punctuation">(</span><span class="token punctuation">)</span>
+handler<span class="token punctuation">.</span>setFormatter<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>Formatter<span class="token punctuation">(</span><span class="token string">'%(asctime)s:%(levelname)s:%(name)s: %(message)s'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>addHandler<span class="token punctuation">(</span>handler<span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь в консоль будет выводиться вся информация о работе нашего бота, в т.ч. мы увидим какие события он обрабатывает.</p>
+<pre class="language-python"><code class="language-python"><span class="token number">2022</span><span class="token operator">-</span><span class="token number">03</span><span class="token operator">-</span><span class="token number">27</span> <span class="token number">12</span><span class="token punctuation">:</span><span class="token number">35</span><span class="token punctuation">:</span><span class="token number">49</span><span class="token punctuation">,</span><span class="token number">590</span><span class="token punctuation">:</span>WARNING<span class="token punctuation">:</span>discord<span class="token punctuation">.</span>client<span class="token punctuation">:</span> PyNaCl <span class="token keyword">is</span> <span class="token keyword">not</span> installed<span class="token punctuation">,</span> voice will NOT be supported
+<span class="token number">2022</span><span class="token operator">-</span><span class="token number">03</span><span class="token operator">-</span><span class="token number">27</span> <span class="token number">12</span><span class="token punctuation">:</span><span class="token number">35</span><span class="token punctuation">:</span><span class="token number">49</span><span class="token punctuation">,</span><span class="token number">590</span><span class="token punctuation">:</span>INFO<span class="token punctuation">:</span>discord<span class="token punctuation">.</span>client<span class="token punctuation">:</span> logging <span class="token keyword">in</span> using static token
+<span class="token number">2022</span><span class="token operator">-</span><span class="token number">03</span><span class="token operator">-</span><span class="token number">27</span> <span class="token number">12</span><span class="token punctuation">:</span><span class="token number">35</span><span class="token punctuation">:</span><span class="token number">51</span><span class="token punctuation">,</span><span class="token number">041</span><span class="token punctuation">:</span>INFO<span class="token punctuation">:</span>discord<span class="token punctuation">.</span>gateway<span class="token punctuation">:</span> Shard ID <span class="token boolean">None</span> has sent the IDENTIFY payload<span class="token punctuation">.</span>
+<span class="token number">2022</span><span class="token operator">-</span><span class="token number">03</span><span class="token operator">-</span><span class="token number">27</span> <span class="token number">12</span><span class="token punctuation">:</span><span class="token number">35</span><span class="token punctuation">:</span><span class="token number">51</span><span class="token punctuation">,</span><span class="token number">446</span><span class="token punctuation">:</span>INFO<span class="token punctuation">:</span>discord<span class="token punctuation">.</span>gateway<span class="token punctuation">:</span> Shard ID <span class="token boolean">None</span> has connected to Gateway<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"gateway-prd-main-k6dw"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">190782</span><span class="token punctuation">,</span><span class="token string">"calls"</span><span class="token punctuation">:</span><span class="token punctuation">[</span><span class="token string">"discord-sessions-blue-prd-2-144"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">188463</span><span class="token punctuation">,</span><span class="token string">"calls"</span><span class="token punctuation">:</span><span class="token punctuation">[</span><span class="token string">"start_session"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">151206</span><span class="token punctuation">,</span><span class="token string">"calls"</span><span class="token punctuation">:</span><span class="token punctuation">[</span><span class="token string">"discord-api-7fbf95f445-g6mld"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">138989</span><span class="token punctuation">,</span><span class="token string">"calls"</span><span class="token punctuation">:</span><span class="token punctuation">[</span><span class="token string">"get_user"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">33933</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token string">"add_authorized_ip"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">12363</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token string">"get_guilds"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">16109</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token string">"coros_wait"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token string">"guilds_connect"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token string">"calls"</span><span class="token punctuation">:</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token string">"presence_connect"</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"micros"</span><span class="token punctuation">:</span><span class="token number">24866</span><span class="token punctuation">,</span><span class="token string">"calls"</span><span class="token punctuation">:</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">]</span> <span class="token punctuation">(</span>Session ID<span class="token punctuation">:</span> fc7219be402e040768429d5363abbdb0<span class="token punctuation">)</span><span class="token punctuation">.</span>
+<span class="token number">2022</span><span class="token operator">-</span><span class="token number">03</span><span class="token operator">-</span><span class="token number">27</span> <span class="token number">12</span><span class="token punctuation">:</span><span class="token number">35</span><span class="token punctuation">:</span><span class="token number">53</span><span class="token punctuation">,</span><span class="token number">460</span><span class="token punctuation">:</span>INFO<span class="token punctuation">:</span>discord<span class="token punctuation">:</span> yl_bot_test<span class="token comment">#0766 has connected to Discord!</span>
+    </code></pre>
+<p>Если вам покажется, что информации слишком много, то можно изменить подробность логирования, указав другой уровень. Например, заменить <code class="language-python">logger<span class="token punctuation">.</span>setLevel<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>DEBUG<span class="token punctuation">)</span></code> на <code class="language-python">logger<span class="token punctuation">.</span>setLevel<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>INFO<span class="token punctuation">)</span></code>. Теперь заменим "принты" на правильное логирование:</p>
+<pre class="language-python"><code class="language-python">    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_ready</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> has connected to Discord!'</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> guild <span class="token keyword">in</span> self<span class="token punctuation">.</span>guilds<span class="token punctuation">:</span>
+            logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span>
+                <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> подключились к чату:\n'</span></span>
+                <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span>name<span class="token punctuation">}</span></span><span class="token string">(id: </span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span><span class="token builtin">id</span><span class="token punctuation">}</span></span><span class="token string">)'</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Давайте добавим несколько обработчиков событий. Для начала напишем обработчик, который будет приветствовать присоединение к серверу нового пользователя <code>(on_member_join)</code> личным сообщением. Обработчик этого события будет принимать еще один аргумент — объект нового пользователя. Добавим новый метод к нашему классу.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_member_join</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> member<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">await</span> member<span class="token punctuation">.</span>create_dm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">await</span> member<span class="token punctuation">.</span>dm_channel<span class="token punctuation">.</span>send<span class="token punctuation">(</span>
+        <span class="token string-interpolation"><span class="token string">f'Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>member<span class="token punctuation">.</span>name<span class="token punctuation">}</span></span><span class="token string">!'</span></span>
+    <span class="token punctuation">)</span>
+</code></pre>
+<p>Но этого еще недостаточно, чтобы сообщение о событии <code>(on_member_join)</code> отправлялось нашему боту. Надо еще сделать небольшую настройку.</p>
+<p>На странице настройки приложения надо перейти на закладку <strong>Bot</strong> добавить для бота разрешения на получение событий об изменении статусов пользователей сервера. Надо включить <strong>PRESENCE INTENT</strong> и <strong>SERVER MEMBERS INTENT</strong>.</p>
+<p>Строку инициализации клиента <code class="language-python">client <span class="token operator">=</span> YLBotClient<span class="token punctuation">(</span><span class="token punctuation">)</span></code> заменить на следующий код:</p>
+<pre class="language-python"><code class="language-python">intents <span class="token operator">=</span> discord<span class="token punctuation">.</span>Intents<span class="token punctuation">.</span>default<span class="token punctuation">(</span><span class="token punctuation">)</span>
+intents<span class="token punctuation">.</span>members <span class="token operator">=</span> <span class="token boolean">True</span>
+client <span class="token operator">=</span> YLBotClient<span class="token punctuation">(</span>intents<span class="token operator">=</span>intents<span class="token punctuation">)</span>
+    </code></pre>
+<p>Здесь мы создаем объект класса <code>intents</code>, в котором указываем, что наш бот будет получать события, связанные с пользователями.</p>
+<p>В тот момент, когда к нам приходит новый пользователь, бот создает чат для прямой отправки сообщений этому пользователю и посылает в него сообщение. Обратите внимание: все вызовы внутренних функций и методов объектов модуля discord.py должны происходить с указанием ключевого слова <var>await</var>. Проверьте как это работает. Для этого подключите бота к своему серверу, включите его и пригласите кого-нибудь на сервер. Как только новый пользователь зайдет на сервер, он тут же получит в личку привет от нашего бота.</p>
+<p>Теперь давайте добавим реакцию бота на какое-либо сообщение. Для этого необходимо в класс добавить метод <var>on_message</var>, который в качестве параметра принимает объект сообщения.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_message</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> message<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">await</span> message<span class="token punctuation">.</span>channel<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">"Спасибо за сообщение"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Мы получаем сообщение и отправляем свое в чат, в котором это сообщение было получено. Давайте запустим и посмотрим, что произойдет.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-3/discord-5.png" width="480"/></div>
+<p>Наш бот начнет отправлять сообщения бесконечно. Это связано с тем, что сообщения от самого бота также вызывают событие <var>on_message</var>. Чтобы этого не происходило, можно добавить проверку на автора сообщения:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> message<span class="token punctuation">.</span>author <span class="token operator">==</span> self<span class="token punctuation">.</span>user<span class="token punctuation">:</span>
+    <span class="token keyword">return</span>
+</code></pre>
+<p>Разумеется внутри обработчика мы можем получить доступ к содержанию сообщения <var>message</var>. Давайте проверим, что пользователь с нами поздоровался:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> <span class="token string">"привет"</span> <span class="token keyword">in</span> message<span class="token punctuation">.</span>content<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">await</span> message<span class="token punctuation">.</span>channel<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">"И тебе привет"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Вот полный код нашего бота:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> discord
+<span class="token keyword">import</span> logging
+
+logger <span class="token operator">=</span> logging<span class="token punctuation">.</span>getLogger<span class="token punctuation">(</span><span class="token string">'discord'</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>setLevel<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>DEBUG<span class="token punctuation">)</span>
+handler <span class="token operator">=</span> logging<span class="token punctuation">.</span>StreamHandler<span class="token punctuation">(</span><span class="token punctuation">)</span>
+handler<span class="token punctuation">.</span>setFormatter<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>Formatter<span class="token punctuation">(</span><span class="token string">'%(asctime)s:%(levelname)s:%(name)s: %(message)s'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>addHandler<span class="token punctuation">(</span>handler<span class="token punctuation">)</span>
+
+TOKEN <span class="token operator">=</span> <span class="token string">"BOT_TOKEN"</span> <span class="token comment"># вставь свой токен</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">YLBotClient</span><span class="token punctuation">(</span>discord<span class="token punctuation">.</span>Client<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_ready</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> has connected to Discord!'</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> guild <span class="token keyword">in</span> self<span class="token punctuation">.</span>guilds<span class="token punctuation">:</span>
+            logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span>
+                <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>user<span class="token punctuation">}</span></span><span class="token string"> подключились к чату:\n'</span></span>
+                <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span>name<span class="token punctuation">}</span></span><span class="token string">(id: </span><span class="token interpolation"><span class="token punctuation">{</span>guild<span class="token punctuation">.</span><span class="token builtin">id</span><span class="token punctuation">}</span></span><span class="token string">)'</span></span><span class="token punctuation">)</span>
+
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_member_join</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> member<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">await</span> member<span class="token punctuation">.</span>create_dm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">await</span> member<span class="token punctuation">.</span>dm_channel<span class="token punctuation">.</span>send<span class="token punctuation">(</span>
+            <span class="token string-interpolation"><span class="token string">f'Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>member<span class="token punctuation">.</span>name<span class="token punctuation">}</span></span><span class="token string">!'</span></span>
+        <span class="token punctuation">)</span>
+
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">on_message</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> message<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> message<span class="token punctuation">.</span>author <span class="token operator">==</span> self<span class="token punctuation">.</span>user<span class="token punctuation">:</span>
+            <span class="token keyword">return</span>
+        <span class="token keyword">if</span> <span class="token string">"привет"</span> <span class="token keyword">in</span> message<span class="token punctuation">.</span>content<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">await</span> message<span class="token punctuation">.</span>channel<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">"И тебе привет"</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">await</span> message<span class="token punctuation">.</span>channel<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">"Спасибо за сообщение"</span><span class="token punctuation">)</span>
+
+
+intents <span class="token operator">=</span> discord<span class="token punctuation">.</span>Intents<span class="token punctuation">.</span>default<span class="token punctuation">(</span><span class="token punctuation">)</span>
+intents<span class="token punctuation">.</span>members <span class="token operator">=</span> <span class="token boolean">True</span>
+client <span class="token operator">=</span> YLBotClient<span class="token punctuation">(</span>intents<span class="token operator">=</span>intents<span class="token punctuation">)</span>
+client<span class="token punctuation">.</span>run<span class="token punctuation">(</span>TOKEN<span class="token punctuation">)</span>
+
+    </code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="6">Команды</h2>
+<p>Помимо простого анализа текста в Discord, как и в Telegram, можно создавать свои команды. При этом немного изменится структура программы: надо создавать уже не объект класса <var>Client</var>, а объект класса <var>Bot</var>, и использовать декоратор <var>bot.command</var>. Давайте сделаем бота, который будет возвращать случайное число от минимального до максимального, указанного пользователем.</p>
+<p>Импортируем из модуля discord.ext модуль commands.</p>
+<p>Сначала сделаем это с помощью отдельной функции:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> discord
+<span class="token keyword">from</span> discord<span class="token punctuation">.</span>ext <span class="token keyword">import</span> commands
+<span class="token keyword">import</span> random<span class="token punctuation">,</span> logging
+
+logger <span class="token operator">=</span> logging<span class="token punctuation">.</span>getLogger<span class="token punctuation">(</span><span class="token string">'discord'</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>setLevel<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>DEBUG<span class="token punctuation">)</span>
+handler <span class="token operator">=</span> logging<span class="token punctuation">.</span>StreamHandler<span class="token punctuation">(</span><span class="token punctuation">)</span>
+handler<span class="token punctuation">.</span>setFormatter<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>Formatter<span class="token punctuation">(</span><span class="token string">'%(asctime)s:%(levelname)s:%(name)s: %(message)s'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>addHandler<span class="token punctuation">(</span>handler<span class="token punctuation">)</span>
+
+intents <span class="token operator">=</span> discord<span class="token punctuation">.</span>Intents<span class="token punctuation">.</span>default<span class="token punctuation">(</span><span class="token punctuation">)</span>
+intents<span class="token punctuation">.</span>members <span class="token operator">=</span> <span class="token boolean">True</span>
+
+bot <span class="token operator">=</span> commands<span class="token punctuation">.</span>Bot<span class="token punctuation">(</span>command_prefix<span class="token operator">=</span><span class="token string">'#!'</span><span class="token punctuation">,</span> intents<span class="token operator">=</span>intents<span class="token punctuation">)</span>
+
+
+@bot<span class="token punctuation">.</span>command<span class="token punctuation">(</span>name<span class="token operator">=</span><span class="token string">'randint'</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">my_randint</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> min_int<span class="token punctuation">,</span> max_int<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    num <span class="token operator">=</span> random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>min_int<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>max_int<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">await</span> ctx<span class="token punctuation">.</span>send<span class="token punctuation">(</span>num<span class="token punctuation">)</span>
+
+
+TOKEN <span class="token operator">=</span> <span class="token string">"BOT_TOKEN"</span>
+
+bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span>TOKEN<span class="token punctuation">)</span>
+</code></pre>
+<p>При создании бота необходимо указать подстроку <var>command_prefix</var>, с которой будут начинаться все команды. Параметры команды должны идти в сообщении через пробел после названия команды, но первым аргументом передается <strong>контекст</strong>, из которого мы можем получить чат и другую полезную информацию.</p>
+<p>А теперь сделаем имитацию броска шестигранных кубиков, но уже с использованием объектно-ориентированного подхода:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> discord
+<span class="token keyword">from</span> discord<span class="token punctuation">.</span>ext <span class="token keyword">import</span> commands
+<span class="token keyword">import</span> random<span class="token punctuation">,</span> logging
+
+logger <span class="token operator">=</span> logging<span class="token punctuation">.</span>getLogger<span class="token punctuation">(</span><span class="token string">'discord'</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>setLevel<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>DEBUG<span class="token punctuation">)</span>
+handler <span class="token operator">=</span> logging<span class="token punctuation">.</span>StreamHandler<span class="token punctuation">(</span><span class="token punctuation">)</span>
+handler<span class="token punctuation">.</span>setFormatter<span class="token punctuation">(</span>logging<span class="token punctuation">.</span>Formatter<span class="token punctuation">(</span><span class="token string">'%(asctime)s:%(levelname)s:%(name)s: %(message)s'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+logger<span class="token punctuation">.</span>addHandler<span class="token punctuation">(</span>handler<span class="token punctuation">)</span>
+
+intents <span class="token operator">=</span> discord<span class="token punctuation">.</span>Intents<span class="token punctuation">.</span>default<span class="token punctuation">(</span><span class="token punctuation">)</span>
+intents<span class="token punctuation">.</span>members <span class="token operator">=</span> <span class="token boolean">True</span>
+dashes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'\u2680'</span><span class="token punctuation">,</span> <span class="token string">'\u2681'</span><span class="token punctuation">,</span> <span class="token string">'\u2682'</span><span class="token punctuation">,</span> <span class="token string">'\u2683'</span><span class="token punctuation">,</span> <span class="token string">'\u2684'</span><span class="token punctuation">,</span> <span class="token string">'\u2685'</span><span class="token punctuation">]</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">RandomThings</span><span class="token punctuation">(</span>commands<span class="token punctuation">.</span>Cog<span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> bot<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>bot <span class="token operator">=</span> bot
+
+    @commands<span class="token punctuation">.</span>command<span class="token punctuation">(</span>name<span class="token operator">=</span><span class="token string">'roll_dice'</span><span class="token punctuation">)</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">roll_dice</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> ctx<span class="token punctuation">,</span> count<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        res <span class="token operator">=</span> <span class="token punctuation">[</span>random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span>dashes<span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+        <span class="token keyword">await</span> ctx<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    @commands<span class="token punctuation">.</span>command<span class="token punctuation">(</span>name<span class="token operator">=</span><span class="token string">'randint'</span><span class="token punctuation">)</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">my_randint</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> ctx<span class="token punctuation">,</span> min_int<span class="token punctuation">,</span> max_int<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        num <span class="token operator">=</span> random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>min_int<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>max_int<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">await</span> ctx<span class="token punctuation">.</span>send<span class="token punctuation">(</span>num<span class="token punctuation">)</span>
+
+
+bot <span class="token operator">=</span> commands<span class="token punctuation">.</span>Bot<span class="token punctuation">(</span>command_prefix<span class="token operator">=</span><span class="token string">'!#'</span><span class="token punctuation">,</span> intents<span class="token operator">=</span>intents<span class="token punctuation">)</span>
+bot<span class="token punctuation">.</span>add_cog<span class="token punctuation">(</span>RandomThings<span class="token punctuation">(</span>bot<span class="token punctuation">)</span><span class="token punctuation">)</span>
+TOKEN <span class="token operator">=</span> <span class="token string">"BOT_TOKEN"</span>
+bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span>TOKEN<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: в таком случае нам надо наследоваться не от класса <var>Bot</var>, а от класса <var>Cog</var>, определять команды там, а потом добавлять их в бота методом <code>bot.add_cog</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Заключение</h2>
+<p>Возможности API Discord достаточно широкие, есть даже возможность подключаться к прослушиванию аудио-сообщений от пользователей канала. Простор для экспериментов действительно огромен.</p>
+<p>Помимо рассмотренных, есть еще ряд платформ с хорошим API и библиотекам к нему на Python. К части из них доступ получить просто и мгновенно, где-то (например, для доступа к API Twitter) вас попросят написать мини-пояснение на тему «как вы хотите использовать API», где-то — пройти дополнительную идентификацию и подтверждение личности.</p>
+<p>Кроме того, рекомендуем посмотреть в сторону параллельного программирования. Такую парадигму поддерживает множество классных библиотек, например, веб-фреймворк <a class="material__link" href="https://www.tornadoweb.org/en/stable/index.html" rel="noopener noreferrer" target="_blank">Tornado</a>.</p>
+</section></article></section>

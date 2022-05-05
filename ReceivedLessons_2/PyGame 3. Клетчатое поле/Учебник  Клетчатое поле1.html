@@ -1,0 +1,101 @@
+<section class="lesson-material__content"><article class="material"><h1>Клетчатое поле</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Что такое клетчатое поле?</a></li>
+<li><a class="material__link" href="#2">Создание класса</a></li>
+<li><a class="material__link" href="#3">Реакция поля на события мыши</a></li>
+<li><a class="material__link" href="#4">Пример</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Мы начинаем рассматривать игры на клетчатом поле. Это занятие посвящено идеологии клетчатых игр и реализации простейших алгоритмов. Продолжим на следующем занятии.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Что такое клетчатое поле?</h2>
+<p>В основе очень многих игр лежит клетчатое поле. Оно встречается не только в шахматах, шашках и «крестиках-ноликах». Это и стакан тетриса, и поле змейки. Даже обычная стратегия редко обходится без клеток.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-3-1.png" width="495"/></div>
+<p><em>Age of Empires тоже разделена на клетки-тайлы.</em></p>
+<p>Поэтому очень важно научиться работать «с клеточками».</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Создание класса</h2>
+<p>В любом большом проекте (а игра — это достаточно большая программа) проще мыслить объектно. Поэтому мы будем строить <strong>класс</strong> клетчатого поля. Чаще всего используется прямоугольное поле с квадратными клетками.</p>
+<p>Давайте подумаем, какие поля и какие методы будут в проектируемом классе? Что общего между всеми полями всех игр?</p>
+<p>На этот вопрос можно отвечать немного по-разному, но неоспоримым фактом остается то, что у поля есть <strong>размер</strong>, который можно измерить в клетках. Кроме того, важные параметры игрового поля — это размер клетки, а также положение его верхнего левого угла на экране.</p>
+<p>Поле должно уметь как минимум <strong>создаваться</strong> и <strong>рисоваться</strong> (отображать свое текущее состояние).</p>
+<p>Для того чтобы программа была гибкой, реализуем принципы рисования отдельно.</p>
+<p>Само поле можно представить двумерным списком. Для большинства задач достаточно хранить в этом списке обычные целые числа.</p>
+<p>Класс можно определить примерно так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Board</span><span class="token punctuation">:</span>
+    <span class="token comment"># создание поля</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>width <span class="token operator">=</span> width
+        self<span class="token punctuation">.</span>height <span class="token operator">=</span> height
+        self<span class="token punctuation">.</span>board <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> width <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>height<span class="token punctuation">)</span><span class="token punctuation">]</span>
+        <span class="token comment"># значения по умолчанию</span>
+        self<span class="token punctuation">.</span>left <span class="token operator">=</span> <span class="token number">10</span>
+        self<span class="token punctuation">.</span>top <span class="token operator">=</span> <span class="token number">10</span>
+        self<span class="token punctuation">.</span>cell_size <span class="token operator">=</span> <span class="token number">30</span>
+
+    <span class="token comment"># настройка внешнего вида</span>
+    <span class="token keyword">def</span> <span class="token function">set_view</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> left<span class="token punctuation">,</span> top<span class="token punctuation">,</span> cell_size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>left <span class="token operator">=</span> left
+        self<span class="token punctuation">.</span>top <span class="token operator">=</span> top
+        self<span class="token punctuation">.</span>cell_size <span class="token operator">=</span> cell_size
+</code></pre>
+<p><em>На этом занятии мы не будем рассматривать практически ничего нового из возможностей библиотеки Pygame, и в процессе занятия вам сразу предстоит решать задачи.</em></p>
+<p>Для упрощения дальнейшей работы стоит отрисовывать поле не линиями, а квадратами. В этом случае мы пройдем по всем клеткам, а ведь именно с клетками и нужно будет работать. Например, такой способ необходим, когда надо нарисовать не «чистый» квадрат, а какую-то осмысленную картинку, как в случае с Age of Empires.</p>
+<p>Добавьте в класс <var>Board</var> метод <code>render(screen)</code>, принимающий в себя холст так, чтобы следующий фрагмент:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># поле 5 на 7</span>
+board <span class="token operator">=</span> Board<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span>
+running <span class="token operator">=</span> <span class="token boolean">True</span>
+<span class="token keyword">while</span> running<span class="token punctuation">:</span>
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+            running <span class="token operator">=</span> <span class="token boolean">False</span>                
+    screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    board<span class="token punctuation">.</span>render<span class="token punctuation">(</span>screen<span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>нарисовал вот такую картинку:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-3-2.png" width="502"/></div>
+<p>А если заменить строку инициализации <var>board</var> и добавить вызов метода <code>set_view()</code> следующим образом:</p>
+<pre class="language-python"><code class="language-python">board <span class="token operator">=</span> Board<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span>
+board<span class="token punctuation">.</span>set_view<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+</code></pre>
+<p>то такую:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-3-3.png" width="502"/></div>
+<p>Обратите внимание, что внутри поля получается <strong>удвоение</strong> линий. Это естественно, потому что каждая клетка занимает свой собственный размер, и граница входит в размер клетки.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Реакция поля на события мыши</h2>
+<p>При щелчке по клетке поле должно «понять», где именно произошло нажатие, и среагировать на это событие.</p>
+<p>Это удобно оформить при помощи трех дополнительных методов:</p>
+<ul>
+<li>Метода <code>get_cell(self, mouse_pos)</code>, который <strong>возвращает координаты клетки в виде кортежа</strong> по переданным координатам мыши. Он должен вернуть None, если координаты мыши оказались вне поля</li>
+<li>Метода <code>on_click(self, cell_coords)</code>, который как-то изменяет поле, опираясь на полученные координаты клетки</li>
+<li>Метода <code>get_click(self, mouse_pos)</code> — «диспетчера», который получает событие нажатия и вызывает первые два метода</li>
+</ul>
+<p>Реализуйте все три описанных метода.</p>
+<p>Например, метод <code>get_click()</code> может быть реализован так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_click</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> mouse_pos<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    cell <span class="token operator">=</span> self<span class="token punctuation">.</span>get_cell<span class="token punctuation">(</span>mouse_pos<span class="token punctuation">)</span>
+    self<span class="token punctuation">.</span>on_click<span class="token punctuation">(</span>cell<span class="token punctuation">)</span>
+</code></pre>
+<p>Следуя описанной выше технологии, можно достаточно легко реализовывать логику различных игр на клетчатом поле. Достаточно получать координаты мыши в главном цикле программы и просто передавать ее полю:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>      
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEBUTTONDOWN<span class="token punctuation">:</span>
+        board<span class="token punctuation">.</span>get_click<span class="token punctuation">(</span>event<span class="token punctuation">.</span>pos<span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>А дальше поле сделает все само!</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Пример</h2>
+<p>Теперь надо «оживить» поле. До этого момента мы никак не задействовали список <var>board</var>. Что мы можем с ним делать?</p>
+<p>Допустим, что в нашем списке хранятся нули и единицы. Ноль означает, что клетка <strong>черная</strong>, а единица — <strong>белая</strong>. Тогда мы можем, например, менять цвет клетки по нажатию клавиш мышки на противоположный, с черного на белый и обратно.</p>
+<p>Получится монохромная интерактивная мозаика:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-3-4.png" width="274"/></div>
+<p>Кажется, что сделано очень мало. Но это не так. Построен фундамент, и на базе нашего простого класса получится достаточно быстро реализовать самые разные клеточные игры.</p>
+</section></article></section>

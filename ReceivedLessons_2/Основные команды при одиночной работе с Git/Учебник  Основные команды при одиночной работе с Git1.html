@@ -1,0 +1,1023 @@
+<section class="lesson-material__content"><article class="material"><h1>Основные команды при одиночной работе с Git</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Основы локального использования Git</a></li>
+<li><a class="material__link" href="#2">Создание локального репозитория</a></li>
+<li><a class="material__link" href="#3">Отслеживание версий файлов</a></li>
+<li><a class="material__link" href="#4">Ветки в Git</a></li>
+<li><a class="material__link" href="#5">Объединение (слияние) изменений</a></li>
+<li><a class="material__link" href="#6">Синхронизация с сетевыми репозиториями</a></li>
+<li><a class="material__link" href="#7">Клонирование сетевого репозитория</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке рассматриваются принципы работы с системой контроля версий Git из командной строки. Мы повторим те же действия, что и на уроках по работе с Git из IDE, но в этот раз сделаем все «руками».</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Основы локального использования Git</h2>
+<p>Давайте посмотрим на работу с Git с использованием командной строки. На этом занятии мы поработаем с системой контроля версий без использования IDE.</p>
+<p>Итак, запустите командную строку (программа <strong>Tерминал</strong> в Linux или macOS или <strong>Cmd</strong> в Windows).</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Создание локального репозитория</h2>
+<p>Сначала создадим для нашего проекта новую папку — git_project_1 — и перейдем в нее.</p>
+<p>Для этого понадобятся следующие команды:</p>
+<ul>
+<li>Команда <var>pwd</var> показывает наше текущее положение в дереве каталогов</li>
+<li>Команда <code>mkdir &lt;имя каталога&gt;</code> создает новый каталог</li>
+<li>Команда <code>cd &lt;имя каталога&gt;</code> переводит в указанную папку</li>
+</ul>
+<pre><code>&gt; pwd
+    /files
+
+&gt; mkdir git_project_1
+&gt; cd git_project_1
+</code></pre>
+<p>Убедимся, что текущий каталог пуст: команда <var>ls</var> (<var>dir</var> для ОС Windows).</p>
+<pre><code>&gt; ls -lsa
+
+    total 0
+    0 drwxr-xr-x  2 user  593637566   68  9 ноя 23:16 .
+    0 drwxr-xr-x@ 3 user  593637566  102  9 ноя 23:16 ..
+</code></pre>
+<p>Теперь создадим первый файл нашей программы program.py в папке git_project_1 со следующим содержимым:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"My first Git program"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь каталог не пустой. Убедимся в этом:</p>
+<pre><code>&gt; ls -lsa
+
+    total 8
+    0 drwxr-xr-x  3 user  593637566  102  9 ноя 23:17 .
+    0 drwxr-xr-x@ 3 user  593637566  102  9 ноя 23:16 ..
+    8 -rw-r--r--@ 1 user  593637566   44  9 ноя 23:17 program.py
+</code></pre>
+<p>И наконец, инициализируем (создадим новый) в этом каталоге пустой репозиторий Git.</p>
+<p>Надеемся, вы не забыли, что <strong>репозиторием</strong> Git называют каталог (папку, директорию), содержащий отслеживаемые файлы, папки и служебные структуры Git.</p>
+<pre><code>&gt; git init
+
+    Initialized empty Git repository in /files/git_project_1/.git/
+</code></pre>
+<p>После выполнения этой команды Git создаст в текущей директории служебную папку .git со служебными структурами репозитория. Сейчас мы не будем ее трогать.</p>
+<p>Посмотрим на текущее состояние репозитория:</p>
+<pre><code>&gt; git status
+
+    On branch master
+    
+    No commits yet
+    
+    Untracked files:
+      (use "git add &lt;file&gt;..." to include in what will be committed)
+    
+    	program.py
+    
+    nothing added to commit but untracked files present (use "git add" to track)
+</code></pre>
+<p>В выводе команды <code>git status</code> мы видим информацию по текущей ветке и состоянию отслеживаемой файловой системы.</p>
+<p>Как мы уже знаем, <strong>ветка (branch)</strong> — это именованная версия (направление) разработки программы, с которой сейчас работает программист.</p>
+<p>Как только мы создаем репозиторий, то у нас появляется автоматически сформированная ветка с названием master.</p>
+<p>Вы всегда можете <strong>переключаться</strong> между ветками, а каждое подтверждение изменений в терминологии Git называется <strong>коммит</strong> (от англ. Commit).</p>
+<p>Здесь видно, что Git нашел в папке репозитория только один файл, но пока его не отслеживает. Запомните: по умолчанию Git <strong>не отслеживает</strong> новые файлы в репозитории до того момента, пока мы четко не укажем ему на обратное.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Отслеживание версий файлов</h2>
+<p>Сообщим Git, что теперь ему необходимо <strong>отслеживать</strong> файл program.py с помощью команды <code>git add &lt;имя/маска файла&gt;</code>, и снова проверим статус репозитория:</p>
+<pre><code>&gt; git add program.py
+&gt; git status
+
+    On branch master
+    
+    No commits yet
+    
+    Changes to be committed:
+      (use "git rm --cached &lt;file&gt;..." to unstage)
+      
+    	new file:   program.py
+</code></pre>
+<p>Git увидел новый файл и сообщает, что готов отслеживать изменения в нем. Удалить файл из списка отслеживаемых можно с помощью команды <code>git rm --cached &lt;имя/маска файла&gt;</code>, о чем Git нам любезно поведал.</p>
+<p>Если просто внести изменения в файл, Git никак не отреагирует. Чтобы система сохранила текущую версию программы, ей нужно дать сигнал через <strong>коммит</strong>.</p>
+<p>Для этого предназначена команда <code>git commit</code>. Каждый коммит в Git обязательно сопровождается коротким текстовым сообщением, в котором разработчик описывает внесенные изменения. Давайте попробуем:</p>
+<pre><code>&gt; git commit -m "Мой первый коммит"
+
+    [master (root-commit) f96f82d] Мой первый коммит
+     1 file changed, 2 insertions(+)
+     create mode 100644 program.py
+</code></pre>
+<p>Если вы вдруг не представлялись Git до этого, необходимо выполнить следующие команды:</p>
+<pre><code>&gt; git config --global user.email "developer@yandex.ru"
+&gt; git config --global user.name "Smart developer"
+</code></pre>
+<p>А затем снова повторите команду <code>git commit</code>. Удалось? Теперь проверим статус:</p>
+<pre><code>&gt; git status
+
+    On branch master
+    nothing to commit, working tree clean
+</code></pre>
+<p>Ура! Наша первая версия зафиксирована. Коммит получился.</p>
+<p>У каждой зафиксированной версии в Git есть свой идентификатор, называемый <strong>хэшом</strong>. Посмотреть историю версий можно с помощью команды <code>git log</code>:</p>
+<pre><code>&gt; git log
+
+    commit f96f82d3c9c2ceec1c8a789ead881ce0d146f167 (HEAD -&gt; master)
+    Author: Smart developer &lt;developer@yandex.ru&gt;
+    Date:   Thu Nov 9 23:18:21 2017 +0300
+    
+        Мой первый коммит
+</code></pre>
+<p>HEAD — это своего рода указатель. Он сообщает нам, на какой версии мы сейчас находимся и связана ли она c веткой.</p>
+<p>В истории версий мы видим:</p>
+<ul>
+<li>Уникальный идентификатор (хэш) коммита (версии)</li>
+<li>Направление коммита — из какой ветки в какую мы сохраняем изменения. Сейчас мы сохранили из HEAD в master</li>
+<li>Автора изменения</li>
+<li>Дату изменения</li>
+<li>Комментарий, который написал автор коммита</li>
+</ul>
+<p>Теперь внесем изменения в файл program.py и попробуем зафиксировать следующую версию.</p>
+<p>Изменим содержимое файла program.py на:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"My first Git program!!!"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>То есть добавим еще три восклицательных знака в конец строки.</p>
+<p>Убедимся, что Git отследил изменение файла:</p>
+<pre><code>&gt; git status
+
+    On branch master
+    Changes not staged for commit:
+      (use "git add &lt;file&gt;..." to update what will be committed)
+      (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
+    
+    	modified:   program.py
+    
+    no changes added to commit (use "git add" and/or "git commit -a")
+</code></pre>
+<p>Git заметил изменения и теперь предлагает на выбор два варианта:</p>
+<ol>
+<li>Отменить изменения — <code>git checkout -- program.py</code>. Эта команда откатит файл к последней зафиксированной версии. <em>Вы можете проверить это самостоятельно</em></li>
+<li>Зафиксировать изменения <code>git commit -a -m "Добавили восклицательные знаки в конце предложения"</code>. Параметр <code>-a</code> указывает, что нужно зафиксировать изменения всех изменившихся файлов. Вместо этого параметра можно просто перечислить имена нужных файлов: <code>git commit program.py -m "Добавили восклицательные знаки в program.py."</code>. Параметр <code>-m</code> задает комментарий к коммиту</li>
+</ol>
+<p>Зафиксируем новую версию, а затем посмотрим статус и обновленную историю коммитов:</p>
+<pre><code>&gt; git commit -a -m "Добавили восклицательные знаки в конце предложения."
+
+    [master b6e8fa1] Добавили восклицательные знаки в конце предложения.
+     1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git status
+
+    On branch master
+    nothing to commit, working tree clean
+
+&gt; git log
+
+    commit b6e8fa1fa53a9d4970994d6139fbe51caae99751 (HEAD -&gt; master)
+    Author: Smart Developer &lt;developer@yandex.ru&gt;
+    Date:   Thu Nov 9 23:19:11 2017 +0300
+    
+        Добавили восклицательные знаки в конце предложения.
+    
+    commit f96f82d3c9c2ceec1c8a789ead881ce0d146f167
+    Author: Smart Developer &lt;developer@yandex.ru&gt;
+    Date:   Thu Nov 9 23:18:21 2017 +0300
+    
+        Мой первый коммит
+</code></pre>
+<p>Как видно из истории, теперь в нашем репозитории есть две <strong>закоммиченные</strong> версии:</p>
+<ol>
+<li>commit b6e8fa1fa53a9d4970994d6139fbe51caae99751 (HEAD -&gt; master) — запись в скобках обозначает, что c этой версией мы сейчас работаем</li>
+<li>commit f96f82d3c9c2ceec1c8a789ead881ce0d146f167 — предыдущая версия</li>
+</ol>
+<p>Переключимся на предыдущую версию. Для этого выполним команду <code>git checkout &lt;хеш (имя) версии, на которую мы хотим переключиться&gt;</code>.</p>
+<p>Имя можно сокращать до нескольких первых символов — лишь бы их было достаточно, чтобы отличить нужную версию от других. Меньше четырех символов вводить нельзя, даже если они образуют уникальную последовательность.</p>
+<pre><code>&gt; git checkout f96f82d
+
+    Note: checking out 'f96f82d'.
+    
+    You are in 'detached HEAD' state. You can look around, make experimental
+    changes and commit them, and you can discard any commits you make in this
+    state without impacting any branches by performing another checkout.
+    
+    If you want to create a new branch to retain commits you create, you may
+    do so (now or later) by using -b with the checkout command again. Example:
+    
+      git checkout -b &lt;new-branch-name&gt;
+    
+    HEAD is now at f96f82d... Мой первый коммит
+</code></pre>
+<p>Заботливый Git продолжает подсказывать вам, что же можно сейчас сделать. Например, осмотреться, поэкспериментировать и т. д. Постарайтесь понять подсказки самостоятельно, а мы посмотрим, что сейчас есть в тексте нашей программы program.py:</p>
+<pre><code>&gt; cat "program.py"
+
+    print("My first Git program")
+</code></pre>
+<p>Как видим, Git откатил файл к предыдущей версии: в выводимой строке нет восклицательных знаков. Проверим статус:</p>
+<pre><code>&gt; git status
+&gt; git log
+    HEAD detached at f96f82d
+    nothing to commit, working tree clean
+    commit f96f82d3c9c2ceec1c8a789ead881ce0d146f167 (HEAD)
+    Author: Smart Developer &lt;developer@yandex.ru&gt;
+    Date:   Thu Nov 9 23:18:21 2017 +0300
+    
+        Мой первый коммит
+</code></pre>
+<p>Сообщения показывают, что сейчас указатель текущей версии HEAD стоит на промежуточном коммите. Этого лучше избегать, чтобы не получалось лишних ветвей и высокой степени неопределенности.</p>
+<p>Для продолжения работы вернемся к последнему коммиту, указав при переключении хэш последнего коммита, и убедимся, что мы снова работаем с наиболее актуальной версией файла:</p>
+<pre><code>&gt; git checkout b6e8fa1
+
+    Previous HEAD position was f96f82d... Мой первый коммит
+    HEAD is now at b6e8fa1... Добавили восклицательные знаки в конце предложения.
+
+cat program.py
+
+    print("My first Git program!!!")
+</code></pre>
+<p>Итак, мы вернулись к последним изменениям.</p>
+<p>Возможность откатиться к предыдущей версии файла бывает крайне полезна — например, когда нужно увидеть, как программа работала до последних изменений. Однако постоянное переключение между коммитами не слишком удобно, особенно если нужно отследить изменения многих файлов. Приходится где-то хранить старую и новую версии, как-то искать между ними расхождения, что само по себе — задача трудоемкая.</p>
+<p>В Git есть более мощный инструмент для поиска различий в версиях. Он вызывается командой <var>diff</var>.</p>
+<p>Команду diff можно записать как <code>git diff &lt;коммит 1&gt; &lt;коммит 2&gt;</code>, либо как <code>git diff &lt;коммит 2&gt;</code>.</p>
+<p>Во втором случае коммитом для сравнения будет выбран текущий активный коммит, на который указывает HEAD.</p>
+<p>Если вы меняли файлы после последнего коммита, то можете дать команду <code>git diff</code>. В этом случае Git сравнит активную ветку (HEAD) с текущим состоянием репозитория.</p>
+<p>Сравним наши два коммита:</p>
+<pre><code>&gt; git diff f96f82 b6e8fa1f
+
+    diff --git a/program.py b/program.py
+    index 90ab278..7da6c40 100644
+    --- a/program.py
+    +++ b/program.py
+     @@ -1,2 +1,2 @@
+    -print("My first Git program")
+    \ No newline at end of file
+    +print("My first Git program!!!")
+    \ No newline at end of file
+</code></pre>
+<p>Вывод команды <var>diff</var> интуитивно понятен. Мы видим список файлов, различающихся в двух версиях, и список изменений в каждом из них. Плюсами обозначены новые строки, минусами — удаленные строки.</p>
+<p>На этом мы закончим рассматривать основные команды для работы с Git как с системой локального хранения и управления версиями файлов.</p>
+<p>Теперь подробнее остановимся на вопросах ветвления, работы с сетевыми репозиториями и объединения изменений.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Ветки в Git</h2>
+<p>В Git существуют ветки, которые позволяют:</p>
+<ul>
+<li>Давать имена версиям</li>
+<li>Иметь одновременно несколько рабочих версий (рабочей версией называется та, над которой в определенный момент времени трудится разработчик)</li>
+<li>Объединять результаты деятельности нескольких разработчиков</li>
+</ul>
+<p>Допустим, мы хотим создать версию нашей программы, выводящую надпись Hello, python!!!. Старую версию мы тоже хотим сохранить.</p>
+<p>Сначала заведем новую ветку программы и сразу на нее переключимся. Это делается командой <code>git checkout -b &lt;имя новой ветки&gt;</code>:</p>
+<pre><code>&gt; git checkout -b "python3branch"
+
+    Switched to a new branch 'python3branch'
+</code></pre>
+<p>Создать новую ветку можно и так: <code>git branch &lt;имя ветки&gt;</code>, но эта команда не переключает нас на созданную ветку.</p>
+<p>Заведем ветку demobranch:</p>
+<pre><code>&gt; git branch demobranch
+</code></pre>
+<p>Посмотрим на список веток, которые сейчас есть в нашем репозитории. Для этого нужна команда <code>git branch</code> (без параметров).</p>
+<pre><code>&gt; git branch
+
+      demobranch
+      master
+    * python3branch
+</code></pre>
+<p>Мы видим, что обе ветки demobranch и python3branch созданы. python3branch — текущая активная ветка, она помечена звездочкой. Это именно та ветка, которую мы создали командой <code>checkout -b "python3branch"</code>.</p>
+<p>Еще мы видим, что кроме созданных нами веток demobranch и python3branch, в списке есть master — ее Git всегда автоматически создает для нового проекта. Именно в ней мы и работали, пока не завели новые ветки.</p>
+<p>Переключаться между ветками можно с помощью команды <code>git checkout &lt;имя ветки&gt;</code> — той же самой, что позволяет переключаться между коммитами. Для Git ветки — просто коммиты особого типа.</p>
+<p>Перейдем на ветку master, а затем вернемся к python3branch:</p>
+<pre><code>&gt; git checkout master
+
+    Switched to branch 'master'
+    
+&gt; git branch
+
+     demobranch
+    * master
+      python3branch
+
+&gt; git checkout python3branch
+
+    Switched to branch 'python3branch'
+    
+&gt; git branch
+
+      demobranch
+      master
+    * python3branch
+</code></pre>
+<p>Теперь удалим неиспользуемую ветку demobranch командой <code>git branch -d &lt;имя ветки&gt;</code> и убедимся, что у нас их осталось только две:</p>
+<pre><code>&gt; git branch -d demobranch
+
+    Deleted branch demobranch (was b6e8fa1).
+
+&gt; git branch
+
+      master
+    * python3branch
+</code></pre>
+<p>Теперь мы умеем создавать и удалять ветки, а также переключаться между ветками.</p>
+<p>А сейчас в ветке python3branch модифицируем нашу программу так, чтобы она выводила нужную надпись, и зафиксируем версию.</p>
+<p>В любом текстовом редакторе изменим содержимое program.py на:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Hello, python"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>А после зафиксируем версию и проверим текущее состояние репозитория:</p>
+<pre><code>&gt; git commit program.py -m "Python3 version"
+
+    [python3branch 96aaee0] Python3 version
+     1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git status
+
+    On branch python3branch
+    nothing to commit, working tree clean
+</code></pre>
+<p>Версии программы, зафиксированные в разных ветках, можно сравнивать между собой с помощью уже знакомой нам команды <var>diff</var>:</p>
+<pre><code>&gt; git diff master python3branch
+
+    diff --git a/program.py b/program.py
+    index 7da6c40..1ce4f9a 100644
+    --- a/program.py
+    +++ b/program.py
+    @@ -1,2 +1,2 @@
+    -print("My first Git program!!!")
+    \ No newline at end of file
+    +print("Hello, python")
+    \ No newline at end of file
+</code></pre>
+<p>Обратите внимание, что создавая ветку любой из описанных выше команд, мы получаем <strong>полную копию</strong> ветки, в которой находились в этот момент.</p>
+<p>Для закрепления успехов перейдем на ветку master, создадим новую addAuthorBranch и переключимся на нее:</p>
+<pre><code>&gt; git checkout master
+
+    Switched to branch 'master'
+
+&gt; git checkout -b addAuthorBranch
+
+    Switched to a new branch 'addAuthorBranch'
+
+&gt; git status
+
+    On branch addAuthorBranch
+    nothing to commit, working tree clean
+
+&gt; git branch
+
+    * addAuthorBranch
+      master
+      python3branch
+</code></pre>
+<p>Изменим содержимое файла program.py, добавив в первую строчку комментарий с именем автора программы:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># I am author!</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"My first Git program!!!"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>И зафиксируем версию в ветке addAuthorBranch:</p>
+<pre><code>&gt; git commit -a -m "Add author"
+
+    [addAuthorBranch bc31053] Add author
+     1 file changed, 1 insertion(+)
+</code></pre>
+<p>Переключимся на ветку master и проанализируем, что же у нас в итоге получилось. Для наглядного отображения введем команду <code>git log</code> с параметрами:</p>
+<ul>
+<li><code>--all</code> — показывать историю всех веток</li>
+<li><code>--graph</code> — показывать ветки в виде дерева</li>
+<li><code>--oneline</code> — не показывать комментарии к коммитам</li>
+<li><code>--abbrev-commit</code> — показывать сокращенные имена коммитов</li>
+</ul>
+<p>Полный список опций доступен по команде <code>git help log</code>:</p>
+<pre><code>&gt; git checkout master
+
+    Switched to branch 'master'
+
+&gt; git log --graph --oneline --all --abbrev-commit
+
+    * bc31053 (addAuthorBranch) Add author
+    | * 96aaee0 (python3branch) Python3 version
+    |/  
+    * b6e8fa1 (HEAD -&gt; master) Добавили восклицательные знаки в конце предложения.
+    * f96f82d Мой первый коммит
+</code></pre>
+<p>Проанализируем вывод последней команды.</p>
+<p>Сначала был <strong>Мой первый коммит</strong>. Потом мы сделали следующий, добавив восклицательные знаки в конце. Текущая главная ветка master сейчас указывает на эту версию (обратите внимание на комментарий). При этом наша последовательность изменений пока еще оставалась линейной.</p>
+<p>Из master’а у нас получилось два ответвления: python3branch и addAuthorBranch. Каждое из них является продолжением версии master, но вносит в код программы свои уникальные изменения. При этом две версии в настоящий момент никак не связаны друг с другом, и работать над каждой можно совершенно независимо.</p>
+<p>Для следующего задания создадим еще одно ответвление от ветки master:</p>
+<pre><code>&gt; git checkout -b "addFooter"
+
+    Switched to a new branch 'addFooter'
+</code></pre>
+<p>Изменим программу program.py следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"My first Git program!!!"</span><span class="token punctuation">)</span>
+<span class="token comment"># 2017 (c) Me</span>
+</code></pre>
+<p>Зафиксируем изменения и вернемся на ветку master:</p>
+<pre><code>&gt; git commit -a -m 'Add footer'
+
+    [addFooter 1c43860] Add footer
+     1 file changed, 2 insertions(+), 1 deletion(-)
+
+&gt; git checkout master
+
+    Switched to branch 'master'
+</code></pre>
+<p>И снова посмотрим на дерево коммитов:</p>
+<pre><code>&gt; git log --graph --oneline --all --abbrev-commit
+
+    * 1c43860 (addFooter) Add footer
+    | * bc31053 (addAuthorBranch) Add author
+    |/  
+    | * 96aaee0 (python3branch) Python3 version
+    |/  
+    * b6e8fa1 (HEAD -&gt; master) Добавили восклицательные знаки в конце предложения.
+    * f96f82d Мой первый коммит
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Объединение (слияние) изменений</h2>
+<p>Итак, Git позволяет независимо разрабатывать несколько версий программы в разных <strong>ветках</strong> одного большого дерева.</p>
+<p>Теперь разберемся, как из двух веток собрать единую версию. Попробуем получить программу как с приветствием Hello, python!!! из ветки python3branch, так и с именем автора из ветки addAuthorBranch.</p>
+<p>Для объединения нескольких веток в одну используется команда <code>git merge &lt;имя ветки&gt;</code>: она добавляет изменения из ветки <code>&lt;имя ветки&gt;</code> в текущую (в которой мы сейчас находимся).</p>
+<p>Сначала добавим в master коммиты из addAuthorBranch и посмотрим на результат:</p>
+<pre><code>&gt; cat program.py
+
+    print("My first Git program!!!")
+
+&gt; git merge addAuthorBranch
+
+    Updating b6e8fa1..bc31053
+    Fast-forward
+     program.py | 1 +
+     1 file changed, 1 insertion(+)
+
+&gt; cat program.py
+
+    # I am author!
+    print("My first Git program!!!")
+
+&gt; git log --graph --oneline --all --abbrev-commit
+
+    * 1c43860 (addFooter) Add footer
+    | * bc31053 (HEAD -&gt; master, addAuthorBranch) Add author
+    |/  
+    | * 96aaee0 (python3branch) Python3 version
+    |/  
+    * b6e8fa1 Добавили восклицательные знаки в конце предложения.
+    * f96f82d Мой первый коммит
+</code></pre>
+<p>Изменения из addAuthorbranch попали в master. Надпись Fast-forward говорит о том, что добавляемая ветка — <strong>дочерняя</strong> ветка текущей. Для такого объединения Git копирует изменения из указанной ветки без сложных сопоставлений — это самый простой и удобный случай.</p>
+<p>Теперь добавим изменения из ветки addFooter. Обратите внимание, что в данном случае мы объединяем master с веткой, которая уже не ее <strong>дочка</strong> — master уже там, где addAuthorBranch.</p>
+<p>Еще добавим комментарий с помощью параметра <code>-m</code>, чтобы потом понимать, какие действия мы совершали.</p>
+<pre><code>&gt; git merge addFooter -m "Merge footer"
+
+    Auto-merging program.py
+    CONFLICT (content): Merge conflict in program.py
+    Automatic merge failed; fix conflicts and then commit the result.
+</code></pre>
+<p>Судя по сообщению, что-то пошло не так. Давайте разберемся.</p>
+<p>Git не смог автоматически объединить ветки и предупредил нас о <strong>конфликте</strong>. Он может возникнуть и тогда, когда два разработчика поправили одну и ту же строчку кода.</p>
+<p>Некоторые IDE умеют автоматически разрешать такие конфликты. Но в итоге может получиться неправильный код, поэтому лучше всегда проверять конфликты вручную.</p>
+<p>Давайте разрешим этот конфликт. Для этого посмотрим на содержание файла program.py:</p>
+<pre><code>&gt; cat program.py
+    &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+    # I am author!
+    print("My first Git program!!!")
+    =======
+    print("My first Git program!!!")
+    # 2017 (c) Me
+    &gt;&gt;&gt;&gt;&gt;&gt;&gt; addFooter
+</code></pre>
+<p>Git просто объединил содержание двух файлов. При этом он разметил части файла признаками, указывающими на ветки, из которых взяты изменения.</p>
+<p>Содержимое файла между &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD и ======= — это наша текущая ветка, в которую мы пытаемся добавить изменения.</p>
+<p>Между ======= и &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; &lt;имя ветки&gt; — содержимое новой ветки, которое конфликтует со старым значением.</p>
+<p>Теперь вручную отредактируем файл и объединим изменения так, как считаем правильным:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># I am author!</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"My first Git program!!!"</span><span class="token punctuation">)</span>
+<span class="token comment"># 2017 (c) Me</span>
+</code></pre>
+<p>Сохраним файл и сообщим системе, что мы готовы зафиксировать исправленную версию:</p>
+<pre><code>&gt; git commit -a -m 'Решаем конфликт слияния master и addFooter'
+
+    [master cd7a95b] Решаем конфликт слияния master и addFooter
+</code></pre>
+<p>Посмотрим, что получилось:</p>
+<pre><code>&gt; git log --graph --oneline --all --abbrev-commit
+
+    *   cd7a95b (HEAD -&gt; master) Решаем конфликт слияния master и addFooter
+    |\  
+    | * 1c43860 (addFooter) Add footer
+    * | bc31053 (addAuthorBranch) Add author
+    |/  
+    | * 96aaee0 (python3branch) Python3 version
+    |/  
+    * b6e8fa1 Добавили восклицательные знаки в конце предложения.
+    * f96f82d Мой первый коммит
+
+&gt; cat "program.py"
+
+    # I am author!
+    print("My first Git program!!!")
+    # 2017 (c) Me
+</code></pre>
+<p>Получилось! Но у нас осталась «висящая» ветка python3branch. Давайте уже и ее отправим в master.</p>
+<pre><code>&gt; git merge python3branch -m "Объединение с python3branch"
+
+    Auto-merging program.py
+    CONFLICT (content): Merge conflict in program.py
+    Automatic merge failed; fix conflicts and then commit the result.
+</code></pre>
+<p>Опять конфликт. Решаем его.</p>
+<pre><code>&gt; cat "program.py"
+
+    &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+    # I am author!
+    print("My first Git program!!!")
+    # 2017 (c) Me
+    =======
+    print("Hello, python")
+    &gt;&gt;&gt;&gt;&gt;&gt;&gt; python3branch
+
+&gt; git commit -a -m 'Решаем конфликт слияния master и python3branch'
+
+    [master 9a704f6] Решаем конфликт слияния master и python3branch
+</code></pre>
+<p>И смотрим на итоговое дерево, на этот раз опустив параметр <code>--oneline</code>:</p>
+<pre><code>&gt; git log --graph --all --abbrev-commit
+
+	*   commit 9a704f6 (HEAD -&gt; master)
+	|\  Merge: cd7a95b 96aaee0
+	| | Author: user &lt;user@gmail.com&gt;
+	| | Date:   Thu Nov 9 23:27:31 2017 +0300
+	| | 
+	| |     Решаем конфликт слияния master и python3branch
+	| | 
+	| * commit 96aaee0 (python3branch)
+	| | Author: user &lt;user@gmail.com&gt;
+	| | Date:   Thu Nov 9 23:21:33 2017 +0300
+	| | 
+	| |     Python3 version
+	| |   
+	* |   commit cd7a95b
+	|\ \  Merge: bc31053 1c43860
+	| | | Author: user &lt;user@gmail.com&gt;
+	| | | Date:   Thu Nov 9 23:25:36 2017 +0300
+	| | | 
+	| | |     Решаем конфликт слияния master и addFooter
+	| | | 
+	| * | commit 1c43860 (addFooter)
+	| |/  Author: user &lt;user@gmail.com&gt;
+	| |   Date:   Thu Nov 9 23:23:07 2017 +0300
+	| |   
+	| |       Add footer
+	| | 
+	* | commit bc31053 (addAuthorBranch)
+	|/  Author: user &lt;user@gmail.com&gt;
+	|   Date:   Thu Nov 9 23:22:20 2017 +0300
+	|   
+	|       Add author
+	| 
+	* commit b6e8fa1
+	| Author: user &lt;user@gmail.com&gt;
+	| Date:   Thu Nov 9 23:19:11 2017 +0300
+	| 
+	|     Добавили восклицательные знаки в конце предложения.
+	| 
+	* commit f96f82d
+	  Author: user &lt;Developer@yandex.ru&gt;
+	  Date:   Thu Nov 9 23:18:21 2017 +0300
+	  
+	      Мой первый коммит
+</code></pre>
+<p>На этом мы заканчиваем изучение основных функций Git, предназначенных для локальной работы. Теперь вы умеете создавать локальный репозиторий, фиксировать изменения, заводить и удалять ветки, объединять изменения из разных веток и даже разрешать простые конфликты.</p>
+<p>Здесь перечислены основные изученные команды и их вариации:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<thead>
+<tr>
+<th>Команда</th>
+<th>Применение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>git init</code></td>
+<td>Создание пустого репозитория</td>
+</tr>
+<tr>
+<td><code>git add &lt;имя/маска файлов&gt;</code></td>
+<td>Добавление файлов в репозиторий для дальнейшего отслеживания изменений</td>
+</tr>
+<tr>
+<td><code>git rm --cached &lt;имя/маска файлов&gt;</code></td>
+<td>Удаление файлов из репозитория. Сами файлы при этом не удаляются, только прекращается отслеживание изменений в них</td>
+</tr>
+<tr>
+<td><code>git commit -a -m "Комментарий"</code></td>
+<td>Зафиксировать изменения во всех отслеживаемых файлах и добавить к версии комментарий</td>
+</tr>
+<tr>
+<td><code>git commit &lt;имя файла&gt; -m "Комментарий"</code></td>
+<td>Зафиксировать изменения в конкретном файле с комментарием</td>
+</tr>
+<tr>
+<td><code>git checkout -b &lt;имя ветки&gt;</code></td>
+<td>Создание новой ветки и переключение на нее</td>
+</tr>
+<tr>
+<td><code>git checkout &lt;имя ветки/хэш версии&gt;</code></td>
+<td>Переключение на определенную ветку или версию</td>
+</tr>
+<tr>
+<td><code>git branch &lt;имя ветки&gt;</code></td>
+<td>Создание новой ветки</td>
+</tr>
+<tr>
+<td><code>git branch</code></td>
+<td>Вывод списка всех локальных веток, существующих в репозитории</td>
+</tr>
+<tr>
+<td><code>git diff &lt;имя ветки/хэш коммита 1&gt; &lt;имя ветки/хэш коммита 2&gt;</code></td>
+<td>Вывод различий между ветками или версиями. Параметры &lt;имя коммита 1&gt; и &lt;имя коммита 2&gt; можно опускать, в этом случае берутся HEAD и «master»</td>
+</tr>
+<tr>
+<td><code>git log</code></td>
+<td>Вывод истории коммитов</td>
+</tr>
+<tr>
+<td><code>git log --all --graph</code></td>
+<td>Вывод всего дерева Git со всеми ветками и зависимостями между ними</td>
+</tr>
+<tr>
+<td><code>git status</code></td>
+<td>Вывод текущего состояния репозитория</td>
+</tr>
+<tr>
+<td><code>git merge &lt;имя ветки&gt;</code></td>
+<td>Добавление изменений из ветки &lt;имя ветки&gt; в текущую активную ветку</td>
+</tr>
+<tr>
+<td><code>git reset HEAD~1 </code></td>
+<td>Вернуться к предыдущему коммиту</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Эти команды — далеко не все существующие. Полный список есть в руководстве <code>man git</code> или во встроенной справке Git (команда <code>git help</code>).</p>
+<pre><code>&gt; git help
+
+    usage: git [--version] [--help] [-C &lt;path&gt;] [-c name=value]
+               [--exec-path[=&lt;path&gt;]] [--html-path] [--man-path] [--info-path]
+               [-p | --paginate | --no-pager] [--no-replace-objects] [--bare]
+               [--git-dir=&lt;path&gt;] [--work-tree=&lt;path&gt;] [--namespace=&lt;name&gt;]
+               &lt;command&gt; [&lt;args&gt;]
+    
+    These are common Git commands used in various situations:
+    
+    start a working area (see also: git help tutorial)
+       clone      Clone a repository into a new directory
+       init       Create an empty Git repository or reinitialize an existing one
+    
+    work on the current change (see also: git help everyday)
+       add        Add file contents to the index
+       mv         Move or rename a file, a directory, or a symlink
+       reset      Reset current HEAD to the specified state
+       rm         Remove files from the working tree and from the index
+    
+    examine the history and state (see also: git help revisions)
+       bisect     Use binary search to find the commit that introduced a bug
+       grep       Print lines matching a pattern
+       log        Show commit logs
+       show       Show various types of objects
+       status     Show the working tree status
+    
+    grow, mark and tweak your common history
+       branch     List, create, or delete branches
+       checkout   Switch branches or restore working tree files
+       commit     Record changes to the repository
+       diff       Show changes between commits, commit and working tree, etc
+       merge      Join two or more development histories together
+       rebase     Reapply commits on top of another base tip
+       tag        Create, list, delete or verify a tag object signed with GPG
+    
+    collaborate (see also: git help workflows)
+       fetch      Download objects and refs from another repository
+       pull       Fetch from and integrate with another repository or a local branch
+       push       Update remote refs along with associated objects
+    
+    'git help -a' and 'git help -g' list available subcommands and some
+    concept guides. See 'git help &lt;command&gt;' or 'git help &lt;concept&gt;'
+    to read about a specific subcommand or concept.
+</code></pre>
+<p>У каждой команды есть множество параметров (например, рассмотренные нами <code>--graph</code> и <code>--all</code> команды <code>git log</code>).</p>
+<p>Чтобы узнать подробнее о параметрах конкретной команды и как ее применять, обратитесь к расширенной справке <code>git help &lt;имя команды&gt;</code> (например, <code>git help merge</code>).</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Синхронизация с сетевыми репозиториями</h2>
+<p>Давайте попробуем выгрузить наш локальный репозиторий в новый сетевой репозиторий на GitHub. Перейдем в папку с созданным ранее репозиторием:</p>
+<pre><code>&gt; cd git_project_1
+&gt; pwd
+
+    /files/git_project_1
+</code></pre>
+<p>У нас уже существует рабочая версия локального репозитория, а удаленный (в Git он называется remote) репозиторий пока пуст. Нам необходимо подключить удаленный репозиторий к нашему локальному и отправить («запУшить») файлы на сервер.</p>
+<p>Имейте в виду, что к локальному репозиторию можно подключить несколько удаленных.</p>
+<p>Для управления remote-репозиториями используется команда <code>git remote</code>. Узнать детальнее про ее параметры можно через <code>git help remote</code>.</p>
+<p>Подключим к нашему локальному репозиторию удаленный, применив команду <code>git remote add</code>. В нашем примере мы подключаем репозиторий с именем github:</p>
+<pre><code>&gt; git remote add github https://github.com/user/git_lesson_repository.git
+</code></pre>
+<p>Чтобы увидеть подключенные репозитории, запускаем команду <code>git remote -v</code>:</p>
+<pre><code>&gt; git remote -v
+
+    github	https://github.com/user/git_lesson_repository.git (fetch)
+    github	https://github.com/user/git_lesson_repository.git (push)
+</code></pre>
+<p>Удаленный репозиторий успешно добавился, но информация о нем отображается 2 раза:</p>
+<ol>
+<li>Он добавлен как репозиторий для вытягивания (fetch) изменений</li>
+<li>И как репозиторий для сохранения удаленных изменений (push)</li>
+</ol>
+<p>Теперь загрузим изменения из нашего локального репозитория в сетевой (удаленный) репозиторий. Для этого используется команда <code>git push -u &lt;имя удаленного репозитория&gt; &lt;имя локальной ветки&gt;</code>.</p>
+<p>По умолчанию команда <code>git push</code> работает с текущей активной веткой, но требует указания имени удаленного репозитория (вспомните имя, написанное нами в качестве первого аргумента при выполнении команды <code>git remote add</code>).</p>
+<p>Но сначала немного настроим наш Git:</p>
+<pre><code>&gt; git config --global push.default current
+</code></pre>
+<pre><code>&gt; git checkout master
+&gt; git push -u github master
+</code></pre>
+<p>Команда запросит ваши логин и пароль, указанные при регистрации на GitHub.</p>
+<pre><code>Counting objects: 21, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (11/11), done.
+Writing objects: 100% (21/21), 1.93 KiB | 495.00 KiB/s, done.
+Total 21 (delta 4), reused 0 (delta 0)
+remote: Resolving deltas: 100% (4/4), done.
+To https://github.com/user/git_lesson_repository.git
+* [new branch]      master -&gt; master
+Branch 'master' set up to track remote branch 'master' from 'github'.
+</code></pre>
+<p>После ее выполнения появится надпись [new branch] master → master, которая означает, что в удаленном репозитории успешно создана новая ветка master, и в нее скопированы изменения из локальной ветки master.</p>
+<p>Вернитесь в веб-интерфейс Github, открыв в вашем браузере ссылку на репозиторий (https://github.com/имя_пользователя/git_lesson_repository.git), и убедитесь, что в веб-интерфейсе появился наш файл program.py из ветки master.</p>
+<p>Обратите внимание на ссылку Commits (7) в верхней части репозитория. Перейдя по ней, вы увидите все коммиты в ветке master, которые мы делали в первой части урока.</p>
+<p>Важно: при загрузке ветки в удаленный репозиторий копируется не только актуальное состояние ветки, но и вся история коммитов в эту ветку, что позволяет всем пользователям удаленного репозитория легко восстановить хронологию «развития» вашей программы.</p>
+<p>Чтобы «запУшить» сразу все локальные ветки в удаленный репозиторий, можно воспользоваться командой <code>git push &lt;имя репозитория&gt; --all</code>. Давайте попробуем:</p>
+<pre><code>&gt; git push github --all
+
+Total 0 (delta 0), reused 0 (delta 0)
+
+To https://github.com/user/git_lesson_repository.git
+ * [new branch]      addAuthorBranch -&gt; addAuthorBranch
+ * [new branch]      addFooter -&gt; addFooter
+ * [new branch]      python3branch -&gt; python3branch
+</code></pre>
+<p>Все три ветки, которые нами были использованы до этого на локальном компьютере, выгрузились в сетевой репозиторий. В этом можно убедиться, зайдя в репозиторий через веб-интерфейс.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Клонирование сетевого репозитория</h2>
+<p>Для клонирования уже существующего сетевого репозитория есть команда <code>git clone &lt;URL репозитория&gt;</code>.</p>
+<p>Выполняя эту команду, Git проверяет существование удаленного репозитория. Если репозиторий есть, то создается локальный репозиторий, и в него подтягиваются изменения из ветки, на которую указывает HEAD. Как правило, это master удаленного репозитория. Удаленный репозиторий добавляется и как upstream (с возможностью загрузки), и как downstream (с возможностью выгрузки), и получает имя origin.</p>
+<p>Попробуем:</p>
+<ol>
+<li>Cоздадим пустую папку <code>git_project_1_clone</code></li>
+<li>Перейдем туда и выполним в ней команду <code>git clone &lt;адрес вашего репозитория&gt; &lt;целевая директория&gt;</code> (помните, что «.» в Linux — это «текущая директория»):</li>
+</ol>
+<pre><code>&gt; cd files
+&gt; mkdir git_project_1_clone
+&gt; cd git_project_1_clone
+&gt; git clone https://github.com/user/git_lesson_repository.git . 
+
+    bash: cd: files: No such file or directory
+    Cloning into '.'...
+    remote: Counting objects: 21, done.[K
+    remote: Compressing objects: 100% (7/7), done.[K
+    remote: Total 21 (delta 4), reused 21 (delta 4), pack-reused 0[K
+    Unpacking objects: 100% (21/21), done.
+</code></pre>
+<p>Проверим, что репозиторий действительно загрузился:</p>
+<pre><code>&gt; cat program.py
+
+    # I am author!
+    print("My first Git program!!!")
+    print("Hello, python")
+    # 2017 (c) Me
+</code></pre>
+<p>Проверим созданные remotes-репозитории:</p>
+<pre><code>&gt; git remote -v
+
+    origin	https://github.com/user/git_lesson_repository.git (fetch)
+    origin	https://github.com/user/git_lesson_repository.git (push)
+</code></pre>
+<p>Готово! Теперь удаленный репозиторий склонирован, и с ним можно работать как с полноценным локальным репозиторием. В том числе отправлять изменения в удаленный репозиторий, если есть права на запись. Обратите внимание, что локально вы увидите только ветку master:</p>
+<pre><code>&gt; git branch
+
+    * master
+</code></pre>
+<p>Почему так? Считается, что master — это основная рабочая ветка репозитория (на нее указывает HEAD), и по умолчанию копируется только она.</p>
+<p>Однако существует несложный способ посмотреть все ветки в удаленном репозитории.</p>
+<p>Для этого используется команда <code>git branch -a</code>:</p>
+<pre><code>&gt; git branch -a
+
+    * master
+      remotes/origin/HEAD -&gt; origin/master
+      remotes/origin/addAuthorBranch
+      remotes/origin/addFooter
+      remotes/origin/master
+      remotes/origin/python3branch
+</code></pre>
+<p>Из вывода этой команды видно, что существует только одна локальная ветка master и четыре удаленных ветки:</p>
+<ul>
+<li>master</li>
+<li>addAuthorBranch</li>
+<li>addFooter</li>
+<li>python3branch</li>
+</ul>
+<p>Есть и одна виртуальная ветка HEAD, которая синхронизирована с origin/master, т.е. удаленной веткой master.</p>
+<p>На удаленные ветки можно переключаться. Для этого применяется уже знакомая вам команда переключения между ветками <code>git checkout</code>. Имя ветки, на которую мы хотим переключиться, указывается в формате <code>&lt;имя upstream&gt;/&lt;имя ветки&gt;</code>. Например: <code>git checkout origin/addFooter</code>.</p>
+<p>Так как удаленные ветки по умолчанию не имеют связей с локальными веткам, для работы с ними рекомендуется создавать локальные ветки, привязанные к удаленным командой <code>git branch &lt;имя ветки&gt; -f &lt;имя апстрима&gt;/&lt;имя удаленной ветки&gt;</code>.</p>
+<p>Принято давать локальным и удаленным веткам одинаковые имена:</p>
+<pre><code>&gt; git branch addFooter -f origin/addFooter
+
+    Branch 'addFooter' set up to track remote branch 'addFooter' from 'origin'.
+</code></pre>
+<p>Теперь работать с веткой addFooter можно как с полноценной локальной веткой. Синхронизация изменений (push и pull) будет проходить с удаленной веткой origin/addFooter.</p>
+<p>Теперь создадим новую ветку в скопированном репозитории и загрузим ее на сервер. Для этого используем уже знакомую нам команду <code>git checkout -b &lt;имя ветки&gt;</code> и рассмотренную на этом уроке команду <code>git push &lt;имя downstream&gt;</code>.</p>
+<pre><code>&gt; git checkout -b myNewBranch
+
+    Switched to a new branch 'myNewBranch'
+</code></pre>
+<pre><code>&gt; git push origin
+
+    Total 0 (delta 0), reused 0 (delta 0)
+    To https://github.com/user/git_lesson_repository.git
+     * [new branch]      myNewBranch -&gt; myNewBranch
+
+&gt; git branch -a
+
+    warning: ignoring ref with broken name refs/Icon?
+    warning: ignoring ref with broken name refs/heads/Icon?
+    warning: ignoring ref with broken name refs/remotes/Icon?
+    warning: ignoring ref with broken name refs/remotes/origin/Icon?
+    warning: ignoring ref with broken name refs/tags/Icon?
+      addFooter
+      master
+    * myNewBranch
+      remotes/origin/HEAD -&gt; origin/master
+      remotes/origin/addAuthorBranch
+      remotes/origin/addFooter
+      remotes/origin/master
+      remotes/origin/myNewBranch
+      remotes/origin/python3branch
+</code></pre>
+<p>Теперь переключимся на свой исходный локальный репозиторий git_project_1 (из первой части урока) и посмотрим на его список веток:</p>
+<pre><code>&gt; cd git_project_1
+&gt; git branch -a
+
+    addAuthorBranch
+    addFooter
+  * master
+    python3branch
+    remotes/github/addAuthorBranch
+    remotes/github/addFooter
+    remotes/github/master
+    remotes/github/python3branch
+</code></pre>
+<p>Что такое? Нашей новой ветки myNewBranch нет не только в списке локальных веток, но и в списке веток удаленного репозитория!</p>
+<p>Неужели мы где-то ошиблись, и ветка не сохранилась в удаленном репозитории? Конечно нет!</p>
+<p>Просто наша локальная копия удаленного репозитория пока еще ничего не знает о состоянии самого удаленного репозитория. Ведь мы еще не провели синхронизацию.</p>
+<p>Для синхронизации используется команда <code>git fetch &lt;имя upstream&gt;</code>.</p>
+<p>Попробуем:</p>
+<pre><code>&gt; git fetch github
+
+    From https://github.com/user/git_lesson_repository
+     * [new branch]      myNewBranch -&gt; github/myNewBranch
+
+&gt; git branch -a
+
+    warning: ignoring ref with broken name refs/remotes/Icon?
+    warning: ignoring ref with broken name refs/remotes/github/Icon?
+      addAuthorBranch
+      addFooter
+    * master
+      python3branch
+      remotes/github/addAuthorBranch
+      remotes/github/addFooter
+      remotes/github/master
+      remotes/github/myNewBranch
+      remotes/github/python3branch
+</code></pre>
+<p>Вот теперь актуальный список веток удаленного репозитория виден и доступен для локальной работы. Выполнять команду <var>fetch</var> рекомендуется перед началом работы над любой задачей или перед любой работой с ветками (создание, удаление, слияние).</p>
+<p>Давайте теперь изменим файл program.py (добавим слово new во второй строке):</p>
+<pre><code>&gt; cat program.py
+
+    # I am new author!
+    print("My first Git program!!!")
+    print("Hello, python")
+    # 2017 (c) Me
+</code></pre>
+<p>Сделаем коммит новой версии и сохраним ее в удаленном репозитории:</p>
+<pre><code>&gt; git commit -a -m 'Fix author name'
+
+    [master 9336df2] Fix author name
+     1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git push github
+
+    Counting objects: 3, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (2/2), done.
+    Writing objects: 100% (3/3), 345 bytes | 345.00 KiB/s, done.
+    Total 3 (delta 0), reused 0 (delta 0)
+    To https://github.com/user/git_lesson_repository.git
+       9a704f6..9336df2  master -&gt; master
+</code></pre>
+<p>Переключимся на локальный репозиторий git_project_1_clone, перейдем на master, выполним <code>git fetch</code> и посмотрим на содержимое program.py:</p>
+<pre><code>&gt; cd git_project_1_clone
+&gt; git checkout master
+&gt; git fetch
+
+    Switched to branch 'master'
+    Your branch is up to date with 'origin/master'.
+    remote: Counting objects: 3, done.[K
+    remote: Compressing objects: 100% (2/2), done.[K
+    remote: Total 3 (delta 0), reused 3 (delta 0), pack-reused 0[K
+    Unpacking objects: 100% (3/3), done.
+    From https://github.com/user/git_lesson_repository
+       9a704f6..9336df2  master     -&gt; origin/master
+
+&gt; cat program.py
+
+    # I am author!
+    print("My first Git program!!!")
+    print("Hello, python")
+    # 2017 (c) Me
+</code></pre>
+<p>Синхронизация прошла, но файл не поменялся. Это связано с тем, что команда <code>git fetch</code> обновляет только мета-информацию репозитория, не затрагивая отслеживаемые файлы и не внося изменения в локальные ветки.</p>
+<p>Если еще раз выполнить <code>git checkout master</code>, то можно увидеть следующее:</p>
+<pre><code>&gt; git checkout master
+
+    Already on 'master'
+    Your branch is behind 'origin/master' by 1 commit, and can be fast-forwarded.
+      (use "git pull" to update your local branch)
+</code></pre>
+<p>Git сообщил нам о том, что текущая ветка master локального репозитория неактуальна.</p>
+<p>Проигнорируем предупреждение и изменим нашу программу следующим образом (добавили 2018 год):</p>
+<pre><code>&gt; cat program.py
+
+    # I am author!
+    print("My first Git program!!!")
+    print("Hello, python")
+    # 2017-2018 (c) Me
+</code></pre>
+<p>Сделаем коммит и отправим измененную версию в сетевой репозиторий:</p>
+<pre><code>&gt; git commit -a -m "Update copyright years"
+
+    [master a2ffe3f] Update copyright years
+     1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git push origin
+
+    To https://github.com/user/git_lesson_repository.git
+     ! [rejected]        master -&gt; master (non-fast-forward)
+    error: failed to push some refs to 'https://github.com/user/git_lesson_repository.git'
+    hint: Updates were rejected because the tip of your current branch is behind
+    hint: its remote counterpart. Integrate the remote changes (e.g.
+    hint: 'git pull ...') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+</code></pre>
+<p>Локальный коммит прошел, но, при попытке «залить» изменения в удаленный репозиторий, мы получили ошибку, так как вносили изменения не в последнюю версию ветки.</p>
+<p>Добавим изменения из сетевого репозитория в нашу локальную ветку командой <code>git pull</code> (Git подсказал нам об этом), аналогом команды <code>git merge</code>, предназначенным для объединения версии из удаленного репозитория с локальной версией текущей активной ветки:</p>
+<pre><code>&gt; git pull
+
+    Auto-merging program.py
+    &lt;files/git_project_1_clone/.git/MERGE_MSG" 7L, 304Ct;cMerge branch 'master' of https://github.com/user/git_lesson_repository/.git/MERGE_MSG"
+
+    # Please enter a commit message to explain why this merge is necessary,
+    # especially if it merges an updated upstream into a topic branch.
+    #
+    # Lines starting with '#' will be ignored, and an empty message aborts
+    # the commit.
+</code></pre>
+<p>После запуска команды <code>git pull</code> Git запросит комментарий к объединению версий (по аналогии с комментарием, который мы передаем с параметром <code>-m &lt;сообщение&gt;</code> при коммите).</p>
+<p>Надо написать комментарий и ввести :q или нажать CTRL+W, CTRL+O для выхода из текстового редактора, после чего изменения будут объединены.</p>
+<p>Обратите внимание, что на этом этапе могут возникнуть конфликты такого же плана, что появлялись у нас ранее при объединении коммитов.</p>
+<p>Для решения конфликта нужно действовать так же, как и в прошлый раз:</p>
+<ol>
+<li>Вручную исправить файл с конфликтом</li>
+<li>Через <code>git commit</code> зафиксировать версию</li>
+</ol>
+<p>Посмотрим на обновленную версию программы и отправим ее в удаленный репозиторий:</p>
+<pre><code>&gt; cat program.py
+
+    # I am new author!
+    print("My first Git program!!!")
+    print("Hello, python")
+    # 2017-2018 (c) Me
+
+&gt; git push origin
+
+    Counting objects: 6, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (4/4), done.
+    Writing objects: 100% (6/6), 624 bytes | 312.00 KiB/s, done.
+    Total 6 (delta 2), reused 0 (delta 0)
+    remote: Resolving deltas: 100% (2/2), completed with 2 local objects.[K
+    To https://github.com/user/git_lesson_repository.git
+       9336df2..a72d9c7  master -&gt; master
+</code></pre>
+<p>Теперь в файле есть изменения из обоих коммитов и версия зафиксирована в удаленном репозитории.</p>
+<p>Любой разработчик, который будет работать с удаленным репозиторием, после выполнения <code>git fetch</code> получит уведомление об изменении в ветке и сможет забрать изменения командой <code>git pull</code>.</p>
+<p>На этом моменте мы закончим изучение основных функций Git для работы с сетевыми репозиториями.</p>
+<p>Больше информации вы можете самостоятельно почерпнуть из документации Git (<code>man git</code>, <code>git help</code>, <code>git help &lt;команда&gt;</code>).</p>
+<p>Теперь вы умеете создавать репозиторий, заводить, просматривать и удалять ветки, фиксировать версии (коммитить), переключаться между версиями, подключать сетевой репозиторий, получать правки из него, вносить правки в удаленный репозиторий, объединять изменения, решать конфликты при объединении и клонировать удаленный репозиторий к себе.</p>
+<p>Этого достаточно для того, чтобы начать работать над проектом в команде.</p>
+</section></article></section>

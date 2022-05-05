@@ -1,0 +1,570 @@
+<section class="lesson-material__content"><article class="material"><h1>Чат-боты 2. Telegram</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Мессенджер Telegram</a></li>
+<li><a class="material__link" href="#2">Как завести пользователя в Телеграме?</a></li>
+<li><a class="material__link" href="#3">API python-telegram-bot</a></li>
+<li><a class="material__link" href="#4">Эхо-бот</a></li>
+<li><a class="material__link" href="#5">Подключение через прокси-сервер</a></li>
+<li><a class="material__link" href="#6">Обработка команд</a></li>
+<li><a class="material__link" href="#7">Создание клавиатуры в диалоге пользователя</a></li>
+<li><a class="material__link" href="#8">Установка и удаление таймера</a></li>
+<li><a class="material__link" href="#9">Создание сценариев диалогов</a></li>
+<li><a class="material__link" href="#10">Передача пользовательских данных в сценарии</a></li>
+<li><a class="material__link" href="#11">Использование HTTP-API в телеграм-ботах</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке рассказывается про реализацию API в виде библиотеки на примере telegram-bot-API. Мы будем учиться на конкретных задачах: разберем устройство telegram-бота и узнаем об основных возможностях API, создав несколько простых ботов.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Мессенджер Telegram</h2>
+<p>Для начала разберемся, что такое Telegram, что такое telegram-bot и какие задачи можно решать с помощью этой технологии.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Телеграм</strong></p>
+<p>Телеграм — это мессенджер (программа для обмена сообщениями), реализованный по клиент-серверной архитектуре. Используя сервер для создания диалога между двумя клиентами, Телеграм пересылает через него или напрямую текстовые сообщения, а также изображения, видео или документы других форматов.</p>
+</section>
+<p>Подробнее о нем можно почитать <a class="material__link" href="https://ru.wikipedia.org/wiki/Telegram" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>Что же такое <strong>телеграм-бот</strong>?</p>
+<p>Представьте, что у нас есть зарегистрированный аккаунт. Все сообщения, присылаемые на него, попадают на вход некоторой программе, а выход этой программы отправляется в виде сообщения тому, от кого пришло исходное сообщение. Это и есть бот. Иными словами, Телеграм-бот — это специальный пользователь, поведением которого управляет некоторая программа. Технически для сервера нет разницы, является данный пользователь человеком или ботом: для сервера оба клиента выглядят одинаково. Эта идеология очень похожа на пользователей-сообществ в vk.com.</p>
+<p>API, которое мы изучим, позволит удобным образом получать сообщения от пользователей, обрабатывать их и отсылать ответы. Вся системная часть (получение ключей, шифрование, маршрутизация и т. д.) остается зоной ответственности библиотеки и архитектуры Telegram. Разработчику же дается удобный интерфейс, поэтому создателю нужно только реализовать логику поведения бота.</p>
+<p>Какие задачи можно решать Телеграм-ботом?</p>
+<p>Все ограничивается только фантазией. Приведем несколько примеров:</p>
+<ul>
+<li>Автоответчики. Все ситуации, когда требуется однозначный ответ на запрос. Например, бот может сообщать телефоны и другие контакты организации, ее рабочее время или предоставлять другую справочную информацию по запросу</li>
+<li>Интерфейс доступа к веб-сервисам. Бот может выполнять запросы к различным API и отдавать ответы в виде телеграм-сообщений</li>
+<li>Сценарии действий. Бот может пройти по какому-либо сценарию, задать пользователю определенные вопросы и собрать ответы на них. Например, при регистрации в каком-либо сервисе или при заявке на услугу</li>
+<li>Игры. Бот умеет пересылать картинки, поэтому можно создавать любые игры, не требующие мгновенной реакции. Например, подумайте, как реализовать игру в шахматы?</li>
+<li>Куда фантазия заведет (умные дома, управление автомобильной сигнализацией и т. д. Но помним о безопасности!)</li>
+</ul>
+</section>
+<section class="material__chapter">
+<h2 id="2">Как завести пользователя в Телеграме?</h2>
+<p>Прежде чем мы сможем писать программу для бота, надо его зарегистрировать. Для этого нужно присвоить ему номер, который раздает «отец всех ботов». Тоже, кстати, бот, с именем <strong>@BotFather</strong> (такая вот рекурсия).</p>
+<p>В режиме диалога он задаст несколько вопросов о назначении бота, поможет выбрать для него имя и выдаст специальный токен — уникальный ключ, с помощью которого в дальнейшем система будет идентифицировать нашего бота.</p>
+<p>Подробная информация находится <a class="material__link" href="https://core.telegram.org/bots#6-botfather" rel="noopener noreferrer" target="_blank">здесь</a>. Очень рекомендуем предварительно с ней ознакомиться. Если кратко:</p>
+<ul>
+<li>Необходимо связаться с <a class="material__link" href="https://telegram.me/botfather" rel="noopener noreferrer" target="_blank">@BotFather</a>, дать ему команду <code>/newbot</code> и ответить на его вопросы</li>
+<li>Придумать имя (name) для бота (это имя будет указано в чатах с ботом)</li>
+<li>Придумать системное имя (username) (оно будет использоваться для логина бота на сервер. Это имя должно быть уникальным и обязано оканчиваться на «bot»)</li>
+</ul>
+<p>А дальше надо написать собственно бота. Давайте разберемся, как это делать.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">API python-telegram-bot</h2>
+<p>Полное описание Telegram Bot API находится <a class="material__link" href="https://core.telegram.org/bots/api" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+<p>Над API реализована обертка в виде библиотеки python-telegram-bot. Она делает написание кода более удобным. Как и в случае с vk.com, telegram предоставляет API в виде доступа к базовым примитивам системы. Это делается для того, чтобы дать пользователям API возможность максимально свободно и гибко применять возможности системы.</p>
+<p>Однако на практике такая свобода и гибкость нужна далеко не всем. Подавляющее большинство программ, использующих API, повторяют одни и те же сценарии. При этом программисты вынуждены многократно повторять один и тот же код. Чтобы освободить разработку от этого, выпускается обертка над базовым API, реализующая большинство общих сценариев. При этом можно использовать и сам базовый API.</p>
+<p>В итоге для обычных сценариев не приходится писать лишний код, но при этом можно сделать и то, что в эти базовые сценарии не вписывается.</p>
+<p>Установим библиотеку:</p>
+<pre><code>pip install python-telegram-bot
+</code></pre>
+<p>У этой библиотеки есть неплохая документация, которая находится <a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/" rel="noopener noreferrer" target="_blank">тут</a>. Кроме того, в репозитории библиотеки есть ряд <a class="material__link" href="https://github.com/python-telegram-bot/python-telegram-bot/blob/master/examples/README.md" rel="noopener noreferrer" target="_blank">примеров программ</a>, изучая которые можно понять, как ей правильно пользоваться и как выглядят типовые операции.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Эхо-бот</h2>
+<p>Давайте разберем простейший пример.</p>
+<p>Это <strong>Эхо-бот</strong>, то есть бот, который просто присылает полученное текстовое сообщение назад. Обычно такие боты используются системой для проверки связи.</p>
+<p>Устройство телеграм-бота очень похоже на Flask веб-приложение (да и вообще на все то, чем мы занимаемся на втором году обучения): мы создаем обработчики для различных действий пользователя, а потом запускаем приложение, которое ждет этих действий и реагирует соответственно. В терминах библиотеки это выглядит следующим образом:</p>
+<p><var>Updater</var> → <var>Dispatсher</var> → <var>Handlers</var> → <var>start</var> → <var>wait_for_the_end</var></p>
+<p>Входом в программу-бота является <var>Updater</var>. Это объект, получающий на вход сообщения от telegram-сервера. Задача этого объекта — организация сетевого взаимодействия между клиентом и сервером.</p>
+<p>Полученные сообщения <var>Updater</var> передает <var>Dispatcher</var>’у, который автоматически создается внутри <var>Updater</var>’а.</p>
+<p>Диспетчер отвечает за вызов обработчиков сообщений. Как и следует из названия объекта, он перенаправляет сообщения внутри программы (от англ. dispatch — пересылать).</p>
+<p>Диспетчер хранит обработчики сообщений — <var>handler</var>’ы. Это функции, имеющие определенную сигнатуру, получающие на вход сообщения уже определенных типов с информацией о том, от каких пользователей пришли данные сообщения.</p>
+<p>Внутри <var>Updater</var>’а реализован цикл приема-передачи сообщений, который запускается в отдельном потоке специальным вызовом.</p>
+<p>Таким образом, программа-бот должна:</p>
+<ol>
+<li>Создать объект <var>Updater</var>, передав ему токен, полученный от @BotFather.</li>
+<li>Получить от <var>Updater</var>’а <var>Dispatcher</var>.</li>
+<li>Получить функции-обработчики для сообщений и команд и зарегистрировать их в диспетчере.</li>
+<li>Запустить цикл приема и обработки сообщений.</li>
+<li>Дожидаться окончания/прерывания работы программы.</li>
+</ol>
+<p>Приведем пример кода, реализующего простейший эхо-бот, который объяснит эту теорию.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Импортируем необходимые классы.</span>
+<span class="token keyword">import</span> logging
+<span class="token keyword">from</span> telegram<span class="token punctuation">.</span>ext <span class="token keyword">import</span> Updater<span class="token punctuation">,</span> MessageHandler<span class="token punctuation">,</span> Filters
+
+<span class="token comment"># Запускаем логгирование</span>
+logging<span class="token punctuation">.</span>basicConfig<span class="token punctuation">(</span>
+    <span class="token builtin">format</span><span class="token operator">=</span><span class="token string">'%(asctime)s - %(name)s - %(levelname)s - %(message)s'</span><span class="token punctuation">,</span> level<span class="token operator">=</span>logging<span class="token punctuation">.</span>DEBUG
+<span class="token punctuation">)</span>
+
+logger <span class="token operator">=</span> logging<span class="token punctuation">.</span>getLogger<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+
+TOKEN <span class="token operator">=</span> <span class="token string">'BOT_TOKEN'</span>
+
+
+<span class="token comment"># Определяем функцию-обработчик сообщений.</span>
+<span class="token comment"># У неё два параметра, сам бот и класс updater, принявший сообщение.</span>
+<span class="token keyword">def</span> <span class="token function">echo</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># У объекта класса Updater есть поле message,</span>
+    <span class="token comment"># являющееся объектом сообщения.</span>
+    <span class="token comment"># У message есть поле text, содержащее текст полученного сообщения,</span>
+    <span class="token comment"># а также метод reply_text(str),</span>
+    <span class="token comment"># отсылающий ответ пользователю, от которого получено сообщение.</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>text<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Создаём объект updater.</span>
+    <span class="token comment"># Вместо слова "TOKEN" надо разместить полученный от @BotFather токен</span>
+    updater <span class="token operator">=</span> Updater<span class="token punctuation">(</span>TOKEN<span class="token punctuation">)</span>
+
+    <span class="token comment"># Получаем из него диспетчер сообщений.</span>
+    dp <span class="token operator">=</span> updater<span class="token punctuation">.</span>dispatcher
+
+    <span class="token comment"># Создаём обработчик сообщений типа Filters.text</span>
+    <span class="token comment"># из описанной выше функции echo()</span>
+    <span class="token comment"># После регистрации обработчика в диспетчере</span>
+    <span class="token comment"># эта функция будет вызываться при получении сообщения</span>
+    <span class="token comment"># с типом "текст", т. е. текстовых сообщений.</span>
+    text_handler <span class="token operator">=</span> MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text<span class="token punctuation">,</span> echo<span class="token punctuation">)</span>
+
+    <span class="token comment"># Регистрируем обработчик в диспетчере.</span>
+    dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>text_handler<span class="token punctuation">)</span>
+    <span class="token comment"># Запускаем цикл приема и обработки сообщений.</span>
+    updater<span class="token punctuation">.</span>start_polling<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># Ждём завершения приложения.</span>
+    <span class="token comment"># (например, получения сигнала SIG_TERM при нажатии клавиш Ctrl+C)</span>
+    updater<span class="token punctuation">.</span>idle<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token comment"># Запускаем функцию main() в случае запуска скрипта.</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Каждый из использованных классов подробно описан в документации:</p>
+<ul>
+<li><a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/telegram.ext.updater.html" rel="noopener noreferrer" target="_blank">Updater</a></li>
+<li><a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/telegram.ext.dispatcher.html" rel="noopener noreferrer" target="_blank">Dispatcher</a></li>
+<li><a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/telegram.ext.messagehandler.html" rel="noopener noreferrer" target="_blank">MessageHandler</a></li>
+<li><a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/telegram.message.html" rel="noopener noreferrer" target="_blank">Message</a></li>
+<li><a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html" rel="noopener noreferrer" target="_blank">Bot</a></li>
+</ul>
+<p>Теперь бота можно запустить как обычный python-скрипт.</p>
+<p>Найдите его по имени или системному имени из любого Telegram-клиента и попробуйте с ним пообщаться. В ответ на любое текстовое сообщение бот пришлет его назад.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Подключение через прокси-сервер</h2>
+<p>К сожалению, у некоторых провайдеров заблокированы интернет-адреса серверов, на которых размещено API Telegram. В этом случае необходимо либо разместить бота на ресурсе, с которого есть доступ к серверам, либо использовать подключение через промежуточный прокси-сервер. Сначала установим дополнительный модуль:</p>
+<pre><code>pip install python-telegram-bot[socks]
+</code></pre>
+<p>Теперь для того, чтобы подключиться через прокси, необходимо указать настройки сервера при создании <var>Updater</var> в параметре <var>request_kwargs</var>:</p>
+<pre class="language-python"><code class="language-python">REQUEST_KWARGS <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">'proxy_url'</span><span class="token punctuation">:</span> <span class="token string">'socks5://ip:port'</span><span class="token punctuation">,</span> <span class="token comment"># Адрес прокси сервера</span>
+    <span class="token comment"># Опционально, если требуется аутентификация:</span>
+    <span class="token comment"># 'urllib3_proxy_kwargs': {</span>
+    <span class="token comment">#     'assert_hostname': 'False',</span>
+    <span class="token comment">#     'cert_reqs': 'CERT_NONE'</span>
+    <span class="token comment">#     'username': 'user',</span>
+    <span class="token comment">#     'password': 'password'</span>
+    <span class="token comment"># }</span>
+<span class="token punctuation">}</span>
+
+updater <span class="token operator">=</span> Updater<span class="token punctuation">(</span>TOKEN<span class="token punctuation">,</span> use_context<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> 
+                  request_kwargs<span class="token operator">=</span>REQUEST_KWARGS<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="6">Обработка команд</h2>
+<p>У внимательного ученика при виде строчки:</p>
+<pre class="language-python"><code class="language-python">text_handler <span class="token operator">=</span> MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text<span class="token punctuation">,</span> echo<span class="token punctuation">)</span>
+</code></pre>
+<p>должно возникнуть два вопроса:</p>
+<ol>
+<li>Какие еще типы обработчиков существуют?</li>
+<li>Какие еще фильтры сообщений существуют?</li>
+</ol>
+<p>Ответим сначала на первый вопрос.</p>
+<p>Кроме сообщений бот может получать <strong>команды</strong>, <strong>inline-запросы</strong> и некоторые другие объекты. Все возможные варианты перечислены <a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/telegram.ext.html#handlers" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Команда</strong></p>
+<p>Команда — это особое сообщение, начинающееся с символа «/». Команда предполагает какое-либо конкретное действие бота.</p>
+</section>
+<p>Есть несколько стандартных команд. Например:</p>
+<ul>
+<li><strong>/start</strong> (команда начала общения с ботом, обычно она присылает сообщение о возможностях бота и как с ним общаться)</li>
+<li><strong>/help</strong> (в ответ на команду бот присылает инструкцию по работе с собой)</li>
+</ul>
+<p>Команды, на которые отвечает бот, могут быть любыми, в зависимости от назначения бота.</p>
+<p>Добавим обработчики команд <strong>/start</strong> и <strong>/help</strong>.</p>
+<p>По аналогии с обработкой сообщений, обработчик команд нужно создать из функции и зарегистрировать в диспетчере.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Добавим необходимый объект из модуля telegram.ext</span>
+<span class="token keyword">from</span> telegram<span class="token punctuation">.</span>ext <span class="token keyword">import</span> CommandHandler
+
+
+<span class="token comment"># Напишем соответствующие функции.</span>
+<span class="token comment"># Их сигнатура и поведение аналогичны обработчикам текстовых сообщений.</span>
+<span class="token keyword">def</span> <span class="token function">start</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Привет! Я эхо-бот. Напишите мне что-нибудь, и я пришлю это назад!"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">help</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Я пока не умею помогать... Я только ваше эхо."</span><span class="token punctuation">)</span>
+
+
+<span class="token comment"># Зарегистрируем их в диспетчере рядом</span>
+<span class="token comment"># с регистрацией обработчиков текстовых сообщений.</span>
+<span class="token comment"># Первым параметром конструктора CommandHandler я</span>
+<span class="token comment"># вляется название команды.</span>
+dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"start"</span><span class="token punctuation">,</span> start<span class="token punctuation">)</span><span class="token punctuation">)</span>
+dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"help"</span><span class="token punctuation">,</span> <span class="token builtin">help</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Также откорректируем строку <code class="language-python">text_handler <span class="token operator">=</span> MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text<span class="token punctuation">,</span>
+        echo<span class="token punctuation">)</span></code> запишем ее так: <code class="language-python">text_handler <span class="token operator">=</span> MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text <span class="token operator">&amp;</span> <span class="token operator">~</span>Filters<span class="token punctuation">.</span>command<span class="token punctuation">,</span>
+            echo<span class="token punctuation">)</span></code>, таким способом мы укажем, то обработчик <strong>echo</strong> будет использован только для обработки текстовых сообщений, но не для обработки команд.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Создание клавиатуры в диалоге пользователя</h2>
+<p>Одна из возможных задач бота — предоставлять разную справочную информацию. Мы уже знаем, что для реализации такого поведения можно завести специальные команды. Однако для пользователя вводить команды — дело сравнительно долгое. А если он пришел к боту с мобильного телефона, то и просто неудобное.</p>
+<p>Для того чтобы справиться с этой трудностью, в API сделан механизм предразмеченных ответов. Если предполагается, что собеседник будет пользоваться какими-либо командами бота, можно вывести набор кнопок, каждая из которых присылает боту определенную команду. Это делает взаимодействие с ботом быстрее, удобнее и понятнее.</p>
+<p>Давайте рассмотрим пример. Разработаем бот-справочник, который будет сообщать некоторую справочную информацию о фирме. Для начала: адрес, телефон, сайт и время работы.</p>
+<p>Заведем четыре команды: /address, /phone, /site, /work_time, каждая из которых будет просто присылать пользователю текстовое сообщение с нужной информацией.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Напишем соответствующие функции.</span>
+<span class="token keyword">def</span> <span class="token function">help</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Я бот справочник."</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">address</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Адрес: г. Москва, ул. Льва Толстого, 16"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">phone</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span><span class="token string">"Телефон: +7(495)776-3030"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">site</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Сайт: http://www.yandex.ru/company"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">work_time</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Время работы: круглосуточно."</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    updater <span class="token operator">=</span> Updater<span class="token punctuation">(</span>TOKEN<span class="token punctuation">)</span>
+    dp <span class="token operator">=</span> updater<span class="token punctuation">.</span>dispatcher
+    dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"address"</span><span class="token punctuation">,</span> address<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"phone"</span><span class="token punctuation">,</span> phone<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"site"</span><span class="token punctuation">,</span> site<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"work_time"</span><span class="token punctuation">,</span> work_time<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"help"</span><span class="token punctuation">,</span> <span class="token builtin">help</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    updater<span class="token punctuation">.</span>start_polling<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    updater<span class="token punctuation">.</span>idle<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь создадим клавиатуру с четырьмя кнопками для этих команд. Для этого воспользуемся классом <var>ReplyKeyboardMarkup</var>. Чтобы им воспользоваться, нужно импортировать его из модуля telegram:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> telegram <span class="token keyword">import</span> ReplyKeyboardMarkup
+</code></pre>
+<p>Первым параметром конструктора <var>ReplyKeyboardMarkup</var> является список кнопок. Обратите внимание: в примере список состоит из двух подсписков, каждый из которых определяет строчку кнопок.</p>
+<pre class="language-python"><code class="language-python">reply_keyboard <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token string">'/address'</span><span class="token punctuation">,</span> <span class="token string">'/phone'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                  <span class="token punctuation">[</span><span class="token string">'/site'</span><span class="token punctuation">,</span> <span class="token string">'/work_time'</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+markup <span class="token operator">=</span> ReplyKeyboardMarkup<span class="token punctuation">(</span>reply_keyboard<span class="token punctuation">,</span> one_time_keyboard<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если передать все четыре строчки в виде одного списка, то получим клавиатуру с четырьмя кнопками в одну строку.</p>
+<p>Параметр <var>one_time_keyboard</var> указывает, нужно ли скрыть клавиатуру после нажатия на одну из кнопок (<code>one_time_keyboard = True</code>, клавиатура получается одноразовой) или не нужно (<code>one_time_keyboard
+            = False</code>, как у нас в примере).</p>
+<p>Для того чтобы клавиатура появилась в диалоге у пользователя, необходимо добавить ее в качестве параметра <var>reply_markup</var> в функцию <var>reply_text</var>. Тогда, помимо текста, API перешлет и размеченную клавиатуру.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">start</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Я бот-справочник. Какая информация вам нужна?"</span><span class="token punctuation">,</span> 
+        reply_markup<span class="token operator">=</span>markup
+    <span class="token punctuation">)</span>
+</code></pre>
+<p>Переданная однажды клавиатура будет оставаться в диалоге в свернутом или развернутом виде до тех пор, пока клиенту не перешлют новую или не укажут явно, что переданную клавиатуру надо удалить.</p>
+<p>Для удаления нужно в качестве значения параметра <var>reply_markup</var> передать объект специального класса: <var>ReplyKeyboardRemove</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> telegram <span class="token keyword">import</span> ReplyKeyboardRemove
+
+
+<span class="token keyword">def</span> <span class="token function">close_keyboard</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Ok"</span><span class="token punctuation">,</span> 
+        reply_markup<span class="token operator">=</span>ReplyKeyboardRemove<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token punctuation">)</span>
+
+
+dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"close"</span><span class="token punctuation">,</span> close_keyboard<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="8">Установка и удаление таймера</h2>
+<p>Рассмотрим еще одну возможность API python-telegram-bot — установку таймера.</p>
+<p>Таймер позволяет выполнить действие не сразу, а через некоторое время. Например, периодически проверять доступность какого-либо сайта, напомнить о чем-нибудь и т. д.</p>
+<p>Для этих целей у бота есть очередь задач, в которую мы можем добавлять свои задачи. Делается это следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">remove_job_if_exists</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Удаляем задачу по имени.
+    Возвращаем True если задача была успешно удалена."""</span>
+    current_jobs <span class="token operator">=</span> context<span class="token punctuation">.</span>job_queue<span class="token punctuation">.</span>get_jobs_by_name<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> current_jobs<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+    <span class="token keyword">for</span> job <span class="token keyword">in</span> current_jobs<span class="token punctuation">:</span>
+        job<span class="token punctuation">.</span>schedule_removal<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+
+<span class="token comment"># Обычный обработчик, как и те, которыми мы пользовались раньше.</span>
+<span class="token keyword">def</span> <span class="token function">set_timer</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Добавляем задачу в очередь"""</span>
+    chat_id <span class="token operator">=</span> update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>chat_id
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        <span class="token comment"># args[0] должен содержать значение аргумента</span>
+        <span class="token comment"># (секунды таймера)</span>
+        due <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>context<span class="token punctuation">.</span>args<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> due <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span><span class="token string">'Извините, не умеем возвращаться в прошлое'</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span>
+
+        <span class="token comment"># Добавляем задачу в очередь</span>
+        <span class="token comment"># и останавливаем предыдущую (если она была)</span>
+        job_removed <span class="token operator">=</span> remove_job_if_exists<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>chat_id<span class="token punctuation">)</span><span class="token punctuation">,</span> context<span class="token punctuation">)</span>
+        context<span class="token punctuation">.</span>job_queue<span class="token punctuation">.</span>run_once<span class="token punctuation">(</span>task<span class="token punctuation">,</span> due<span class="token punctuation">,</span> context<span class="token operator">=</span>chat_id<span class="token punctuation">,</span> name<span class="token operator">=</span><span class="token builtin">str</span><span class="token punctuation">(</span>chat_id<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        text <span class="token operator">=</span> <span class="token string-interpolation"><span class="token string">f'Вернусь через </span><span class="token interpolation"><span class="token punctuation">{</span>due<span class="token punctuation">}</span></span><span class="token string"> секунд!'</span></span>
+        <span class="token keyword">if</span> job_removed<span class="token punctuation">:</span>
+            text <span class="token operator">+=</span> <span class="token string">' Старая задача удалена.'</span>
+        update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>text<span class="token punctuation">)</span>
+
+    <span class="token keyword">except</span> <span class="token punctuation">(</span>IndexError<span class="token punctuation">,</span> ValueError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span><span class="token string">'Использование: /set &lt;секунд&gt;'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Задача — это функция с одним параметром — контекстом.</p>
+<p>Обратите внимание: сообщение мы отправляем, используя объект <var>bot</var> внутри контекста, а не <var>updater</var>. Это обращение к базовому API.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">task</span><span class="token punctuation">(</span>context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Выводит сообщение"""</span>
+    job <span class="token operator">=</span> context<span class="token punctuation">.</span>job
+    context<span class="token punctuation">.</span>bot<span class="token punctuation">.</span>send_message<span class="token punctuation">(</span>job<span class="token punctuation">.</span>context<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">'КУКУ!'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Задачу из очереди можно отменить. Добавим для этого специальную команду:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">unset</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Удаляет задачу, если пользователь передумал"""</span>
+    chat_id <span class="token operator">=</span> update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>chat_id
+    job_removed <span class="token operator">=</span> remove_job_if_exists<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>chat_id<span class="token punctuation">)</span><span class="token punctuation">,</span> context<span class="token punctuation">)</span>
+    text <span class="token operator">=</span> <span class="token string">'Таймер отменен!'</span> <span class="token keyword">if</span> job_removed <span class="token keyword">else</span> <span class="token string">'У вас нет активных таймеров'</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>text<span class="token punctuation">)</span>
+</code></pre>
+<p>Регистрируем обработчики. Обратите внимание на параметры <var>pass_job_queue</var> и <var>pass_chat_data</var>.</p>
+<p>По умолчанию они равны False и соответствующие параметры не передаются в обработчики. Сейчас же они нам нужны, мы явно задаем их значения и прописываем соответствующие параметры в прототипы обработчиков.</p>
+<pre class="language-python"><code class="language-python">dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"set"</span><span class="token punctuation">,</span> set_timer<span class="token punctuation">,</span>
+                              pass_args<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                              pass_job_queue<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                              pass_chat_data<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>CommandHandler<span class="token punctuation">(</span><span class="token string">"unset"</span><span class="token punctuation">,</span> unset<span class="token punctuation">,</span>
+                              pass_chat_data<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+               <span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="9">Создание сценариев диалогов</h2>
+<p>Обсуждая сферу применения ботов, мы говорили о разных сценариях, в которых пользователю последовательно задаются вопросы, а бот собирает ответы и что-то дальше с ними делает. Чем это отличается от того, что мы делали раньше? Главным образом тем, что в предыдущем примере мы <strong>не хранили контекст</strong> «разговора». То есть бот «отвечал» на один вопрос и тут же «забывал», кто и о чем его спрашивал.</p>
+<p>Сценарий — это серия вопросов или реплик, в которой бот «помнит», какие вопросы он уже задавал пользователю, какие ответы получил и что спрашивать дальше.</p>
+<p>Для создания сценариев в telegram-bot-python есть специальный обработчик диалога: <var>ConversationHandler</var>.</p>
+<p>Рассмотрим пример его использования.</p>
+<pre class="language-python"><code class="language-python">    conv_handler <span class="token operator">=</span> ConversationHandler<span class="token punctuation">(</span>
+        <span class="token comment"># Точка входа в диалог.</span>
+        <span class="token comment"># В данном случае — команда /start. Она задаёт первый вопрос.</span>
+        entry_points<span class="token operator">=</span><span class="token punctuation">[</span>CommandHandler<span class="token punctuation">(</span><span class="token string">'start'</span><span class="token punctuation">,</span> start<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+
+        <span class="token comment"># Состояние внутри диалога.</span>
+        <span class="token comment"># Вариант с двумя обработчиками, фильтрующими текстовые сообщения.</span>
+        states<span class="token operator">=</span><span class="token punctuation">{</span>
+            <span class="token comment"># Функция читает ответ на первый вопрос и задаёт второй.</span>
+            <span class="token number">1</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text <span class="token operator">&amp;</span> <span class="token operator">~</span>Filters<span class="token punctuation">.</span>command<span class="token punctuation">,</span> first_response<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token comment"># Функция читает ответ на второй вопрос и завершает диалог.</span>
+            <span class="token number">2</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text <span class="token operator">&amp;</span> <span class="token operator">~</span>Filters<span class="token punctuation">.</span>command<span class="token punctuation">,</span> second_response<span class="token punctuation">)</span><span class="token punctuation">]</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+        <span class="token comment"># Точка прерывания диалога. В данном случае — команда /stop.</span>
+        fallbacks<span class="token operator">=</span><span class="token punctuation">[</span>CommandHandler<span class="token punctuation">(</span><span class="token string">'stop'</span><span class="token punctuation">,</span> stop<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token punctuation">)</span>
+
+    dp<span class="token punctuation">.</span>add_handler<span class="token punctuation">(</span>conv_handler<span class="token punctuation">)</span>
+</code></pre>
+<p>В обычных обработчиках есть одна-единственная функция. Диспетчер вызывает ее, если выполняется условие фильтра в обработчике. Сама же функция возвращает None, или, другими словами, не возвращает никакого значения.</p>
+<p>Здесь мы регистрируем обработчик, состоящий из других обработчиков. Как же такой механизм работает?</p>
+<p>В самом начале работы программы активен только обработчик <var>start</var>, описанный в параметре <var>entry_points</var>. Ровно так же, как если бы мы без создания <var>ConversationHandler</var> просто зарегистрировали бы его в диспетчере, как делали ранее.</p>
+<p>Однако, в отличие от предыдущих случаев, обработчик <var>start</var> должен будет вернуть значение. И это значение укажет диспетчеру, какой обработчик выбрать для <strong>последующих</strong> сообщений.</p>
+<p>В нашем случае мы вернем 1, и это укажет диспетчеру, что к следующему сообщению надо применить обработчик из параметра <var>states</var> c индексом 1 — <code>states[1]</code>. То есть тот, что связан с функцией <code>first_response()</code>. Получается, что, помимо обработки самой команды /start, мы еще и указываем диспетчеру, как работать дальше.</p>
+<p>В свою очередь, <code>first_response()</code> вернет значение 2. После этого к следующим сообщениям диспетчер применит обработчик из <code>states[2]</code>.</p>
+<p>Для окончания диалога нужно вернуть специальное значение <code>ConversationHandler.END</code>. После этого диспетчер будет, как и в самом начале, пробовать применить обработчик <var>entry_points</var>.</p>
+<p>Обработчик из параметра <var>fallbacks</var> активен все время работы диалога и деактивируется после выхода из него. Он служит для прерывания диалога.</p>
+<p>Давайте напишем упомянутые выше функции.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">start</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string">"Привет. Пройдите небольшой опрос, пожалуйста!\n"</span>
+        <span class="token string">"Вы можете прервать опрос, послав команду /stop.\n"</span>
+        <span class="token string">"В каком городе вы живёте?"</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># Число-ключ в словаре states —</span>
+    <span class="token comment"># втором параметре ConversationHandler'а.</span>
+    <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token comment"># Оно указывает, что дальше на сообщения от этого пользователя</span>
+    <span class="token comment"># должен отвечать обработчик states[1].</span>
+    <span class="token comment"># До этого момента обработчиков текстовых сообщений</span>
+    <span class="token comment"># для этого пользователя не существовало,</span>
+    <span class="token comment"># поэтому текстовые сообщения игнорировались.</span>
+
+
+<span class="token keyword">def</span> <span class="token function">first_response</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Это ответ на первый вопрос.</span>
+    <span class="token comment"># Мы можем использовать его во втором вопросе.</span>
+    locality <span class="token operator">=</span> update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>text
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string-interpolation"><span class="token string">f"Какая погода в городе </span><span class="token interpolation"><span class="token punctuation">{</span>locality<span class="token punctuation">}</span></span><span class="token string">?"</span></span><span class="token punctuation">)</span>
+    <span class="token comment"># Следующее текстовое сообщение будет обработано</span>
+    <span class="token comment"># обработчиком states[2]</span>
+    <span class="token keyword">return</span> <span class="token number">2</span>
+
+
+<span class="token keyword">def</span> <span class="token function">second_response</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Ответ на второй вопрос.</span>
+    <span class="token comment"># Мы можем его сохранить в базе данных или переслать куда-либо.</span>
+    weather <span class="token operator">=</span> update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>text
+    logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span>weather<span class="token punctuation">)</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span><span class="token string">"Спасибо за участие в опросе! Всего доброго!"</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> ConversationHandler<span class="token punctuation">.</span>END  <span class="token comment"># Константа, означающая конец диалога.</span>
+    <span class="token comment"># Все обработчики из states и fallbacks становятся неактивными.</span>
+
+
+<span class="token keyword">def</span> <span class="token function">stop</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span><span class="token string">"Всего доброго!"</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> ConversationHandler<span class="token punctuation">.</span>END
+</code></pre>
+<p>Рассмотрим таблицу состояний созданного сценария:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<tbody>
+<tr>
+<td> </td>
+<td><strong>До диалога</strong></td>
+<td><strong>После /start</strong></td>
+<td><strong>После first_response</strong></td>
+<td><strong>После second_response</strong></td>
+<td><strong>После /stop</strong></td>
+</tr>
+<tr>
+<td><strong>/start</strong></td>
+<td style="text-align: center;">Активна</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Активна</td>
+<td style="text-align: center;">Активна</td>
+</tr>
+<tr>
+<td><strong>first_response</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Активна</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td><strong>second_response</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Активна</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td><strong>/stop</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Активна</td>
+<td style="text-align: center;">Активна</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ol>
+<li>До начала диалога активна только команда /start. Остальные части диалога игнорируются.</li>
+<li>После выполнения команда /start перестает работать, а активной становится команда /stop и обработчик <var>first_response</var>.</li>
+<li>После выполнения обработчика <var>first_response</var> он деактивируется, а его место занимает обработчик <var>second_response</var>.</li>
+<li>После выполнения обработчика <var>second_response</var> деактивируются он и команда /stop, и снова включается команда /start.</li>
+</ol>
+<p>Пускай наш бот находится в каком-то состоянии и может перейти в другие состояния. Описывать возможности перехода можно либо таблицей состояний, как мы делали выше, либо диаграммой состояний. Диаграмма состояний — это схема, на которой изображены состояния (например, в виде прямоугольников или кружков) и стрелками отмечены доступные переходы в из одних состояний в другие. Часто над стрелками пишут условия, при которых осуществляется тот или иной переход.</p>
+<p>Диаграмма состояний нашего бота изображена на рисунке ниже.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/telegram-bot.svg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="10">Передача пользовательских данных в сценарии</h2>
+<p>Часто нужно хранить не только предыдущий ответ пользователя, но и большее количество данных, полученных в ходе диалога.</p>
+<p>Для хранения и передачи таких данных телеграм поддерживает специальный словарь <var>context.user_data</var>. Для получения доступа к нему необходимо при создании соответствующего обработчика указать параметр <code>pass_user_data=True</code>.</p>
+<p>Модифицируем нашего бота так, чтобы он в конце диалога мог <em>передать привет</em> в город, который пользователь указал в первом ответе.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Добавили словарь user_data в параметры.</span>
+<span class="token keyword">def</span> <span class="token function">first_response</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Сохраняем ответ в словаре.</span>
+    context<span class="token punctuation">.</span>user_data<span class="token punctuation">[</span><span class="token string">'locality'</span><span class="token punctuation">]</span> <span class="token operator">=</span> update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>text
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string-interpolation"><span class="token string">f"Какая погода в городе </span><span class="token interpolation"><span class="token punctuation">{</span>context<span class="token punctuation">.</span>user_data<span class="token punctuation">[</span><span class="token string">'locality'</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">?"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token number">2</span>
+
+
+<span class="token comment"># Добавили словарь user_data в параметры.</span>
+<span class="token keyword">def</span> <span class="token function">second_response</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    weather <span class="token operator">=</span> update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>text
+    logger<span class="token punctuation">.</span>info<span class="token punctuation">(</span>weather<span class="token punctuation">)</span>
+    <span class="token comment"># Используем user_data в ответе.</span>
+    update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>reply_text<span class="token punctuation">(</span>
+        <span class="token string-interpolation"><span class="token string">f"Спасибо за участие в опросе! Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>context<span class="token punctuation">.</span>user_data<span class="token punctuation">[</span><span class="token string">'locality'</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">!"</span></span><span class="token punctuation">)</span>
+    context<span class="token punctuation">.</span>user_data<span class="token punctuation">.</span>clear<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># очищаем словарь с пользовательскими данными</span>
+    <span class="token keyword">return</span> ConversationHandler<span class="token punctuation">.</span>END
+
+<span class="token operator">&lt;</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token operator">&gt;</span>
+
+    conv_handler <span class="token operator">=</span> ConversationHandler<span class="token punctuation">(</span>
+        entry_points<span class="token operator">=</span><span class="token punctuation">[</span>CommandHandler<span class="token punctuation">(</span><span class="token string">'start'</span><span class="token punctuation">,</span> start<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        states<span class="token operator">=</span><span class="token punctuation">{</span>
+            <span class="token comment"># Добавили user_data для сохранения ответа.</span>
+            <span class="token number">1</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text <span class="token operator">&amp;</span> <span class="token operator">~</span>Filters<span class="token punctuation">.</span>command<span class="token punctuation">,</span> first_response<span class="token punctuation">,</span> pass_user_data<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token comment"># ...и для его использования.</span>
+            <span class="token number">2</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>MessageHandler<span class="token punctuation">(</span>Filters<span class="token punctuation">.</span>text <span class="token operator">&amp;</span> <span class="token operator">~</span>Filters<span class="token punctuation">.</span>command<span class="token punctuation">,</span> second_response<span class="token punctuation">,</span> pass_user_data<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        fallbacks<span class="token operator">=</span><span class="token punctuation">[</span>CommandHandler<span class="token punctuation">(</span><span class="token string">'stop'</span><span class="token punctuation">,</span> stop<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="11">Использование HTTP-API в телеграм-ботах</h2>
+<p>Как вы понимаете, чат-боты могут работать не только с теми данными, которые находятся в их непосредственной доступности, но и запрашивать информацию у API сторонних сервисов. Идея проста: научим телеграм-бота «ходить» в HTTP API, превращая запросы пользователей в http-запросы к API, и транслировать ответы API в удобной и понятной для пользователя форме.</p>
+<p>Давайте создадим бота, который по запросу пользователя присылает ему карту с запрошенным объектом. Например, пользователь запрашивает: «г. Москва, Тверская улица». В ответ высылается картинка с картой улицы.</p>
+<p>Алгоритм работы может быть таким:</p>
+<ol>
+<li>Бот «идет» с адресом в геокодер, получает координаты и размеры окна карты с нужным объектом.</li>
+<li>С полученными координатами бот «идет» в StaticAPI и запрашивает по ним картинку карты.</li>
+</ol>
+<p>Необходимо разобраться, как отправлять изображения (фотографии, в нотации телеграм-бота). Об этом можно почитать <a class="material__link" href="https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html#telegram.Bot.sendPhoto" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+<p>Функция, обрабатывающая сообщения, получится примерно следующая:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">geocoder</span><span class="token punctuation">(</span>update<span class="token punctuation">,</span> context<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    geocoder_uri <span class="token operator">=</span> geocoder_request_template <span class="token operator">=</span> <span class="token string">"http://geocode-maps.yandex.ru/1.x/"</span>
+    response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>geocoder_uri<span class="token punctuation">,</span> params<span class="token operator">=</span><span class="token punctuation">{</span>
+        <span class="token string">"apikey"</span><span class="token punctuation">:</span> <span class="token string">"40d1649f-0493-4b70-98ba-98533de7710b"</span><span class="token punctuation">,</span>
+        <span class="token string">"format"</span><span class="token punctuation">:</span> <span class="token string">"json"</span><span class="token punctuation">,</span>
+        <span class="token string">"geocode"</span><span class="token punctuation">:</span> update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>text
+    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+    toponym <span class="token operator">=</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token string">"response"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"GeoObjectCollection"</span><span class="token punctuation">]</span><span class="token punctuation">[</span>
+        <span class="token string">"featureMember"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"GeoObject"</span><span class="token punctuation">]</span>
+    ll<span class="token punctuation">,</span> spn <span class="token operator">=</span> get_ll_spn<span class="token punctuation">(</span>toponym<span class="token punctuation">)</span>
+    <span class="token comment"># Можно воспользоваться готовой функцией,</span>
+    <span class="token comment"># которую предлагалось сделать на уроках, посвящённых HTTP-геокодеру.</span>
+
+    static_api_request <span class="token operator">=</span> <span class="token string-interpolation"><span class="token string">f"http://static-maps.yandex.ru/1.x/?ll=</span><span class="token interpolation"><span class="token punctuation">{</span>ll<span class="token punctuation">}</span></span><span class="token string">&amp;spn=</span><span class="token interpolation"><span class="token punctuation">{</span>spn<span class="token punctuation">}</span></span><span class="token string">&amp;l=map"</span></span>
+    context<span class="token punctuation">.</span>bot<span class="token punctuation">.</span>send_photo<span class="token punctuation">(</span>
+        update<span class="token punctuation">.</span>message<span class="token punctuation">.</span>chat_id<span class="token punctuation">,</span>  <span class="token comment"># Идентификатор чата. Куда посылать картинку.</span>
+        <span class="token comment"># Ссылка на static API, по сути, ссылка на картинку.</span>
+        <span class="token comment"># Телеграму можно передать прямо её, не скачивая предварительно карту.</span>
+        static_api_request<span class="token punctuation">,</span>
+        caption<span class="token operator">=</span><span class="token string">"Нашёл:"</span>
+    <span class="token punctuation">)</span>
+</code></pre>
+</section></article></section>

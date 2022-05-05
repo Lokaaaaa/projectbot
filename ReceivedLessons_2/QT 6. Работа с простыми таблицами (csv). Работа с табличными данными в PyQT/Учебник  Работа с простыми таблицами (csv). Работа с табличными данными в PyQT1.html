@@ -1,0 +1,412 @@
+<section class="lesson-material__content"><article class="material"><h1>Работа с простыми таблицами (csv). Работа с табличными данными в PyQT</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Хранение записей в файлах</a></li>
+<li><a class="material__link" href="#2">Форматы с фиксированной длиной записи</a></li>
+<li><a class="material__link" href="#3">Форматы с произвольной длиной записи</a></li>
+<li><a class="material__link" href="#4">Формат TSV</a></li>
+<li><a class="material__link" href="#5">Формат CSV</a></li>
+<li><a class="material__link" href="#6">Библиотека CSV</a></li>
+<li><a class="material__link" href="#7">Использование графического интерфейса. Чтение из .csv файла</a></li>
+<li><a class="material__link" href="#8">PyQT. Запись из таблицы в .csv файл</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Урок посвящен технологии хранения однотипных записей в файлах, форматам с фиксированной и с произвольной длиной записи (DSV, TSV, CSV). Особое внимание уделено форматам с произвольной длиной записи, методам работы с ними при помощи строковых функций, а также специализированной библиотеки csv и PyQT.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Хранение записей в файлах</h2>
+<p>Любой файл может содержать последовательность байт, которая интерпретируется человеком и прикладными программами различным образом. Например, байт с десятичным значением 65 может означать и число 65, и код латинской буквы A в зависимости от договоренности по формату. При разработке приложений очень быстро возникла необходимость хранения в файлах больших массивов однородных объектов (записей), имеющих некоторый набор полей или характеристик. По сути такой массив представляет собой таблицу со строками и столбцами. Каждый столбец имеет свой, как правило, примитивный тип: целое или вещественное число, строка и т. д.</p>
+<p>Очень важно, что формат при этом может быть совершенно различным. Главное, чтобы все программы, которые с ним работают, были написаны в соответствии со спецификацией этого формата, то есть <strong>понимали</strong> его.</p>
+<p>В процессе эволюции из всех форматов для хранения массивов записей прижились два: с фиксированной и произвольной длиной записи. А подлинного искусства обработка и хранение таблиц достигли в <a class="material__link" href="https://ru.wikipedia.org/wiki/Реляционная_база_данных" rel="noopener noreferrer" target="_blank">реляционных базах данных</a>, о которых мы поговорим уже очень скоро.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Форматы с фиксированной длиной записи</h2>
+<p>Такие форматы практически всегда имеют байтовую, а не текстовую структуру.</p>
+<p>Размер каждого поля фиксируется таким образом, чтобы иметь минимальную, но достаточную длину в байтах для представления всего диапазона значений. Как правило, на этом этапе возникают проблемы с выбором длины строковых данных.</p>
+<p>Для примера рассмотрим расшифровку записи для хранения информации о школьнике:</p>
+<ul>
+<li><code>Имя: строка(50)</code></li>
+<li><code>Фамилия: строка(50)</code></li>
+<li><code>Возраст: однобайтовое число</code></li>
+<li><code>Пол: строка(1)</code></li>
+<li><code>Адрес: строка(100)</code></li>
+</ul>
+<p>Как видно из примера, в мире нашей программы существует ряд ограничений, например, нет адресов, которые содержат более 100 символов.</p>
+<p>Преимущества бинарных форматов с фиксированной длиной записи аналогичны преимуществам по работе с массивами: мы за константное время можем взять любую по счету запись, просто вычислив, по какому смещению в файле она располагается относительно его начала.</p>
+<p>Примером файлов такого рода является, например, <a class="material__link" href="https://upload.wikimedia.org/wikipedia/commons/c/c4/BMPfileFormat.png" rel="noopener noreferrer" target="_blank">BMP-файл</a>.</p>
+<p>Его структура такова: в первых 54 байтах хранится так называемый <strong>заголовок</strong>. <em>Иногда его еще называют мета-данными, то есть данными о данных.</em> Он информирует о размере изображения, сжатии и других характеристиках всего файла. После заголовка подряд записывается информация о каждом пикселе изображения, на каждый пиксель отводится ровно 3 байта, по одному байту на каналы R, G, B. То есть информация об изображении представляет собой массив (список) кортежей из трех чисел — значений red, green и blue составляющих цвета пикселя.</p>
+<p>Фиксированный формат имеет и недостатки. Один из самых больших в том, что, как только появляется запись, одно из полей которой <strong>не влезает</strong> в предопределенную длину, мы не сможем использовать данный формат или вынуждены будем его видоизменить.</p>
+<p>Причем, расширяя размер поля для данной записи, мы расширяем ее и для всех остальных, расходуя понапрасну ресурсы памяти.</p>
+<p>Одна из самых широко известных ситуаций, связанных с фиксированным форматом, — <a class="material__link" href="https://ru.wikipedia.org/wiki/Проблема_2000_года" rel="noopener noreferrer" target="_blank">проблема 2000 года</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Форматы с произвольной длиной записи</h2>
+<p>Если длина полей в одной записи не фиксирована (например, мы говорим, что адрес клиента может быть любой длины), нам нужно решить две проблемы:</p>
+<ol>
+<li>Как мы будем понимать, где <strong>границы полей</strong>.</li>
+<li>Как мы будем понимать, где <strong>границы записей</strong>.</li>
+</ol>
+<p>Решать их можно по-разному: например, перед каждым полем делать служебное поле из 4 байт, которое показывает размер в байтах следующего поля. Таким образом, в нашем случае поле не сможет содержать более 4 Гб данных.</p>
+<p>Можно пойти другим путем и ввести специальные разделители. Поговорим про этот случай. Воспользуемся модельным примером и рассмотрим <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/ikea.txt" rel="noopener noreferrer" target="_blank">прайс-лист</a> товаров в магазине «Икея».</p>
+<p>Вот небольшой фрагмент этого файла:</p>
+<pre><code>&gt; keywords	price	product_name
+
+&gt; МОРУМ, Ковёр, безворсовый	6999	МОРУМ
+
+&gt; МОРУМ, Ковёр, безворсовый	6999	МОРУМ
+
+&gt; ИДБИ, Придверный коврик	649	ИДБИ
+
+&gt; ХОДДЕ, Ковёр, безворсовый	1399	ХОДДЕ
+
+&gt; ОПЛЕВ, Придверный коврик	599	ОПЛЕВ
+
+&gt; ОПЛЕВ, Придверный коврик	599	ОПЛЕВ
+</code></pre>
+<p>Разделителем записей был выбран символ <strong>новой строки</strong>, а разделителем полей — <strong>табуляция</strong> (хотя на самом деле увидеть символы табуляции можно с трудом).</p>
+<p>В результате мы получили текстовый файл, который легко читается и человеком, и компьютерной программой.</p>
+<p>Назовем такой формат <strong>TSV</strong>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Формат TSV</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>TSV</strong></p>
+<p>TSV (англ. tab separated values — «значения, разделенные табуляцией») — текстовый формат для представления таблиц баз данных. Каждая запись в таблице — строка текстового файла. Каждое поле записи отделяется от других символом табуляции, а точнее — горизонтальной табуляции.</p>
+</section>
+<p><strong>TSV</strong> — форма более общего формата <strong>DSV</strong> («значения, разграниченные разделителем», от англ. delimiter separated values).</p>
+<p>Программы для работы с электронными таблицами (MS Excel, LibreOffice Calc) поддерживают импорт из такого формата.</p>
+<details>
+<summary>Импорт из текстового файла в Excel</summary>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/excel-1.png" width="680"/></div>
+<p>Шаг 1:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/excel-2.png" width="680"/></div>
+<p>Шаг 2:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/excel-3.png" width="680"/></div>
+<p>Шаг 3:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/excel-4.png" width="680"/></div>
+<p>Результат:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/excel-5.png" width="680"/></div>
+</details>
+<p>Посмотрим, как работать с таким форматом в Python. Тут нет ничего сложного, поскольку у нас есть мощная функциональность по работе со строками, в частности, метод <var>split</var>.</p>
+<pre class="language-python"><code class="language-python">data <span class="token operator">=</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'files/ikea.txt'</span><span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> row <span class="token keyword">in</span> data<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>row<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'\t'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['keywords', 'price', 'product_name']
+['МОРУМ, Ковёр, безворсовый', '6999', 'МОРУМ']
+['МОРУМ, Ковёр, безворсовый', '6999', 'МОРУМ']
+['ИДБИ, Придверный коврик', '649', 'ИДБИ']
+['ХОДДЕ, Ковёр, безворсовый', '1399', 'ХОДДЕ']
+['ОПЛЕВ, Придверный коврик', '599', 'ОПЛЕВ']
+['ОПЛЕВ, Придверный коврик', '599', 'ОПЛЕВ']
+['ЮНКЭН, Брикеты', '89', 'ЮНКЭН']
+['БУНСЁ, Детское садовое кресло', '1199', 'БУНСЁ']
+['ИКЕА ПС ВОГЭ, Садовое лёгкое кресло', '1999', 'ИКЕА ПС ВОГЭ']</samp></pre>
+<p>Вспомним списочные выражения и сразу сделаем «двумерный массив», а потом обратимся к цене пятого по счету товара:</p>
+<pre class="language-python"><code class="language-python">table <span class="token operator">=</span> <span class="token punctuation">[</span>r<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'\t'</span><span class="token punctuation">)</span> <span class="token keyword">for</span> r <span class="token keyword">in</span> data<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>table<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>599</samp></pre>
+<p>Мы можем также отсортировать элементы по цене и напечатать 10 самых дешевых товаров:</p>
+<pre class="language-python"><code class="language-python">table <span class="token operator">=</span> table<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span>
+table<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> r <span class="token keyword">in</span> table<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['СМОРИСКА, Стопка', '6', 'СМОРИСКА']
+['СМОРИСКА, Стакан', '12', 'СМОРИСКА']
+['ДИСТАНС, Контейнер', '12', 'ДИСТАНС']
+['ДИСТАНС, Контейнер', '12', 'ДИСТАНС']
+['ОППЕН, Миска', '25', 'ОППЕН']
+['ДАРРОКА, Стакан', '25', 'ДАРРОКА']
+['АНТАГЕН, Щетка для мытья посуды', '25', 'АНТАГЕН']
+['ВАНКИВА, Рама', '25', 'ВАНКИВА']
+['ХОППЛЁС, Доска разделочная', '27', 'ХОППЛЁС']
+['ДАРРОКА, Стакан д/виски', '29', 'ДАРРОКА']</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Формат CSV</h2>
+<p>Одним из самых распространенных форматов <strong>DSV</strong> стал <strong>CSV</strong> — формат с разделителем полей — запятой (англ. comma separated values). Наш файл будет выглядеть в нем <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/ikea.csv" rel="noopener noreferrer" target="_blank">вот так</a>:</p>
+<pre><code>&gt; keywords,price,product_name
+
+&gt;"МОРУМ, Ковёр, безворсовый",6999,МОРУМ
+
+&gt;"МОРУМ, Ковёр, безворсовый",6999,МОРУМ
+
+&gt;"ИДБИ, Придверный коврик",649,ИДБИ
+
+&gt;"ХОДДЕ, Ковёр, безворсовый",1399,ХОДДЕ
+
+&gt;"ОПЛЕВ, Придверный коврик",599,ОПЛЕВ
+
+&gt;"ОПЛЕВ, Придверный коврик",599,ОПЛЕВ
+
+&gt;"ЮНКЭН, Брикеты",89,ЮНКЭН
+
+&gt;"БУНСЁ, Детское садовое кресло",1199,БУНСЁ
+
+&gt;"ИКЕА ПС ВОГЭ, Садовое лёгкое кресло",1999,ИКЕА ПС ВОГЭ
+</code></pre>
+<p>Для всех форматов DSV проблемой является символ-разделитель полей в данных. В этом случае вводят так называемый <strong>разделитель текста</strong>, в качестве которого выступают двойные кавычки, а если в поле встречается сам разделитель текста, то его удваивают. Например, <strong>ООО "Светлана"</strong> при записи в файл превращается в <strong>"ООО ""Светлана"""</strong>.</p>
+<p>Вот почему в приведенном фрагменте CSV-файла первое поле в кавычках — внутри него есть запятые.</p>
+<p>Нужно отметить, что в CSV могут быть другие разделители, например, точка с запятой. Очень часто это регулируется настройками операционной системы (параметр «Разделитель элементов списка» в ОС Windows):</p>
+<p>Параметры — Время и язык — Язык:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/windows-params.png" width="680"/></div>
+<p>Дополнительные параметры:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/qt-5-2.png" width="567"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="6">Библиотека CSV</h2>
+<p>Несмотря на то, что DSV-форматы просты, отсутствие четких стандартов в выборе разделителей и экранировании символов привели к тому, что с ними лучше работать при помощи специализированных библиотек, а не в стиле «использования функции» <var>split()</var>.</p>
+<p>Для работы с такими форматами в Python есть модуль <a class="material__link" href="https://docs.python.org/3/library/csv.html" rel="noopener noreferrer" target="_blank">csv</a>.</p>
+<p>В модуле есть два основных объекта: <var>reader</var> и <var>writer</var>, созданные, чтобы читать и создавать csv-файлы соответственно.</p>
+<p>Приведем пример использования <strong>читателя</strong> с почти полным набором значений, указав:</p>
+<ul>
+<li>Кодировку файла</li>
+<li>Символ-разделитель</li>
+<li>Разделитель текста</li>
+</ul>
+<p>Объект <var>reader</var> дает доступ к построчному итератору полностью аналогично работе с файлом или списком.</p>
+<p>Общности ради в следующем примере мы покажем, что разделителем может быть любой символ.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> csv
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'files/ikea.csv'</span><span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">"utf8"</span><span class="token punctuation">)</span> <span class="token keyword">as</span> csvfile<span class="token punctuation">:</span>
+    reader <span class="token operator">=</span> csv<span class="token punctuation">.</span>reader<span class="token punctuation">(</span>csvfile<span class="token punctuation">,</span> delimiter<span class="token operator">=</span><span class="token string">';'</span><span class="token punctuation">,</span> quotechar<span class="token operator">=</span><span class="token string">'"'</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> index<span class="token punctuation">,</span> row <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>reader<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> index <span class="token operator">&gt;</span> <span class="token number">10</span><span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['keywords', 'price', 'product_name']
+['МОРУМ, Ковёр, безворсовый', '6999', 'МОРУМ']
+['МОРУМ, Ковёр, безворсовый', '6999', 'МОРУМ']
+['ИДБИ, Придверный коврик', '649', 'ИДБИ']
+['ХОДДЕ, Ковёр, безворсовый', '1399', 'ХОДДЕ']
+['ОПЛЕВ, Придверный коврик', '599', 'ОПЛЕВ']
+['ОПЛЕВ, Придверный коврик', '599', 'ОПЛЕВ']
+['ЮНКЭН, Брикеты', '89', 'ЮНКЭН']
+['БУНСЁ, Детское садовое кресло', '1199', 'БУНСЁ']
+['ИКЕА ПС ВОГЭ, Садовое лёгкое кресло', '1999', 'ИКЕА ПС ВОГЭ']
+['КУНГСХОЛЬМЕН, Садовый табурет', '5500', 'КУНГСХОЛЬМЕН']</samp></pre>
+<p>Давайте разберем построчно, что происходит в этом коде.</p>
+<p>Мы пользуемся менеджером контекста <var>with</var>, чтобы просто открыть наш файл с кодировкой UTF-8, а потом создаем объект <var>reader</var>, говоря ему про символы-разделители полей и строк.</p>
+<p>Объект <var>reader</var> может служить итератором (и использоваться в цикле <var>for</var>) по строкам, каждая из которых представляет собой список. При создании <var>reader </var>мы указываем, что символ-разделитель записей <var>delimiter</var> в нашем файле — точка с запятой, а символ кавычек <var>quotechar</var> — двойные кавычки. Кроме того, мы используем <var>enumerate</var>, чтобы посчитать строки.</p>
+<p>Отметим, что исходный файл содержит подписи полей в первой строке, что будет снова нам мешать (например, при сортировке строк). Для корректной работы мы должны были бы исключить первую строку из обработки.</p>
+<p>Но в модуле csv есть специальный объект <strong>DictReader</strong>, который поддерживает создание объекта-словаря на основе подписей к полям.</p>
+<p><strong>DictReader</strong> не просто словарь, а словарь, который отслеживает порядок ключей после их добавления, — <strong>OrderDict</strong>, что будет дальше видно в примере. Дополнительно почитать про <strong>OrderDict</strong> можно <a class="material__link" href="https://docs.python.org/3.6/library/collections.html" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>Теперь мы можем обращаться к полям не по индексу, а по <strong>названию</strong>, что делает программу еще более понятной.</p>
+<p>Найдем топ-10 самых дорогих товаров (как вы думаете, какая запись более понятна: <code>int(x['price'])</code> или <code>int(x[1])</code>?):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'files/ikea.csv'</span><span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">"utf8"</span><span class="token punctuation">)</span> <span class="token keyword">as</span> csvfile<span class="token punctuation">:</span>
+    reader <span class="token operator">=</span> csv<span class="token punctuation">.</span>DictReader<span class="token punctuation">(</span>csvfile<span class="token punctuation">,</span> delimiter<span class="token operator">=</span><span class="token string">';'</span><span class="token punctuation">,</span> quotechar<span class="token operator">=</span><span class="token string">'"'</span><span class="token punctuation">)</span>
+    expensive <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>reader<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">[</span><span class="token string">'price'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> record <span class="token keyword">in</span> expensive<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>record<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>{'keywords': 'МОРУМ, Ковёр, безворсовый', 'price': '6999', 'product_name': 'МОРУМ'}
+{'keywords': 'КУНГСХОЛЬМЕН, Садовый табурет', 'price': '5500', 'product_name': 'КУНГСХОЛЬМЕН'}
+{'keywords': 'ИКЕА ПС ВОГЭ, Садовое лёгкое кресло', 'price': '1999', 'product_name': 'ИКЕА ПС ВОГЭ'}
+{'keywords': 'ХОДДЕ, Ковёр, безворсовый', 'price': '1399', 'product_name': 'ХОДДЕ'}
+{'keywords': 'БУНСЁ, Детское садовое кресло', 'price': '1199', 'product_name': 'БУНСЁ'}
+{'keywords': 'МОРУМ, Ковёр, ворсовый', 'price': '999', 'product_name': 'МОРУМ'}
+{'keywords': 'ИДБИ, Придверный коврик', 'price': '649', 'product_name': 'ИДБИ'}
+{'keywords': 'ОПЛЕВ, Придверный коврик', 'price': '599', 'product_name': 'ОПЛЕВ'}
+{'keywords': 'ОПЛЕВ, дверный коврик', 'price': '99', 'product_name': 'ОПЛЕВ'}
+{'keywords': 'ЮНКЭН, Брикеты', 'price': '89', 'product_name': 'ЮНКЭН'}</samp></pre>
+<p>Мы привели цены к типу <var>int</var>, потому что строки сравниваются в лексикографическом порядке (по алфавиту). Например:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'11'</span> <span class="token operator">&gt;</span> <span class="token string">'100'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">11</span> <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>False</samp></pre>
+<p>Использование объекта для записи (<var>writer</var>) аналогично «читателю» (<var>reader</var>):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'files/квадраты.csv'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">,</span> newline<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span> <span class="token keyword">as</span> csvfile<span class="token punctuation">:</span>
+    writer <span class="token operator">=</span> csv<span class="token punctuation">.</span>writer<span class="token punctuation">(</span>
+        csvfile<span class="token punctuation">,</span> delimiter<span class="token operator">=</span><span class="token string">';'</span><span class="token punctuation">,</span> quotechar<span class="token operator">=</span><span class="token string">'"'</span><span class="token punctuation">,</span> quoting<span class="token operator">=</span>csv<span class="token punctuation">.</span>QUOTE_MINIMAL<span class="token punctuation">)</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        writer<span class="token punctuation">.</span>writerow<span class="token punctuation">(</span><span class="token punctuation">[</span>i<span class="token punctuation">,</span> i <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">"Квадрат числа %d равен %d"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>i<span class="token punctuation">,</span> i <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В этом случае использовался опциональный параметр функции <code>open() newline</code>. Он отвечает за переводы строк при чтении или записи в текстовый файл. По умолчанию имеет значение None, в этом случае все разделители строк преобразуются в <code>\n</code>. Если в файле оказывается лишний перевод строки, то следует использовать этот параметр в режиме <code>newline=''</code>, тогда <code>\n</code> будет преобразован в пустую строку.</p>
+<p>Выполните этот код и посмотрите, что получилось.</p>
+<p>Записывать в csv-файл можно и с помощью <var>DictWriter</var>, аналогичного <var>DictReader</var>. Но нужно ему указать, какие заголовки должны быть в файле и какие значения им соответствуют у каждой записи. Для этого сначала подготовим список словарей:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> csv
+
+data <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">{</span>
+    <span class="token string">'lastname'</span><span class="token punctuation">:</span> <span class="token string">'Иванов'</span><span class="token punctuation">,</span>
+    <span class="token string">'firstname'</span><span class="token punctuation">:</span> <span class="token string">'Пётр'</span><span class="token punctuation">,</span>
+    <span class="token string">'class_number'</span><span class="token punctuation">:</span> <span class="token number">9</span><span class="token punctuation">,</span>
+    <span class="token string">'class_letter'</span><span class="token punctuation">:</span> <span class="token string">'А'</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+    <span class="token string">'lastname'</span><span class="token punctuation">:</span> <span class="token string">'Кузнецов'</span><span class="token punctuation">,</span>
+    <span class="token string">'firstname'</span><span class="token punctuation">:</span> <span class="token string">'Алексей'</span><span class="token punctuation">,</span>
+    <span class="token string">'class_number'</span><span class="token punctuation">:</span> <span class="token number">9</span><span class="token punctuation">,</span>
+    <span class="token string">'class_letter'</span><span class="token punctuation">:</span> <span class="token string">'В'</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+    <span class="token string">'lastname'</span><span class="token punctuation">:</span> <span class="token string">'Меньшова'</span><span class="token punctuation">,</span>
+    <span class="token string">'firstname'</span><span class="token punctuation">:</span> <span class="token string">'Алиса'</span><span class="token punctuation">,</span>
+    <span class="token string">'class_number'</span><span class="token punctuation">:</span> <span class="token number">9</span><span class="token punctuation">,</span>
+    <span class="token string">'class_letter'</span><span class="token punctuation">:</span> <span class="token string">'А'</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+    <span class="token string">'lastname'</span><span class="token punctuation">:</span> <span class="token string">'Иванова'</span><span class="token punctuation">,</span>
+    <span class="token string">'firstname'</span><span class="token punctuation">:</span> <span class="token string">'Татьяна'</span><span class="token punctuation">,</span>
+    <span class="token string">'class_number'</span><span class="token punctuation">:</span> <span class="token number">9</span><span class="token punctuation">,</span>
+    <span class="token string">'class_letter'</span><span class="token punctuation">:</span> <span class="token string">'Б'</span>
+<span class="token punctuation">}</span><span class="token punctuation">]</span>
+
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'dictwriter.csv'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">,</span> newline<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+    writer <span class="token operator">=</span> csv<span class="token punctuation">.</span>DictWriter<span class="token punctuation">(</span>
+        f<span class="token punctuation">,</span> fieldnames<span class="token operator">=</span><span class="token builtin">list</span><span class="token punctuation">(</span>data<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        delimiter<span class="token operator">=</span><span class="token string">';'</span><span class="token punctuation">,</span> quoting<span class="token operator">=</span>csv<span class="token punctuation">.</span>QUOTE_NONNUMERIC<span class="token punctuation">)</span>
+    writer<span class="token punctuation">.</span>writeheader<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> d <span class="token keyword">in</span> data<span class="token punctuation">:</span>
+        writer<span class="token punctuation">.</span>writerow<span class="token punctuation">(</span>d<span class="token punctuation">)</span>
+</code></pre>
+<p>Результат:</p>
+<pre><samp>"lastname";"firstname";"class_number";"class_letter"
+"Иванов";"Пётр";9;"А"
+"Кузнецов";"Алексей";9;"В"
+"Меньшова";"Алиса";9;"А"
+"Иванова";"Татьяна";9;"Б"</samp></pre>
+<p>Скачать файл ikea.csv можно по <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/ikea.csv" rel="noopener noreferrer" target="_blank">ссылке</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Использование графического интерфейса. Чтение из .csv файла</h2>
+<p>Поскольку большинство программ используются людьми без опыта работы в командной строке, в пакетах, отвечающих за создание графического интерфейса, существуют специальные модули для работы с табличными данными. Для работы с таблицами в PyQT существует класс <strong>Table Widget</strong>. Давайте рассмотрим несколько примеров его использования.</p>
+<p>Создадим простое приложение, которое будет отображать содержимое таблицы, которая хранится в формате .csv.</p>
+<p>Для этого создадим в QtDesigner новую форму, добавим на нее <strong>Table Widget</strong>, а затем подключим интерфейс к нашей программе (в виде ui-файла или конвертируем полученный GUI в файл с расширением .py).</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/qt-res-5-1.png" width="392"/></div>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> csv
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> uic
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QMainWindow<span class="token punctuation">,</span> QTableWidgetItem
+
+
+<span class="token keyword">class</span> <span class="token class-name">MyWidget</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        uic<span class="token punctuation">.</span>loadUi<span class="token punctuation">(</span><span class="token string">'UI1.ui'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>loadTable<span class="token punctuation">(</span><span class="token string">'Data.csv'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">loadTable</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> table_name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>table_name<span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">"utf8"</span><span class="token punctuation">)</span> <span class="token keyword">as</span> csvfile<span class="token punctuation">:</span>
+            reader <span class="token operator">=</span> csv<span class="token punctuation">.</span>reader<span class="token punctuation">(</span>csvfile<span class="token punctuation">,</span>
+                                delimiter<span class="token operator">=</span><span class="token string">';'</span><span class="token punctuation">,</span> quotechar<span class="token operator">=</span><span class="token string">'"'</span><span class="token punctuation">)</span>
+            title <span class="token operator">=</span> <span class="token builtin">next</span><span class="token punctuation">(</span>reader<span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setColumnCount<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>title<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setHorizontalHeaderLabels<span class="token punctuation">(</span>title<span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setRowCount<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token keyword">for</span> i<span class="token punctuation">,</span> row <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>reader<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setRowCount<span class="token punctuation">(</span>
+                    self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>rowCount<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+                <span class="token keyword">for</span> j<span class="token punctuation">,</span> elem <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setItem<span class="token punctuation">(</span>
+                        i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> QTableWidgetItem<span class="token punctuation">(</span>elem<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>resizeColumnsToContents<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> MyWidget<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В методе <var>loadTable()</var> класса <var>MyWidget</var> происходит загрузка содержимого в виджет таблицы. Давайте посмотрим более детально.</p>
+<p>Для отображения таблицы необходимо указать ее размеры: количество строк и столбцов. Если бы у нас была фиксированная матрица, мы бы легко узнали ее размеры, но в случае работы с .csv мы используем итератор, поэтому необходимо применить некоторые «лайфхаки».</p>
+<p>Сначала, так же, как и в прошлых примерах, мы открываем файл для чтения. Поскольку <var>reader</var> является итератором, то, для того чтобы получить первую строку, необходимо воспользоваться функцией <code>next()</code>.</p>
+<p>Чтобы отобразить заголовки в виджете, воспользуемся методом <var>setHorizontalHeaderLabels()</var>. Кстати, существует также функция <var>setVerticalHeaderLabels()</var> — для задания вертикальных заголовков. По умолчанию, если программист не задает текст заголовков, это просто номера. Если в функцию передано недостаточное количество заголовков, после того как они «закончатся», следующие заголовки будут цифровыми. Например:</p>
+<pre class="language-python"><code class="language-python">self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setVerticalHeaderLabels<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">,</span> <span class="token string">'B'</span><span class="token punctuation">,</span> <span class="token string">'C'</span><span class="token punctuation">,</span> <span class="token string">'D'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/qt-res-5-2.png" width="392"/></div>
+<p>Зная количество заголовков, можно установить количество столбцов в нашей таблице, используя метод <var>setColumnCount()</var>. Но так как мы не знаем (если не преобразовали <var>reader</var> в список), сколько элементов в нашем итераторе, установим изначальное количество, равное 0, а затем будем на каждом шаге увеличивать его на единицу.</p>
+<p>Основным методом при работе с <var>QTableWidget</var> является <code>tableWidget.setItem(i, j, QTableWidgetItem(elem))</code>. Он помещает в заданную с помощью координат ячейку соответствующее значение. Важно не забыть, что в таблице хранятся не текстовые, не числовые и не какие-либо другие данные, а данные типа <var>QTableWidgetItem</var>, поэтому не забывайте приводить значения к этому типу.</p>
+<p>Очень часто непонятно заранее, какого размера будет содержимое той или иной ячейки в таблице. Для того чтобы размеры ячеек соответствовали длине текста, используем метод <code>resizeColumnsToContents()</code> после того, как заполним таблицу данными. Он растянет или сузит, при необходимости, размеры ячейки, чтобы пользователю был виден весь текст.</p>
+<p>Согласитесь, что сейчас таблица выглядит блекло и неинтересно. Давайте раскрасим ее. Для этого нам понадобится импортировать модуль, отвечающий за работу с цветом: <code>from PyQt5.QtGui import QColor</code>. К сожалению, по умолчанию в PyQT нет функции, чтобы изменить цвет целого ряда таблицы, а есть только для одной ячейки. Так что придется написать такой метод самостоятельно.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">color_row</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>columnCount<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>item<span class="token punctuation">(</span>row<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">.</span>setBackground<span class="token punctuation">(</span>color<span class="token punctuation">)</span>
+</code></pre>
+<p>И теперь, если мы захотим выделить нулевой ряд цветом, нам достаточно лишь вызвать этот метод:</p>
+<pre class="language-python"><code class="language-python">self<span class="token punctuation">.</span>color_row<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> QColor<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span>  <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Получим такой результат:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/qt-res-5-3.png" width="392"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="8">PyQT. Запись из таблицы в .csv файл</h2>
+<p>Мы уже научились читать данные из файла и отображать их с помощью таблицы. Теперь попробуем обратный процесс. Для этого напишем программу, которая может использоваться при выставлении баллов команде за различные этапы на каком-нибудь соревновании. Известно, что и команд, и испытаний фиксированное число. Так что можно создать сетку для нашей таблицы, используя QtDesigner. Для этого необходимо навести курсор на виджет, нажать правую кнопку мыши, выбрать пункт меню <strong>Edit Items...</strong>, а затем указать данные.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/qt-res-5-4.png" width="488"/></div>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/qt-res-5-5.png" width="445"/></div>
+<p>Для сохранения данных напишем метод <var>save_2_csv</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">save_2_csv</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'results.csv'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">,</span> newline<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span> <span class="token keyword">as</span> csvfile<span class="token punctuation">:</span>
+        writer <span class="token operator">=</span> csv<span class="token punctuation">.</span>writer<span class="token punctuation">(</span>
+            csvfile<span class="token punctuation">,</span> delimiter<span class="token operator">=</span><span class="token string">';'</span><span class="token punctuation">,</span> quotechar<span class="token operator">=</span><span class="token string">'"'</span><span class="token punctuation">,</span>
+            quoting<span class="token operator">=</span>csv<span class="token punctuation">.</span>QUOTE_MINIMAL<span class="token punctuation">)</span>
+        <span class="token comment"># Получение списка заголовков    </span>
+        writer<span class="token punctuation">.</span>writerow<span class="token punctuation">(</span>
+            <span class="token punctuation">[</span>self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>horizontalHeaderItem<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+             <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>columnCount<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>rowCount<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            row <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+            <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>columnCount<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                item <span class="token operator">=</span> self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>item<span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">)</span>
+                <span class="token keyword">if</span> item <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+                    row<span class="token punctuation">.</span>append<span class="token punctuation">(</span>item<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            writer<span class="token punctuation">.</span>writerow<span class="token punctuation">(</span>row<span class="token punctuation">)</span>
+</code></pre>
+<p>К сожалению, в PyQT нет встроенной функции, которая возвращает список заголовков, так что пришлось использовать генератор и встроенный метод <code>horizontalHeaderItem(i)</code>, который возвращает <var>i</var>-й заголовок. А затем каждая строка переносится в список, а этот список уже записывается в файл.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-5/qt-res-5-6.png" width="443"/></div>
+<p>Результатом будет такой .csv-файлик:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse;">
+<tbody>
+<tr>
+<td>Название</td>
+<td>Испытание №1</td>
+<td>Испытание №2</td>
+<td>Испытание №3</td>
+</tr>
+<tr>
+<td>Альтаир</td>
+<td>5</td>
+<td>8</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Бригантина</td>
+<td>5</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Будильник</td>
+<td>4</td>
+<td>6</td>
+<td>10</td>
+</tr>
+<tr>
+<td>220 Вольт</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Непоседы</td>
+<td>5</td>
+<td>10</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Трубодуры</td>
+<td>1</td>
+<td>9</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section></article></section>

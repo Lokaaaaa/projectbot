@@ -1,0 +1,98 @@
+<section class="lesson-material__content"><article class="material"><h1>QT. Установка дополнительных компонентов. PyQTGraph</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">PyQTGraph</a></li>
+<li><a class="material__link" href="#2">Проигрывание музыки</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке мы научимся пользоваться дополнительными компонентами PyQT на примере PyQTGraph — библиотеки для построения графиков. А еще научимся проигрывать музыку в своих приложениях.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">PyQTGraph</h2>
+<p>Несмотря на большое количество встроенных виджетов, их не всегда хватает для реализации всех задумок. Хорошая новость заключается в том, что PyQT позволяет создавать собственные виджеты со своими функциями. Некоторые разработчики выкладывают эти библиотеки в Интернет, чтобы их могли использовать другие люди. В этом уроке мы познакомимся с библиотекой <a class="material__link" href="http://www.pyqtgraph.org/" rel="noopener noreferrer" target="_blank">PyQTGraph</a>, которая включает в себя виджеты для работы с графиками.</p>
+<p>Для установки библиотеки выполните стандартную команду в командной строке:</p>
+<pre><code>pip install pyqtgraph
+</code></pre>
+<p>Затем советуем вам настроить QtDesigner для работы с этой библиотекой. Это — необязательное условие, работать с ней можно и «вручную», как мы делали в самом первом уроке. Но это не столь удобно.</p>
+<ol>
+<li>Открываем новый виджет в QtDesigner и добавляем <strong>Graphics View</strong>.</li>
+<li>Нажимаем на него правой кнопкой мыши и выбираем вкладку <strong>Преобразовать в...</strong> (Promote to...).</li>
+<li>Заполняем поля, как показано на картинке:
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqtgraph/qtgraph-1.png" width="480"/></div>
+</li>
+<li>Нажимаем на кнопку «Добавить», а затем — на кнопку «Преобразовать».</li>
+</ol>
+<p>Если нам в следующий раз понадобится добавить такой же виджет, то мы сможем выбрать его из выпадающего меню <strong>Преобразовать в...</strong>.</p>
+<p>Напишем программу, которая будет строить графики одной из трех функций в зависимости от выбранного Radio Button.</p>
+<p>Сначала создадим интерфейс в QtDesigner, не забыв при этом выполнить преобразование Graphics View в наш Plot Widget.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqtgraph/qtgraph-2.png" width="553"/></div>
+<p>Преобразуем его с помощью <strong>pyuic5</strong> и начнем выполнять построение.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QMainWindow
+<span class="token keyword">from</span> ui <span class="token keyword">import</span> Ui_Form
+ 
+
+<span class="token keyword">class</span> <span class="token class-name">MyWidget</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">,</span>Ui_Form<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setupUi<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>run<span class="token punctuation">)</span>
+        
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>radioButton<span class="token punctuation">.</span>isChecked<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>widget<span class="token punctuation">.</span>clear<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>widget<span class="token punctuation">.</span>plot<span class="token punctuation">(</span><span class="token punctuation">[</span>i <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>i <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pen<span class="token operator">=</span><span class="token string">'r'</span><span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> self<span class="token punctuation">.</span>radioButton_2<span class="token punctuation">.</span>isChecked<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>widget<span class="token punctuation">.</span>clear<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>widget<span class="token punctuation">.</span>plot<span class="token punctuation">(</span><span class="token punctuation">[</span>i <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>i <span class="token operator">**</span> <span class="token number">2</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pen<span class="token operator">=</span><span class="token string">'g'</span><span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> self<span class="token punctuation">.</span>radioButton_3<span class="token punctuation">.</span>isChecked<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>widget<span class="token punctuation">.</span>clear<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>widget<span class="token punctuation">.</span>plot<span class="token punctuation">(</span><span class="token punctuation">[</span>i <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>i <span class="token operator">**</span> <span class="token number">3</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pen<span class="token operator">=</span><span class="token string">'b'</span><span class="token punctuation">)</span>
+ 
+
+app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+ex <span class="token operator">=</span> MyWidget<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span>exec_<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqtgraph/qtgraph-3.png" width="541"/></div>
+<p>Подробнее про модуль <var>pyqtgraph</var> можно почитать в его официальной <a class="material__link" href="https://pyqtgraph.readthedocs.io" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Проигрывание музыки</h2>
+<p>Часто в программах хочется добавить какую-либо аудио-информацию. Злоупотреблять этим не следует, но работать со звуками надо уметь. Напишем простейшее приложение-плеер, который будет проигрывать одну песню. Создадим интерфейс нашего приложения в QtDesigner.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqtgraph/qtgraph-4.png" width="441"/></div>
+<p>Для работы с музыкальными файлами нам понадобится импортировать виджет <strong>QtMultimedia</strong>, а чтобы получить полный путь к файлу — <strong>QtCore</strong>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> QtCore<span class="token punctuation">,</span> QtMultimedia
+</code></pre>
+<p>Посмотрим, как выглядит наше приложение:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> player <span class="token keyword">import</span> Ui_Form
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> QtCore<span class="token punctuation">,</span> QtMultimedia
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QMainWindow
+
+<span class="token keyword">class</span> <span class="token class-name">MyWidget</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">,</span> Ui_Form<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setupUi<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>load_mp3<span class="token punctuation">(</span><span class="token string">'/Users/user/Documents/Yandex/FileLesson/test.mp3'</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>playBtn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>player<span class="token punctuation">.</span>play<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pauseBtn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>player<span class="token punctuation">.</span>pause<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>stopBtn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>player<span class="token punctuation">.</span>stop<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">load_mp3</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>filename<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        media <span class="token operator">=</span> QtCore<span class="token punctuation">.</span>QUrl<span class="token punctuation">.</span>fromLocalFile<span class="token punctuation">(</span>filename<span class="token punctuation">)</span>
+        content <span class="token operator">=</span> QtMultimedia<span class="token punctuation">.</span>QMediaContent<span class="token punctuation">(</span>media<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>player <span class="token operator">=</span> QtMultimedia<span class="token punctuation">.</span>QMediaPlayer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>player<span class="token punctuation">.</span>setMedia<span class="token punctuation">(</span>content<span class="token punctuation">)</span>
+        
+app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+ex <span class="token operator">=</span> MyWidget<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span>exec_<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В нем всего две функции. Начнем с конца, с функции <var>load_mp3</var>. Она отвечает за загрузку музыкального файла и создание объекта <strong>плеера</strong>, в котором эта музыка будет содержаться.</p>
+<p>Важно, что сначала мы передаем в эту функцию не название файла, а полный путь, после чего происходит «оборачивание» в формат <var>QUrl</var>. Затем создается медиа-объект, который помещается в плеер.</p>
+<p>Во время инициализации, после того, как мы подключили наш интерфейс, мы вызываем эту функцию, и в нашем классе появится поле <var>player</var>. Затем необходимо лишь настроить кнопки, привязав к каждой из них соответствующую функцию нашего объекта. Функции объекта <var>player</var> достаточно очевидны по их названиям.</p>
+</section></article></section>

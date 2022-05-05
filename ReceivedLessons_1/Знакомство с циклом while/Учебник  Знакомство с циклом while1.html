@@ -1,0 +1,281 @@
+<section class="lesson-material__content"><article class="material"><h1>Знакомство с циклом while</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Цикл while</a></li>
+<li><a class="material__link" href="#2">Составной оператор присваивания</a></li>
+<li><a class="material__link" href="#3">Сигнал остановки</a></li>
+<li><a class="material__link" href="#4">Подсчет количества элементов, удовлетворяющих условию</a></li>
+<li><a class="material__link" href="#5">Поиск максимума и минимума</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы познакомимся с оператором цикла <var>while</var>. Цикл позволяет повторять организовать многократное повторение одних и тех же действий. Кроме того, мы  сделаем акцент вот на чем: в одной и той же строчке программы на разных итерациях цикла переменные могут иметь разное значение.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Цикл while</h2>
+<p>Сегодня мы научимся повторять заданные действия несколько раз. Для этого существуют операторы циклов. Мы разберем оператор цикла <var>while</var>. Он выполняет блок кода, <strong>пока истинно</strong> какое-то условие.</p>
+<p>Напомним, условный оператор <var>if</var> проверяет условие и, в зависимости от того, истинно оно или ложно, выполняет либо не выполняет следующий записанный с отступом блок. После этого программа в любом случае выполняется дальше (там еще может быть <var>elif</var> или <var>else</var>, но сути это не меняет).</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Цикл while</strong></p>
+<p>Оператор <var>while</var> («пока») тоже проверяет условие и тоже, в случае его истинности, выполняет следующий блок кода (<strong>тело цикла</strong>). Однако после выполнения этого блока кода выполняется не то, что идет после него, а снова проверяется условие, записанное после <var>while</var>.</p>
+</section>
+<p>Ведь при выполнении тела цикла значения каких-то переменных могли измениться — в результате условие цикла может уже не быть истинным. Если условие все еще истинно, тело цикла выполняется снова. Как только условие цикла перестало выполняться (в том числе если оно с самого начала не было выполнено), программа идёт дальше — выполняются команды, записанные после тела цикла.</p>
+<p>Условие цикла записывается как и для <var>if</var>: с помощью операций отношения (<code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>!=</code>, <code>==</code>). Cложные условия можно составлять с помощью логических операций <var>not</var>, <var>and</var>, <var>or</var>.</p>
+<p>Действия, расположенные в теле цикла (блок кода), записываются со смещением вправо на четыре пробела относительно начала слова <var>while</var>. Переменные, входящие в условие, должны на момент проверки условия цикла иметь значения.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">while</span> условие<span class="token punctuation">:</span>
+    блок кода <span class="token punctuation">(</span>тело цикла<span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Один шаг цикла (выполнение тела цикла) еще называют <strong>итерацией</strong>.</p>
+<p>Используйте цикл <var>while</var> всегда, когда какая-то часть кода должна выполниться несколько раз, причем невозможно заранее сказать, сколько именно.</p>
+</section>
+<p>Давайте посмотрим программу, в которой цикл будет выполняться, пока не введут число, меньшее или равное 0:</p>
+<pre class="language-python"><code class="language-python">number <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> number <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы ввели положительное число! Вводите дальше.'</span><span class="token punctuation">)</span>
+    number <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Так-так, что тут у нас...'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы ввели отрицательное число или ноль. Всё.'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Разберемся, как будет работать эта программа.</p>
+<p>Сначала выполняется первая строчка: <code>number = int(input())</code> — пользователь вводит целое число. (Мы предполагаем, что пользователь действительно ввел число, и программа не вылетела с ошибкой.) Предположим, он ввел число 10. Оно записано в переменной <var>number</var>.</p>
+<p>Выполняется вторая строчка: <code>while number &gt; 0</code>: — «пока number &gt; 0» — здесь проверяется, выполнено ли условие <code>number &gt; 0</code>. Поскольку мы предположили, что <var>number</var> в этот момент равно 10, тогда условие выполнено, поэтому дальше выполняется блок, записанный с отступом, — тело цикла.</p>
+<p>Третья строчка программы выводит на экран строку, тут все понятно.</p>
+<p>Четвертая строчка вновь считывает с клавиатуры число и сохраняет его в переменную <var>number</var>. Пусть пользователь ввел 2.</p>
+<p>Когда выполнение программы доходит до конца тела цикла, происходит возврат к заголовку цикла (второй строчке программы) и повторная проверка условия. Поскольку <code>2 &gt; 0</code>, снова выполняется тело цикла.</p>
+<p>Третья строчка снова выводит на экран сообщение, четвертая строчка снова считывает число (пусть это будет число 3), пятая строчка снова выводит на экран сообщение...</p>
+<p>Закончив тело цикла, опять проверяем условие в заголовке. <var>number</var> равно 3, <code>3 &gt; 0</code>, поэтому продолжаем.</p>
+<p>Третья строчка опять выводит на экран сообщение, четвертая строчка опять считывает число. Пусть теперь это будет −1. Обратите внимание: переменная <var>number</var> на каждой итерации цикла приобретает новое значение! Пятая строчка опять выводит на экран сообщение...</p>
+<p>Вновь вернувшись на вторую строчку, получаем, что <code>−1 &gt; 0</code> — ложно. Поэтому цикл завершается, тело цикла больше не выполняется, прыгаем сразу на следующую после цикла строчку программы — шестую. Она выводит последнее сообщение.</p>
+<p>Все.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Составной оператор присваивания</h2>
+<p>Напомним, что в операторе присваивания одно и то же имя переменной может стоять и справа (в составе какого-то выражения), и слева. В этом случае сначала вычисляется правая часть со старым значением переменной, после чего результат становится новым значением этой переменной. Ни в коем случае не воспринимайте такой оператор присваивания как уравнение!</p>
+<pre class="language-python"><code class="language-python">number <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># например, 5</span>
+number <span class="token operator">=</span> number <span class="token operator">+</span> <span class="token number">1</span>  <span class="token comment"># тогда здесь number становится равным 6</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Для конструкций вида <code>number = number + 1</code> существует и сокращенная форма записи оператора присваивания: <code>number += 1</code>. Аналогично оператор <code>x = x + y</code> можно записать как <code>x += y</code>, оператор <code>x = x * y</code> — как <code>x *= y</code>, и так для любого из семи арифметических действий.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="3">Сигнал остановки</h2>
+<p>Рассмотрим такую задачу: пользователь вводит числа. Пусть это будут цены на купленные в магазине товары, а наша программа — часть программного обеспечения кассового аппарата. Ввод "−1" — сигнал остановки. Нужно сосчитать сумму всех введенных чисел (сумму чека).</p>
+<p>Поскольку требуется повторить нечто (ввод очередной цены) неизвестное количество раз, потребуется цикл <var>while</var>. Нам понадобится как минимум две переменные: <var>price</var> для цены очередного товара и <var>total</var> — для общей суммы.</p>
+<p>Если бы мы знали точно, что пользователю надо купить ровно три товара, цикл (и ввод −1 как условие его прерывания) был бы не нужен. Тогда программа могла бы выглядеть так:</p>
+<pre class="language-python"><code class="language-python">total <span class="token operator">=</span> <span class="token number">0</span>
+price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+total <span class="token operator">=</span> total <span class="token operator">+</span> price 
+price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+total <span class="token operator">=</span> total <span class="token operator">+</span> price 
+price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+total <span class="token operator">=</span> total <span class="token operator">+</span> price
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Сумма введённых чисел равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: мы назвали переменные осмысленно. Это очень облегчит жизнь программисту, который будет читать наш код позже, даже если это будете вы сами неделю спустя. Однако интерпретатор Python к этому факту совершенно равнодушен. Чтобы значения переменных соответствовали названиям и тому смыслу, который мы в них закладываем, нужно поддерживать переменные в актуальном состоянии. И только вы, программист, можете это сделать.</p>
+<p>С переменной <var>price</var> все относительно понятно: ее значение обновляется при считывании с клавиатуры на каждой итерации цикла, как это делалось во многих других задачах. <var>total</var> сначала равно нулю: до начала ввода цен их сумма, конечно, ноль. Однако значение переменной <var>total</var> устаревает каждый раз, когда пользователь вводит цену очередного товара. Поэтому нам нужно прибавить к значению <var>total</var> только что введенную цену, чтобы эта переменная по-прежнему обозначала сумму цен всех купленных товаров.</p>
+<p>Если бы мы хотели сократить запись, можно было бы организовать цикл, который выполнился бы ровно три раза. Для этого нам потребуется переменная-счетчик, которая внутри цикла будет считать каждую итерацию цикла. А условием выхода обозначим выполнение нужного количества итераций:</p>
+<pre class="language-python"><code class="language-python">count <span class="token operator">=</span> <span class="token number">0</span>
+total <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">while</span> count <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">:</span>
+    price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    total <span class="token operator">=</span> total <span class="token operator">+</span> price
+    count <span class="token operator">=</span> count <span class="token operator">+</span> <span class="token number">1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Сумма введённых чисел равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: <var>total</var> и <var>count</var> должны обнуляться до цикла.</p>
+<p>Однако у нас в задаче количество товаров неизвестно, поэтому понадобится цикл до ввода сигнала остановки (−1). С учетом сказанного выше программа будет выглядеть так:</p>
+<pre class="language-python"><code class="language-python">total <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вводите цены; для остановки введите -1.'</span><span class="token punctuation">)</span>
+price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> price <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    total <span class="token operator">=</span> total <span class="token operator">+</span> price  <span class="token comment"># можно заменить на аналогичную запись </span>
+    <span class="token comment"># total += price</span>
+    price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Общая стоимость равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Подсчет количества элементов, удовлетворяющих условию</h2>
+<p>А теперь рассмотрим еще одну задачу.</p>
+<p>Пользователь вводит целые числа. Ввод чисел прекращается, если введено число 0. Необходимо определить, сколько чисел среди введенных оканчивались на 2 и были кратны числу 4. Теперь нам надо проверять последовательность чисел.</p>
+<p>Для каждого введенного числа надо делать проверку, соответствует ли оно условию. Если оно подходит под условие, увеличиваем счетчик таких чисел.</p>
+<p>И уже после цикла, когда остановился ввод чисел, выводим результат — посчитанное количество нужных чисел.</p>
+<pre class="language-python"><code class="language-python">count <span class="token operator">=</span> <span class="token number">0</span>
+number <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> number <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> number <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">==</span> <span class="token number">2</span> <span class="token keyword">and</span> number <span class="token operator">%</span> <span class="token number">4</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        count <span class="token operator">+=</span> <span class="token number">1</span>
+    number <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Количество искомых чисел:'</span><span class="token punctuation">,</span> count<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: до цикла необходимо задать начальное значение для переменной <var>count</var>. Ведь когда придет первое подходящее под условие число, у нас <var>count</var> будет увеличиваться на 1 относительно предыдущего значения. А значит, это значение должно быть задано.</p>
+<p>Давайте посмотрим, как будет работать эта программа для последовательности чисел: 12, 3, 32, 14, 0.</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse;">
+<thead>
+<tr>
+<th>Шаг</th>
+<th>Действие</th>
+<th>Пояснение</th>
+<th>Цикл</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>count = 0</code></td>
+<td><code>count = 0</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>number = int(input())</code></td>
+<td><code>number = 12</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>while number != 0:</code></td>
+<td><code>12 != 0</code> (Истина)</td>
+<td>Вход в цикл, 1-я итерация</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>if number % 10 == 2 and number % 4 == 0:</code></td>
+<td><code>12 % 10 == 2 and 12 % 4 == 0</code> (Истина)</td>
+<td>Заходим в if</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>count += 1</code></td>
+<td><code>count = 1</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>number = int(input())</code></td>
+<td><code>number = 3</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>while number != 0:</code></td>
+<td><code>3 != 0</code> (Истина)</td>
+<td>2-я итерация</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>if number % 10 == 2 and number % 4 == 0:</code></td>
+<td><code>3 % 10 == 2 and 3 % 4 == 0</code> (Ложь)</td>
+<td>Пропускаем if</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>number = int(input())</code></td>
+<td><code>number = 32</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>while number != 0:</code></td>
+<td><code>32 != 0</code> (Истина)</td>
+<td>3-я итерация</td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>if number % 10 == 2 and number % 4 == 0:</code></td>
+<td><code>32 % 10 == 2 and 32 % 4 == 0</code> (Истина)</td>
+<td>Заходим в if</td>
+</tr>
+<tr>
+<td>12</td>
+<td><code>count += 1</code></td>
+<td><code>count = 2</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>13</td>
+<td><code>number = int(input())</code></td>
+<td><code>number = 14</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>while number != 0:</code></td>
+<td><code>14 != 0</code> (Истина)</td>
+<td>4-я итерация</td>
+</tr>
+<tr>
+<td>15</td>
+<td><code>if number % 10 == 2 and number % 4 == 0:</code></td>
+<td><code>14 % 10 == 2 and 14 % 4 == 0</code> (Ложь)</td>
+<td>Пропускаем if</td>
+</tr>
+<tr>
+<td>16</td>
+<td><code>number = int(input())</code></td>
+<td><code>number = 0</code></td>
+<td> </td>
+</tr>
+<tr>
+<td>17</td>
+<td><code>while number != 0:</code></td>
+<td><code>0 != 0</code> (Ложь)</td>
+<td>Выход из цикла</td>
+</tr>
+<tr>
+<td>18</td>
+<td><code>print('Количество искомых чисел:', count)</code></td>
+<td>Вывод вычисленного <var>count</var></td>
+<td> </td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="material__chapter">
+<h2 id="5">Поиск максимума и минимума</h2>
+<p>Очень часто в задачах приходится использовать различные статистические алгоритмы: поиск максимума, минимума, среднего значения, медианы и моды чисел, главный из которых — определение максимального и минимального значений на множестве данных.</p>
+<p>Рассмотрим алгоритм в общем виде.</p>
+<ol>
+<li>Заведем отдельную переменную для хранения максимума и минимума. В качестве начального значения можно задать:
+<ul>
+<li>Заведомо малое для анализируемых данных значения, для максимума это будет совсем маленькое число: например, если мы вычисляем максимальный балл за экзамен, можно взять <code>maximum = 0</code>, тогда гарантированно произойдет замена максимума. Минимуму же, наоборот, присваивается заведомо большое значение</li>
+<li>Первый элемент данных</li>
+</ul>
+</li>
+<li>В теле цикла каждый подходящий элемент данных обрабатывается операторами по принципу:
+<ul>
+<li>Если текущий элемент больше максимума, меняем максимум</li>
+<li>Если текущий элемент меньше минимума, заменяем минимум</li>
+</ul>
+</li>
+</ol>
+<p>Рассмотрим пример. Витя анализировал список литературы и решил, что хочет начать с самой большой по объему книги. Напишем программу, которая поможет мальчику определить, сколько страниц ему предстоит прочитать. Витя последовательно вводит количество страниц каждой книги из списка, а окончанием ввода служит ввод любого отрицательного числа (или 0).</p>
+<pre class="language-python"><code class="language-python">biggest_book <span class="token operator">=</span> <span class="token number">0</span>
+n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> n <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> n <span class="token operator">&gt;</span> biggest_book<span class="token punctuation">:</span>
+        biggest_book <span class="token operator">=</span> n
+    n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>biggest_book<span class="token punctuation">)</span>
+</code></pre>
+<p>Так как книга не может содержать в себе 0 страниц, для значения максимума мы можем взять 0.</p>
+<p>После этого Витя начинает вводить количество страниц: например, он вводит 148. <code>148 &gt; 0</code> — условие цикла выполняется, и мы переходим к операции сравнения. На данном шаге <code>148 &gt; 0</code>, значит, <code>biggest_book = 148</code>. Снова считываем число.</p>
+<p>Предположим, теперь введено 120. <code>120 &gt; 0</code> — продолжаем работать в цикле. <code>120 &gt; 148</code> — условие не выполняется, переходим к вводу новых данных, <var>biggest_book</var> все еще равен 148.</p>
+<p>В этот раз мальчик ввел 486, мы заходим в цикл <code>486 &gt; 148</code>, производим замену <code>biggest_book = 486</code>. Продолжаем ввод. И так далее до тех пор пока не будет введено отрицательное число или 0.</p>
+<p>При решении задачи мы можем использовать особенность языка Python 3.8 — моржовый оператор или, как его еще называют, «оператор-морж» (из за ассоциации обозначения оператора <code>:=</code> c животным). Моржовый оператор позволяет присвоить значение переменной в условии <code>if</code> или <code>while</code>. Используя его, можно записать нашу программу следующим образом:</p>
+<pre class="language-python"><code class="language-python">biggest_book <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">while</span> <span class="token punctuation">(</span>n <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> n <span class="token operator">&gt;</span> biggest_book<span class="token punctuation">:</span>
+        biggest_book <span class="token operator">=</span> n
+<span class="token keyword">print</span><span class="token punctuation">(</span>biggest_book<span class="token punctuation">)</span>
+</code></pre>
+<p>В этой программе значение переменной <var>n</var> задается один раз, в условии цикла, в отличие от ее предыдущей версии.</p>
+</section></article></section>

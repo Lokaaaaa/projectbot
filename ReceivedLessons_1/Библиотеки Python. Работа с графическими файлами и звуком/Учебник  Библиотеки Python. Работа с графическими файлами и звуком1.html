@@ -1,0 +1,188 @@
+<section class="lesson-material__content"><article class="material"><h1>Библиотеки Python. Часть 3. Работа с графическими файлами и звуком</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Фильтры</a></li>
+<li><a class="material__link" href="#2">Готовые функции</a></li>
+<li><a class="material__link" href="#3">Модуль wave</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы продолжим изучение библиотеки PIL и научимся создавать собственные фильтры для растровых изображений. Кроме того, мы познакомимся с модулем wave для обработки звука.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Фильтры</h2>
+<p>Когда-то Instagram превратился из заурядной социальной сети в очень популярный феномен именно из-за удачной реализации встроенных фильтров. Фильтры можно было накладывать на фотографии, которые после этого обычно становились красивыми, похожими на профессиональные.</p>
+<p>Фильтры очень широко применяются в киноиндустрии. Сравните цветовую гамму молодежных комедий или современных блокбастеров, например, с классическим «Шерлоком Холмсом».</p>
+<p>Иначе говоря, фильтры невероятно востребованы — начиная от самых простых и заканчивая работами с привлечением искусственного интеллекта: например, в проекте <a class="material__link" href="http://prisma-ai.com/" rel="noopener noreferrer" target="_blank">Prisma</a>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Фильтры</strong></p>
+<p>Фильтр можно воспринимать как любое преобразование заданного изображения.</p>
+<p>Чтобы добиться лучшего эффекта, их можно накладывать последовательно.</p>
+</section>
+<p>В библиотеке PIL реализовано много встроенных фильтров и инструментов (вырезание, изменение размеров и т. д.). Фактически это такой программируемый мини-Photoshop, но мы попытаемся поработать с фильтрами самостоятельно, чтобы поучиться восприятию цветовой палитры и алгоритмизации.</p>
+<p>Для начала попробуем превратить изображение в черно-белое.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Черно-белое изображение</strong></p>
+<p>Черно-белое изображение содержит только информацию о яркости, но не о цветах. У таких изображений все три компоненты имеют одинаковое значение, поэтому мы можем просто «размазать» суммарную яркость пикселя поровну по трем компонентам.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>  
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b <span class="token operator">=</span> pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span>
+        bw <span class="token operator">=</span> <span class="token punctuation">(</span>r <span class="token operator">+</span> g <span class="token operator">+</span> b<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">3</span>
+        pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span> <span class="token operator">=</span> bw<span class="token punctuation">,</span> bw<span class="token punctuation">,</span> bw
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/riana-bw.png" width="680"/></div>
+<p>Можно сказать, что мы слили содержимое контейнеров R, G, B в одну емкость, а затем разлили обратно, но уже поровну в каждый контейнер. Суммарная яркость пикселя осталась прежней, но информация о цвете не сохранилась. Фотография же стала более «задумчивой».</p>
+<p>Попробуем поменять местами зеленый и синий каналы:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>  
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b <span class="token operator">=</span> pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span>
+        pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span> <span class="token operator">=</span> r<span class="token punctuation">,</span> b<span class="token punctuation">,</span> g
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/owl2.jpeg" width="680"/></div>
+<section class="material__note">
+<p class="material__note-heading"><strong>Негатив</strong></p>
+<p>Давайте подумаем над тем, как получить негатив. Если в позитиве белое изображение (255), в негативе должно быть черное (0) и наоборот. То есть для значения х негативом будет 255 — x.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>  
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b <span class="token operator">=</span> pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span>
+        pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">255</span> <span class="token operator">-</span> r<span class="token punctuation">,</span> <span class="token number">255</span> <span class="token operator">-</span> g<span class="token punctuation">,</span> <span class="token number">255</span> <span class="token operator">-</span> b
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/owl3.jpeg" width="680"/></div>
+<p>Как видим, в негативе можно рассмотреть некоторые детали, которые не видны в позитиве.</p>
+<p>Во многих редакторах, включая Photoshop, есть инструмент «Кривые» (Curves).</p>
+<p>Он позволяет задать функцию, меняющую яркость всего пикселя или отдельной компоненты в зависимости от исходной яркости. Изначально эта функция представляет собой прямую y = x.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/curves.gif" width="400"/></div>
+<p>В Python можно написать функцию, которая работает как инструмент Curves. Например, мы можем высветлить темные участки в изображении, не трогая светлые. Это очень частая операция: например, когда на снимке светлое небо и очень темное здание, потому что фотоаппарат подстроился под яркость неба.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Высветление</strong></p>
+<p>«Высветлить» означает увеличить значения всех цветовых компонентов на какой-то коэффициент. Важно помнить, что эти значения не могут быть больше 255.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">curve</span><span class="token punctuation">(</span>pixel<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b <span class="token operator">=</span> pixel
+    brightness <span class="token operator">=</span> r <span class="token operator">+</span> g <span class="token operator">+</span> b <span class="token keyword">if</span> r <span class="token operator">+</span> g <span class="token operator">+</span> b <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">1</span>
+    <span class="token keyword">if</span> brightness <span class="token operator">&lt;</span> <span class="token number">60</span><span class="token punctuation">:</span>
+        k <span class="token operator">=</span> <span class="token number">60</span> <span class="token operator">/</span> brightness
+        <span class="token keyword">return</span> <span class="token builtin">min</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>r <span class="token operator">*</span> k <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> \
+               <span class="token builtin">min</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>g <span class="token operator">*</span> k <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>\
+               <span class="token builtin">min</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>b <span class="token operator">*</span> k <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b
+
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span> <span class="token operator">=</span> curve<span class="token punctuation">(</span>pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Результат:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/owl4.jpeg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="2">Готовые функции</h2>
+<p>Как мы уже говорили раньше, в PIL есть большое число встроенных инструментов для изменения изображений. Продолжим эксперименты над нашим изображением совы.</p>
+<p>Например, мы можем изменить размер изображения с помощью функции <var>resize</var>, в которую кортежем передается новый размер изображения. Обратите внимание: все подобные функции не изменяют исходное изображение, а возвращают его измененную копию.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+ 
+im <span class="token operator">=</span> Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"2.jpg"</span><span class="token punctuation">)</span>
+im2 <span class="token operator">=</span> im<span class="token punctuation">.</span>resize<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+im2<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'6.jpg'</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-27/lesson-27-1.jpg" width="100"/></div>
+<p>С помощью функции <var>crop</var> вырезать прямоугольный кусочек из изображения. В функцию передаются координаты верхнего левого и правого нижнего угла вырезаемого прямоугольника одним кортежем.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+ 
+im <span class="token operator">=</span> Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"2.jpg"</span><span class="token punctuation">)</span>
+im2 <span class="token operator">=</span> im<span class="token punctuation">.</span>crop<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">200</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">,</span> <span class="token number">500</span><span class="token punctuation">,</span> <span class="token number">500</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+im2<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'7.jpg'</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-27/lesson-27-2.jpg" width="300"/></div>
+<p>Функция <var>quantize</var> используется для сокращения цветов в палитре изображения и используется для создания миниатюр для предпросмотра. Принимает на вход число меньшее 256 — количество цветов. Обратите внимание: эта функция также преобразовывает изображение в формат bmp.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+ 
+im <span class="token operator">=</span> Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"2.jpg"</span><span class="token punctuation">)</span>
+im2 <span class="token operator">=</span> im<span class="token punctuation">.</span>quantize<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span>
+im2<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'8.bmp'</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-27/8.bmp" width="680"/></div>
+<p>В задачах прошлого урока вы пробовали вращать и отражать изображения, манипулируя пикселями напрямую, однако PIL содержит уже готовые реализации данных алгоритмов. Повороты и отражения изображения можно выполнить с помощью функции <var>transpose</var>, в которую передается тип преобразования. Это может быть отражение слева направо, или сверху вниз, или повороты на 90, 180 или 270 градусов.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+ 
+im <span class="token operator">=</span> Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"2.jpg"</span><span class="token punctuation">)</span>
+im2 <span class="token operator">=</span> im<span class="token punctuation">.</span>transpose<span class="token punctuation">(</span>Image<span class="token punctuation">.</span>FLIP_LEFT_RIGHT<span class="token punctuation">)</span><span class="token punctuation">.</span>transpose<span class="token punctuation">(</span>Image<span class="token punctuation">.</span>ROTATE_90<span class="token punctuation">)</span>
+<span class="token comment"># Image.FLIP_LEFT_RIGHT, </span>
+<span class="token comment"># Image.FLIP_TOP_BOTTOM, </span>
+<span class="token comment"># Image.ROTATE_90, </span>
+<span class="token comment"># Image.ROTATE_180, </span>
+<span class="token comment"># Image.ROTATE_270</span>
+im2<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'9.jpg'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Благодаря тому, что преобразование возвращает измененное изображение, можно создавать цепочки преобразований.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-27/lesson-27-3.jpg" width="400"/></div>
+<p>Библиотека PIL содержит в себе много любопытного: например, в модуле <var>ImageOps</var> есть встроенные реализации превращения изображения в негатив (функция <var>invert</var>) и в черно-белое изображение (функция <var>grayscale</var>), а в модуле <var>ImageFilter</var> находятся встроенные интересные фильтры изображений, один из которых мы рассмотрим. Этот фильтр называется размытие Гаусса и принимает на вход радиус размытия.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image<span class="token punctuation">,</span> ImageFilter
+ 
+im <span class="token operator">=</span> Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"2.jpg"</span><span class="token punctuation">)</span>
+im2 <span class="token operator">=</span> im<span class="token punctuation">.</span><span class="token builtin">filter</span><span class="token punctuation">(</span>ImageFilter<span class="token punctuation">.</span>GaussianBlur<span class="token punctuation">(</span>radius<span class="token operator">=</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+im2<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'10.jpg'</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-27/lesson-27-4.jpg" width="680"/></div>
+<p>Все фильтры данного модуля можно передавать в функцию <var>filter</var> изображения. А еще можно делать цепочки преобразований для получения сложных эффектов.</p>
+<p>Обязательно загляните в документацию к библиотеке PIL, мы уверены, что вы найдете там много интересных функций, которые не поместились в наш рассказ об этом модуле.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Модуль wave</h2>
+<p>Фильтры можно накладывать не только на изображения, но и на звуковые файлы. Для манипуляции с «сырыми», необработанными аудиоданными предназначен модуль <var>wave</var>. В ОС Windows такие данные хранятся в файлах с расширением .wav.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Аудиоданные</strong></p>
+<p>«Сырые» аудиоданные представляют собой зависимость амплитуды звукового сигнала от времени. Посмотрите на график этой зависимости. Вы часто видели его в фильмах, репортажах журналистов и т. д.</p>
+<p>Вдоль оси абсцисс откладывается время, вдоль оси ординат — амплитуда (интенсивность, громкость) звукового сигнала.</p>
+</section>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-27/1.svg" width="680"/></div>
+<p>Этот график строится по точкам, причем вместо пар (t, y) хранятся только значения y, а ось абсцисс задана <strong>частотой дискретизации</strong> (количеством отсчетов в секунду) — как правило, она составляет 44 100 Гц. Такой частоты достаточно, чтобы человек мог прослушать оцифрованный звук и не заметить его отличия от реального.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Представление аудиофайла</strong></p>
+<p>Получается, что представление звукового файла для программиста очень простое. Это список целых чисел (положительных и отрицательных) — значений амплитуды звукового сигнала.</p>
+</section>
+<p>В следующем примере мы рассмотрим основные этапы работы со звуковым файлом.</p>
+<p>Наша программа будет разворачивать звуковой <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/in.wav" rel="noopener noreferrer" target="_blank">файл</a> в обратную сторону, то есть проигрывать музыкальное произведение задом наперед.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> wave
+<span class="token keyword">import</span> struct
+ 
+source <span class="token operator">=</span> wave<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"in.wav"</span><span class="token punctuation">,</span> mode<span class="token operator">=</span><span class="token string">"rb"</span><span class="token punctuation">)</span>
+dest <span class="token operator">=</span> wave<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"out.wav"</span><span class="token punctuation">,</span> mode<span class="token operator">=</span><span class="token string">"wb"</span><span class="token punctuation">)</span>
+ 
+dest<span class="token punctuation">.</span>setparams<span class="token punctuation">(</span>source<span class="token punctuation">.</span>getparams<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+ 
+<span class="token comment"># найдем количество фреймов</span>
+frames_count <span class="token operator">=</span> source<span class="token punctuation">.</span>getnframes<span class="token punctuation">(</span><span class="token punctuation">)</span> 
+ 
+data <span class="token operator">=</span> struct<span class="token punctuation">.</span>unpack<span class="token punctuation">(</span><span class="token string">"&lt;"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>frames_count<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"h"</span><span class="token punctuation">,</span>
+                     source<span class="token punctuation">.</span>readframes<span class="token punctuation">(</span>frames_count<span class="token punctuation">)</span><span class="token punctuation">)</span>
+ 
+<span class="token comment"># собственно, основная строка программы - переворот списка</span>
+newdata <span class="token operator">=</span> data<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> 
+ 
+newframes <span class="token operator">=</span> struct<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token string">"&lt;"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>newdata<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"h"</span><span class="token punctuation">,</span> <span class="token operator">*</span>newdata<span class="token punctuation">)</span> 
+ 
+<span class="token comment"># записываем содержимое в преобразованный файл.</span>
+dest<span class="token punctuation">.</span>writeframes<span class="token punctuation">(</span>newframes<span class="token punctuation">)</span> 
+source<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+dest<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Мы открываем два файла: исходный <var>source</var> и формируемый <var>dest</var>.</p>
+<p>Одно значение амплитуды в терминах библиотеки <var>wave</var> называется <strong>фреймом</strong>.</p>
+</section>
+<p>Наибольшую трудность здесь представляют строки с использованием встроенного модуля <var>struct</var>. Пока договоримся, что функции этого модуля могут на лету распаковывать и запаковывать данные разной природы.</p>
+<p>Интересно, что палиндромы в аудиофайлах сохраняют свою «палиндромность» (например, «А роза упала на лапу Азора»).</p>
+<p>Что еще можно сделать?</p>
+<ul>
+<li>Если мы уберем, например, каждый второй фрейм, ускорим воспроизведение вдвое. При этом частота тоже вырастет в два раза (и вы услышите голоса Чипа и Дейла). Кстати, на телевидении и радио часто ускоряют видео и аудио на 5-10%: это незаметно для уха, но позволяет разместить больше рекламы в эфире</li>
+<li>Если мы увеличим все фреймы в какое-то количество раз, сделаем произведение громче, а если уменьшим — тише</li>
+<li>Копируя каждый фрейм два раза, мы замедлим воспроизведение и понизим частоту</li>
+</ul>
+<p>Если вы заинтересовались обработкой аудиофайлов, обратите свое внимание на библиотеки <var>pydub</var> и <var>librosa</var>.</p>
+</section></article></section>

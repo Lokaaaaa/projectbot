@@ -1,0 +1,259 @@
+<section class="lesson-material__content"><article class="material"><h1>ООП. Определение операторов</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Специальные методы</a></li>
+<li><a class="material__link" href="#2">Переопределение поведения объекта в функции print()</a></li>
+<li><a class="material__link" href="#3">Метод __repr__</a></li>
+<li><a class="material__link" href="#4">Класс «Вектор на плоскости»</a></li>
+<li><a class="material__link" href="#5">Другие специальные методы</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Почти любой оператор Python можно определить и для типов данных, которые мы сами создаем с помощью классов. Это делается с помощью специальных методов. О них и пойдет речь в этом уроке.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Специальные методы</h2>
+<p>На предыдущем занятии мы обсудили полиморфизм на примере оператора <code>+</code>. Оператор <code>+</code> работает для многих встроенных типов данных: чисел, строк, списков, кортежей. Однако возможность определять операторы есть не только у встроенных типов данных.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Специальные методы</strong></p>
+<p>Специальные методы имеют для интерпретатора особое значение. Имена специальных методов и их смысл определены создателями языка: создавать новые нельзя, можно только реализовывать существующие. Названия всех специальных методов начинаются и заканчиваются на два подчеркивания.</p>
+</section>
+<p>Пример такого метода — уже знакомый нам <var>__init__</var>. Он предназначен для инициализации экземпляров и автоматически вызывается интерпретатором после создания экземпляра объекта.</p>
+<p>Остальные специальные методы также вызываются в строго определенных ситуациях. Большинство из них отвечает за реализацию операторов. Так, например, всякий раз, когда интерпретатор встречает запись вида <code>x + y</code>, он заменяет ее на <code>x.__add__(y)</code>, и для реализации сложения нам достаточно определить в классе экземпляра <var>x</var> метод <var>__add__</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Time</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> minutes<span class="token punctuation">,</span> seconds<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>minutes <span class="token operator">=</span> minutes
+        self<span class="token punctuation">.</span>seconds <span class="token operator">=</span> seconds
+ 
+    <span class="token keyword">def</span> <span class="token function">__add__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        m <span class="token operator">=</span> self<span class="token punctuation">.</span>minutes <span class="token operator">+</span> other<span class="token punctuation">.</span>minutes
+        s <span class="token operator">=</span> self<span class="token punctuation">.</span>seconds <span class="token operator">+</span> other<span class="token punctuation">.</span>seconds
+        m <span class="token operator">+=</span> s <span class="token operator">//</span> <span class="token number">60</span>
+        s <span class="token operator">=</span> s <span class="token operator">%</span> <span class="token number">60</span>
+        <span class="token keyword">return</span> Time<span class="token punctuation">(</span>m<span class="token punctuation">,</span> s<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">info</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>minutes<span class="token punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>seconds<span class="token punctuation">}</span></span><span class="token string">'</span></span>
+ 
+
+t1 <span class="token operator">=</span> Time<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>t1<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>    <span class="token comment"># 5:50</span>
+t2 <span class="token operator">=</span> Time<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>t2<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>    <span class="token comment"># 3:20</span>
+t3 <span class="token operator">=</span> t1 <span class="token operator">+</span> t2
+<span class="token keyword">print</span><span class="token punctuation">(</span>t3<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>    <span class="token comment"># 9:10</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>t1<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">id</span><span class="token punctuation">(</span>t2<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">id</span><span class="token punctuation">(</span>t3<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># Все объекты разные</span>
+</code></pre>
+<p>Обратите внимание: в методе <var>__add__</var> мы создаем новый экземпляр с результатом сложения, а не изменяем уже существующий. Для арифметических операторов мы будем поступать так почти всегда, ведь при выполнении <code>z = x + y</code> ни <var>x</var>, ни <var>y</var> изменяться не должны. Должен создаваться новый объект <var>z</var> с результатом операции.</p>
+<p>Кстати, именно поэтому в некоторых случаях запись <code>a = a + b</code> отличается от <code>a += b</code>. В первом случае вызывается метод <var>__add__</var>, а во втором — <var>__iadd__</var>, для чисел эти методы работают одинаково, а для списков нет.</p>
+<p>Так как объекты класса <var>Time</var> относятся к изменяемым, при вызове <var>__iadd__</var> должен изменяться сам объект. Давайте добавим этот метод в наш класс и посмотрим, как он работает.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Time</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> minutes<span class="token punctuation">,</span> seconds<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>minutes <span class="token operator">=</span> minutes
+        self<span class="token punctuation">.</span>seconds <span class="token operator">=</span> seconds
+
+    <span class="token keyword">def</span> <span class="token function">__add__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        m <span class="token operator">=</span> self<span class="token punctuation">.</span>minutes <span class="token operator">+</span> other<span class="token punctuation">.</span>minutes
+        s <span class="token operator">=</span> self<span class="token punctuation">.</span>seconds <span class="token operator">+</span> other<span class="token punctuation">.</span>seconds
+        m <span class="token operator">+=</span> s <span class="token operator">//</span> <span class="token number">60</span>
+        s <span class="token operator">=</span> s <span class="token operator">%</span> <span class="token number">60</span>
+        <span class="token keyword">return</span> Time<span class="token punctuation">(</span>m<span class="token punctuation">,</span> s<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">__iadd__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        m <span class="token operator">=</span> self<span class="token punctuation">.</span>minutes <span class="token operator">+</span> other<span class="token punctuation">.</span>minutes
+        s <span class="token operator">=</span> self<span class="token punctuation">.</span>seconds <span class="token operator">+</span> other<span class="token punctuation">.</span>seconds
+        m <span class="token operator">+=</span> s <span class="token operator">//</span> <span class="token number">60</span>
+        s <span class="token operator">=</span> s <span class="token operator">%</span> <span class="token number">60</span>
+        self<span class="token punctuation">.</span>minutes <span class="token operator">=</span> m
+        self<span class="token punctuation">.</span>seconds <span class="token operator">=</span> s
+        <span class="token keyword">return</span> self
+
+    <span class="token keyword">def</span> <span class="token function">info</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>minutes<span class="token punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>seconds<span class="token punctuation">}</span></span><span class="token string">'</span></span>
+
+
+t1 <span class="token operator">=</span> Time<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>t1<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 5:50</span>
+t2 <span class="token operator">=</span> Time<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>t2<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 3:20</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>t1<span class="token punctuation">)</span><span class="token punctuation">)</span>
+t1 <span class="token operator">+=</span> t2
+<span class="token keyword">print</span><span class="token punctuation">(</span>t1<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 9:10</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>t1<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># id объекта не поменяется</span>
+</code></pre>
+<p>Обратите внимание: мы не только изменяем атрибуты объекта в методе <var>__iadd__</var>, но и после всех преобразований возвращаем <var>self</var> — сам объект (если мы ничего не вернем, в переменной будет None).</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Переопределение поведения объекта в функции print()</h2>
+<p>Другой специальный метод позволяет избавиться от вызовов метода <var>info</var> перед передачей данных в <var>print</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Метод __str__</strong></p>
+<p>Перед выводом аргументов на печать функция <var>print</var> преобразует их в строки с помощью функции <var>str</var>. Но функция <var>str</var> делает это не сама, а вызывает метод <var>__str__</var> своего аргумента. Так что вызов <code>str(x)</code> эквивалентен <code>x.__str__()</code>.</p>
+</section>
+<p>Если мы сейчас попытаемся распечатать экземпляры <var>Time</var> просто с помощью <code>print(t1)</code>, получим что-то вроде:</p>
+<pre><samp>&lt;__main__.Time object at 0x7fa021586f98&gt;</samp></pre>
+<p>Это сработала реализация метода <var>__str__</var> по умолчанию из класса <var>object</var>. Дело в том, что при создании класса можно указать так называемый суперкласс, от которого наш класс получит всю функциональность. Такой процесс называется <strong>наследованием</strong>. Об этом механизме мы поговорим на следующем уроке.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Если суперкласс не указать, по умолчанию наследуется класс <var>object</var>, содержащий некоторую базовую функциональность, в том числе метод <var>__str__</var>.</p>
+<p>Если мы определим в своем классе собственный метод <var>__str__</var>, он заменит тот, что был унаследован от <var>object</var>.</p>
+</section>
+<p>Давайте это сделаем:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Time</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> minutes<span class="token punctuation">,</span> seconds<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>minutes <span class="token operator">=</span> minutes
+        self<span class="token punctuation">.</span>seconds <span class="token operator">=</span> seconds
+ 
+    <span class="token keyword">def</span> <span class="token function">__add__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        m <span class="token operator">=</span> self<span class="token punctuation">.</span>minutes <span class="token operator">+</span> other<span class="token punctuation">.</span>minutes
+        s <span class="token operator">=</span> self<span class="token punctuation">.</span>seconds <span class="token operator">+</span> other<span class="token punctuation">.</span>seconds
+        m <span class="token operator">+=</span> s <span class="token operator">//</span> <span class="token number">60</span>
+        s <span class="token operator">=</span> s <span class="token operator">%</span> <span class="token number">60</span>
+        <span class="token keyword">return</span> Time<span class="token punctuation">(</span>m<span class="token punctuation">,</span> s<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__str__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>minutes<span class="token punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>seconds<span class="token punctuation">}</span></span><span class="token string">'</span></span>
+ 
+
+t1 <span class="token operator">=</span> Time<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>t1<span class="token punctuation">)</span>    <span class="token comment"># 5:50</span>
+t2 <span class="token operator">=</span> Time<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>t2<span class="token punctuation">)</span>    <span class="token comment"># 3:20</span>
+t3 <span class="token operator">=</span> t1 <span class="token operator">+</span> t2
+<span class="token keyword">print</span><span class="token punctuation">(</span>t3<span class="token punctuation">)</span>    <span class="token comment"># 9:10</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Метод __repr__</h2>
+<p>Давайте проведем эксперимент: создадим несколько объектов типа <var>Time</var>, положим их в список, а затем попытаемся вывести его на печать.</p>
+<pre class="language-python"><code class="language-python">li <span class="token operator">=</span> <span class="token punctuation">[</span>Time<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span> Time<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>li<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[&lt;__main__.Time object at 0x7ff15c76e4e0&gt;, &lt;__main__.Time object at 0x7ff15c76e550&gt;]</samp></pre>
+<p>Но почему такое произошло? Мы же добавили метод для преобразования к строке! Оказывается, кроме метода <var>__str__</var>, который предназначен для выдачи информации об экземпляре для пользователей в «человеческом» виде, часто определяется метод <var>__repr__</var>. Для метода <var>__repr__</var>, как и для <var>__len__</var>, есть функция, явно вызывающая этот метод у объекта. Функция <var>repr</var> предназначена для выдачи полной информации об объекте для программиста. Она часто применяется при отладке. Поскольку «сырой» вывод списка обычно не предназначен для пользователя, он вызывает у объектов не метод <var>__str__</var>, а метод <var>__repr__</var>. Для нашего класса <var>Time</var> этот метод мог бы выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Time</span><span class="token punctuation">:</span>
+ 
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> методы __init__<span class="token punctuation">,</span> __add__<span class="token punctuation">,</span> __str__ <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__repr__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'Time(</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>minutes<span class="token punctuation">}</span></span><span class="token string">, </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>second<span class="token punctuation">}</span></span><span class="token string">)'</span></span>
+ 
+
+t1 <span class="token operator">=</span> Time<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>t1<span class="token punctuation">)</span>          <span class="token comment"># 5:50</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">repr</span><span class="token punctuation">(</span>t1<span class="token punctuation">)</span><span class="token punctuation">)</span>    <span class="token comment"># Time(5, 50)</span>
+</code></pre>
+<p>Как видно, здесь метод <var>__repr__</var> выдает строку, которую можно скопировать и вставить в исходный код на Python, чтобы получить выражение, которое заново сконструирует такой же объект.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Класс «Вектор на плоскости»</h2>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-32/vector%20-%20new.svg" width="680"/></div>
+<p>Двумерные векторы — очень полезный и важный геометрический объект. Векторы любой нужной размерности уже есть в библиотеке Numpy, которую вы могли изучить в дополнительных материалах курса, но, если бы мы захотели реализовать двумерный вектор самостоятельно, можно было бы сделать это, например, так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">MyVector</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>x <span class="token operator">=</span> x
+        self<span class="token punctuation">.</span>y <span class="token operator">=</span> y
+ 
+    <span class="token keyword">def</span> <span class="token function">__add__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> MyVector<span class="token punctuation">(</span>self<span class="token punctuation">.</span>x <span class="token operator">+</span> other<span class="token punctuation">.</span>x<span class="token punctuation">,</span> self<span class="token punctuation">.</span>y <span class="token operator">+</span> other<span class="token punctuation">.</span>y<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__sub__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> MyVector<span class="token punctuation">(</span>self<span class="token punctuation">.</span>x <span class="token operator">-</span> other<span class="token punctuation">.</span>x<span class="token punctuation">,</span> self<span class="token punctuation">.</span>y <span class="token operator">-</span> other<span class="token punctuation">.</span>y<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__mul__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> MyVector<span class="token punctuation">(</span>self<span class="token punctuation">.</span>x <span class="token operator">*</span> other<span class="token punctuation">,</span> self<span class="token punctuation">.</span>y <span class="token operator">*</span> other<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__rmul__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> MyVector<span class="token punctuation">(</span>self<span class="token punctuation">.</span>x <span class="token operator">*</span> other<span class="token punctuation">,</span> self<span class="token punctuation">.</span>y <span class="token operator">*</span> other<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__str__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'MyVector(</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>x<span class="token punctuation">}</span></span><span class="token string">, </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>y<span class="token punctuation">}</span></span><span class="token string">)'</span></span>
+ 
+ 
+v1 <span class="token operator">=</span> MyVector<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span>
+v2 <span class="token operator">=</span> MyVector<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">4</span><span class="token punctuation">)</span>
+v_sum <span class="token operator">=</span> v1 <span class="token operator">+</span> v2
+<span class="token keyword">print</span><span class="token punctuation">(</span>v_sum<span class="token punctuation">)</span>  <span class="token comment"># MyVector(1, 1)</span>
+v_mul <span class="token operator">=</span> v1 <span class="token operator">*</span> <span class="token number">1.5</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>v_mul<span class="token punctuation">)</span>  <span class="token comment"># MyVector(-3.0, 7.5)</span>
+v_rmul <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">2</span> <span class="token operator">*</span> v1
+<span class="token keyword">print</span><span class="token punctuation">(</span>v_rmul<span class="token punctuation">)</span>  <span class="token comment"># MyVector(4, -10)</span>
+</code></pre>
+<p>В этом примере определены методы <var>__add__</var> и <var>__sub__</var> для реализации классических операций сложения и вычитания векторов. Метод <var>__mul__</var> реализует операцию умножения вектора на число, а метод <var>__rmul__</var> — операцию умножения числа на вектор. Для преобразования в строку используется уже знакомый нам метод <var>__str__</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Другие специальные методы</h2>
+<p>Специальных методов слишком много, чтобы рассмотреть их все на этом уроке. Мы приведем лишь небольшой их список.</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<thead>
+<tr>
+<th>Метод</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__add__(self, other)</code></td>
+<td>Сложение (x + y). Будет вызвано: x.__add__(y)</td>
+</tr>
+<tr>
+<td><code>__sub__(self, other)</code></td>
+<td>Вычитание (x - y)</td>
+</tr>
+<tr>
+<td><code>__mul__(self, other)</code></td>
+<td>Умножение (x * y)</td>
+</tr>
+<tr>
+<td><code>__truediv__(self, other)</code></td>
+<td>Деление (x / y)</td>
+</tr>
+<tr>
+<td><code>__floordiv__(self, other)</code></td>
+<td>Целочисленное деление (x // y)</td>
+</tr>
+<tr>
+<td><code>__mod__(self, other)</code></td>
+<td>Остаток от деления (x % y)</td>
+</tr>
+<tr>
+<td><code>__divmod__(self, other)</code></td>
+<td>Частное и остаток (divmod(x, y))</td>
+</tr>
+<tr>
+<td><code>__radd__(self, other)</code></td>
+<td>Сложение (y + x). Будет вызвано: y.__radd__(x)</td>
+</tr>
+<tr>
+<td><code>__rsub__(self, other)</code></td>
+<td>Вычитание (y - x)</td>
+</tr>
+<tr>
+<td><code>__lt__(self, other)</code></td>
+<td>Сравнение (x &lt; y). Будет вызвано: x.__lt__(y)</td>
+</tr>
+<tr>
+<td><code>__eq__(self, other)</code></td>
+<td>Сравнение (x == y). Будет вызвано: x.__eq__(y)</td>
+</tr>
+<tr>
+<td><code>__len__(self)</code></td>
+<td>Возвращение длины объекта</td>
+</tr>
+<tr>
+<td><code>__getitem__(self, key)</code></td>
+<td>Доступ по индексу (или ключу)</td>
+</tr>
+<tr>
+<td><code>__call__(self[, args...])</code></td>
+<td>Вызов экземпляра класса как функции</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Однако найти полную документацию по специальным методам в Интернете сравнительно легко. Если вам нужно реализовать тот или иной оператор, для начала поищите соответствующий ему специальный метод на <strong>втором листе</strong> вот этой <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/abregepython-english.pdf" rel="noopener noreferrer" target="_blank">шпаргалки</a>.</p>
+<p>Если вы не нашли необходимой информации, рекомендуем очень подробную <a class="material__link" href="https://habrahabr.ru/post/186608/" rel="noopener noreferrer" target="_blank">статью с длинным и обстоятельным описанием</a>.</p>
+<p>Ну и конечно же, никто не должен забывать про официальную <a class="material__link" href="https://docs.python.org/3/reference/datamodel.html#special-method-names" rel="noopener noreferrer" target="_blank">документацию на сайте</a>.</p>
+</section></article></section>

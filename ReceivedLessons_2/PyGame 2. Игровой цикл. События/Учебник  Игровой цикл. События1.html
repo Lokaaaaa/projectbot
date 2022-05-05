@@ -1,0 +1,342 @@
+<section class="lesson-material__content"><article class="material"><h1>Игровой цикл. События</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Поговорим о времени</a></li>
+<li><a class="material__link" href="#2">Время в PyGame</a></li>
+<li><a class="material__link" href="#3">События</a></li>
+<li><a class="material__link" href="#4">События по таймеру</a></li>
+<li><a class="material__link" href="#5">Холст (Surface)</a></li>
+<li><a class="material__link" href="#6">Памятка по решению задач</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке поговорим об игровом цикле. Обсудим работу со временем, кадрами и событиями.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Поговорим о времени</h2>
+<p>Обычно программа на Pygame, даже если она показывает статичную картинку, все равно содержит <strong>игровой цикл</strong>.</p>
+<p><strong>Главный игровой цикл</strong> — обязательный компонент любой игры. В нем происходит постоянная отрисовка игровых объектов, изменение их состояния (например, положения) и обработка событий. Прежде всего, цикл реагирует на действия пользователя.</p>
+<p>Общая концепция примерно такая же, как при использовании PyQT: мы задаем реакцию приложения на определенные события, только там главный цикл запускался неявно через <code>app.exec()</code>, тут же нам предстоит более низкоуровневое управление этой частью программы.</p>
+<p>Рассмотрим обработку завершения приложения: цикл должен быть завершен по желанию пользователя.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pygame
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    pygame<span class="token punctuation">.</span>init<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    size <span class="token operator">=</span> width<span class="token punctuation">,</span> height <span class="token operator">=</span> <span class="token number">800</span><span class="token punctuation">,</span> <span class="token number">400</span>
+    screen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_mode<span class="token punctuation">(</span>size<span class="token punctuation">)</span>
+
+    running <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token keyword">while</span> running<span class="token punctuation">:</span>
+        <span class="token comment"># внутри игрового цикла ещё один цикл</span>
+        <span class="token comment"># приема и обработки сообщений</span>
+        <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># при закрытии окна</span>
+            <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+                running <span class="token operator">=</span> <span class="token boolean">False</span>
+
+        <span class="token comment"># отрисовка и изменение свойств объектов</span>
+        <span class="token comment"># ...</span>
+
+        <span class="token comment"># обновление экрана</span>
+        pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>quit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Игра заканчивается, когда завершается главный игровой цикл.</p>
+<p>Если завести переменную <var>x_pos</var>, занести в нее значение 0, а в цикл добавить строки:</p>
+<pre class="language-python"><code class="language-python">screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>circle<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>x_pos<span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+x_pos <span class="token operator">+=</span> <span class="token number">1</span>
+</code></pre>
+<p>то красный круг «поедет» вправо.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/jamesbond.gif" width="600"/></div>
+<p>Для аккуратности лучше поместить рисование в отдельную функцию. На прошлом занятии мы называли ее <code>draw()</code>. Если написать в нее генерацию случайных точек, то картинка на экране будет постоянно меняться, получится эффект ряби не настроенного на канал телевизора.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/tvsnow2.gif" width="600"/></div>
+<p><strong>Тренировочное задание.</strong> Реализуйте программу, моделирующую ненастроенный телевизор.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Время в PyGame</h2>
+<p>Не имеет большого значения, с какой скоростью мерцает телевизор из предыдущего примера. Но в играх время играет очень важную роль. На некоторых машинах движение будет идти слишком быстро, на других — слишком медленно. Это зависит как от мощности компьютера, так и от загруженности процессора.</p>
+<p>Но разработчик игры стремится к тому, чтобы на любом компьютере движение выглядело примерно одинаково. Для этого нужно учитывать время.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/time.svg" width="600"/></div>
+<p><em>Л. Кэрролл «Алиса в стране чудес»</em></p>
+<p>В Pygame для учета времени есть специальный класс <var>Clock</var> в модуле <var>time</var>.</p>
+<p>Нужно создать его экземпляр перед игровым циклом, а в самом цикле на каждом шаге вызывать метод <code>tick()</code> этого экземпляра.</p>
+<p>Этот метод возвращает <strong>количество миллисекунд</strong>, прошедших с момента последнего вызова. Можно ориентироваться на него и работать с объектом игры с учетом полученного прошедшего времени.</p>
+<p>Например, завести переменную скорости и вычислять новое положение объекта по формуле <code>x_pos += v * clock.tick()</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pygame
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    pygame<span class="token punctuation">.</span>init<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_caption<span class="token punctuation">(</span><span class="token string">'Движущийся круг 2'</span><span class="token punctuation">)</span>
+    size <span class="token operator">=</span> width<span class="token punctuation">,</span> height <span class="token operator">=</span> <span class="token number">800</span><span class="token punctuation">,</span> <span class="token number">400</span>
+    screen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_mode<span class="token punctuation">(</span>size<span class="token punctuation">)</span>
+
+    running <span class="token operator">=</span> <span class="token boolean">True</span>
+    x_pos <span class="token operator">=</span> <span class="token number">0</span>
+    v <span class="token operator">=</span> <span class="token number">20</span>  <span class="token comment"># пикселей в секунду</span>
+    clock <span class="token operator">=</span> pygame<span class="token punctuation">.</span>time<span class="token punctuation">.</span>Clock<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">while</span> running<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+                running <span class="token operator">=</span> <span class="token boolean">False</span>
+        screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>circle<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x_pos<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+        x_pos <span class="token operator">+=</span> v <span class="token operator">*</span> clock<span class="token punctuation">.</span>tick<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">1000</span>  <span class="token comment"># v * t в секундах</span>
+        pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>quit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь кружок из первого примера будет перемещаться со скоростью <strong>ровно</strong> 20 пикселей в секунду практически равномерно.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/jamesbond2.gif" width="600"/></div>
+<p>Обратите внимание: при вычислениях <var>x</var> может стать нецелым, а при рисовании окружности позиция центра должна быть кортежем целых чисел. Поэтому нужно приводить <var>x</var> к типу <var>int</var>.</p>
+<p>В простых случаях, когда особая точность не требуется, можно просто передавать в метод <code>tick()</code> требуемое FPS (FPS — Frames per Second — кадров в секунду) и считать, что кадры рассчитываются и рисуются почти мгновенно. В этом случае <code>tick()</code> будет задерживать выполнение программы так, чтобы количество кадров было не больше переданного значения — оно будет примерно равно ему — и дальше ориентироваться на это значение:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pygame
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    pygame<span class="token punctuation">.</span>init<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_caption<span class="token punctuation">(</span><span class="token string">'Движущийся круг 2'</span><span class="token punctuation">)</span>
+    size <span class="token operator">=</span> width<span class="token punctuation">,</span> height <span class="token operator">=</span> <span class="token number">800</span><span class="token punctuation">,</span> <span class="token number">400</span>
+    screen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_mode<span class="token punctuation">(</span>size<span class="token punctuation">)</span>
+
+    running <span class="token operator">=</span> <span class="token boolean">True</span>
+    x_pos <span class="token operator">=</span> <span class="token number">0</span>
+    v <span class="token operator">=</span> <span class="token number">20</span>  <span class="token comment"># пикселей в секунду</span>
+    fps <span class="token operator">=</span> <span class="token number">60</span>
+    clock <span class="token operator">=</span> pygame<span class="token punctuation">.</span>time<span class="token punctuation">.</span>Clock<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">while</span> running<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+                running <span class="token operator">=</span> <span class="token boolean">False</span>
+        screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>circle<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x_pos<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+        x_pos <span class="token operator">+=</span> v <span class="token operator">/</span> fps
+        clock<span class="token punctuation">.</span>tick<span class="token punctuation">(</span>fps<span class="token punctuation">)</span>
+        pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>quit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Конечно, у компьютера есть предел, и 1000 FPS вы не получите в любом случае. Но, на самом деле, и 30 FPS вполне достаточно.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">События</h2>
+<p>В Pygame есть модули <var>mouse</var> и <var>keyboard</var>. Они позволяют «опрашивать» мышь и клавиатуру в любой момент, то есть получать от устройств информацию. Но удобнее работать с <strong>событиями.</strong></p>
+<p>Важнее узнать, что кнопка мыши <em>нажалась</em>, чем получить информацию о том, что она <em>нажата</em>.</p>
+<p>Любая игра также управляется событиями. Что же это за события?</p>
+<p>Прежде всего, это события пользовательского ввода: игрок нажал клавишу на клавиатуре, подвинул мышь, нажал на кнопку закрытия окна и т. д. На каждом шаге главного игрового цикла мы разбираем накопившиеся события.</p>
+<p>Несмотря на то, что цикл работает очень быстро, за одну итерацию наступивших событий может быть несколько. Поэтому в программе появляется второй внутренний цикл, который обрабатывает все произошедшие события (разбирает очередь событий).</p>
+<p>Еще раз вернемся к шаблону игровой программы:</p>
+<pre class="language-python"><code class="language-python">running <span class="token operator">=</span> <span class="token boolean">True</span>
+
+<span class="token keyword">while</span> running<span class="token punctuation">:</span>
+    <span class="token comment"># внутри игрового цикла ещё один цикл</span>
+    <span class="token comment"># приёма и обработки сообщений</span>
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># при закрытии окна</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+            running <span class="token operator">=</span> <span class="token boolean">False</span>            
+        <span class="token comment"># РЕАКЦИЯ НА ОСТАЛЬНЫЕ СОБЫТИЯ</span>
+        <span class="token comment"># ...  </span>
+    <span class="token comment"># отрисовка и изменение свойств объектов</span>
+    <span class="token comment"># ...    </span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: мы забираем события функцией <code>get()</code>, а не <code>wait()</code>, как на прошлом занятии. <code>wait()</code> блокирует выполнение программы, пока не наступит событие. Такое поведение подходит для шахмат или пошаговых стратегий, но в <strong>шутере</strong> монстры не станут ждать, пока игрок выстрелит.</p>
+<p>Таким образом, главный игровой цикл обычно выглядит примерно так:</p>
+<pre class="language-python"><code class="language-python">fps <span class="token operator">=</span> <span class="token number">50</span> <span class="token comment"># количество кадров в секунду</span>
+clock <span class="token operator">=</span> pygame<span class="token punctuation">.</span>time<span class="token punctuation">.</span>Clock<span class="token punctuation">(</span><span class="token punctuation">)</span>
+running <span class="token operator">=</span> <span class="token boolean">True</span>
+<span class="token keyword">while</span> running<span class="token punctuation">:</span> <span class="token comment"># главный игровой цикл</span>
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    	<span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+    		running <span class="token operator">=</span> <span class="token boolean">False</span>
+    	<span class="token comment"># обработка остальных событий</span>
+    	<span class="token comment"># ...</span>
+    <span class="token comment"># формирование кадра</span>
+    <span class="token comment"># ...</span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># смена кадра</span>
+    <span class="token comment"># изменение игрового мира</span>
+    <span class="token comment"># ...</span>
+    <span class="token comment"># временная задержка</span>
+    clock<span class="token punctuation">.</span>tick<span class="token punctuation">(</span>fps<span class="token punctuation">)</span>
+</code></pre>
+<p>Каждое событие содержит в себе его тип и параметры. Например, события от мыши содержат позицию курсора и информацию о том, какая кнопка была нажата или отпущена.</p>
+<p>Приведем список основных типов событий с их атрибутами:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<thead>
+<tr>
+<th>event.type</th>
+<th>атрибуты</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QUIT</td>
+<td>нет</td>
+</tr>
+<tr>
+<td>KEYDOWN</td>
+<td>unicode, key, mod (например, shift, ctrl...)</td>
+</tr>
+<tr>
+<td>KEYUP</td>
+<td>key, mod</td>
+</tr>
+<tr>
+<td>MOUSEMOTION</td>
+<td>pos (кортеж текущих координат),<br/>rel (кортеж координат относительно предыдущего события),<br/>buttons (кортеж номеров нажатых кнопок в момент движения)</td>
+</tr>
+<tr>
+<td>MOUSEBUTTONUP</td>
+<td>pos, button</td>
+</tr>
+<tr>
+<td>MOUSEBUTTONDOWN</td>
+<td>pos, button</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Например, код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">while</span> running<span class="token punctuation">:</span>
+    screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+            running <span class="token operator">=</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEMOTION<span class="token punctuation">:</span>
+            pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>circle<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">)</span><span class="token punctuation">,</span> event<span class="token punctuation">.</span>pos<span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    clock<span class="token punctuation">.</span>tick<span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span>
+</code></pre>
+<p>отображает при движении мыши синий круг под курсором.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/blueball.gif" width="600"/></div>
+<p>Обратите внимание: круг исчезает, если мышь не двигать. Почему? Как это можно исправить?</p>
+<p>Pygame поставляется с большим количеством <a class="material__link" href="https://www.pygame.org/docs/ref/examples.html" rel="noopener noreferrer" target="_blank">примеров, небольших программ</a>, иллюстрирующих ее возможности. Примеры устанавливаются вместе с библиотекой в виде модуля <var>examples</var>.</p>
+<p>Хорошо помогает разобраться с событиями пример <var>eventlist</var>. Его можно запустить из командной строки</p>
+<pre><code>python -m pygame.examples.eventlist
+</code></pre>
+<p>Или кодом (из среды программирования):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pygame<span class="token punctuation">.</span>examples<span class="token punctuation">.</span>eventlist
+pygame<span class="token punctuation">.</span>examples<span class="token punctuation">.</span>eventlist<span class="token punctuation">.</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>А еще лучше — узнать местоположение папки с примерами с помощью следующей мини-программы:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pygame<span class="token punctuation">.</span>examples
+<span class="token keyword">print</span><span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>examples<span class="token punctuation">.</span>__file__<span class="token punctuation">)</span>
+</code></pre>
+<p>и скопировать оттуда в среду исходный код из файла eventlist.py. Тогда его можно будет изменять.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/eventlist.gif" width="500"/></div>
+<p>Поэкспериментируйте с кодом этого примера.</p>
+<p><strong>Тренировочное задание.</strong> По <a class="material__link" href="https://www.pygame.org/docs/ref/mouse.html" rel="noopener noreferrer" target="_blank">документации по модулю mouse</a> или при помощи эксперимента разберитесь, как же работать с колесиком мыши?</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">События по таймеру</h2>
+<p>Иногда требуется создавать свои собственные события, которые должны возникать с определенной периодичностью. Например, каждые 10 миллисекунд необходимо проверять значение некоторой переменной, которую могут менять различные обработчики.</p>
+<p>Для этого есть следующий механизм:</p>
+<ol>
+<li>Объявляем свое событие. Это целочисленная константа, ее значение должно находиться между значениями констант <var>pygame.USEREVENT</var> и <var>pygame.NUMEVENTS</var>
+<pre class="language-python"><code class="language-python">MYEVENTTYPE <span class="token operator">=</span> pygame<span class="token punctuation">.</span>USEREVENT <span class="token operator">+</span> <span class="token number">1</span>
+</code></pre>
+</li>
+<li>Вызываем функцию
+<pre class="language-python"><code class="language-python">pygame<span class="token punctuation">.</span>time<span class="token punctuation">.</span>set_timer<span class="token punctuation">(</span>MYEVENTTYPE<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+</code></pre>
+</li>
+<li>Обрабатываем событие в основном цикле игры так же, как и другие стандартные события
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> MYEVENTTYPE<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Мое событие сработало"</span><span class="token punctuation">)</span>
+</code></pre>
+</li>
+<li>Если в какой-то момент необходимо отменить генерацию этого события, необходимо вызвать эту же функцию и передать ей в качестве аргумента 0
+<pre class="language-python"><code class="language-python">pygame<span class="token punctuation">.</span>time<span class="token punctuation">.</span>set_timer<span class="token punctuation">(</span>MYEVENTTYPE<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="5">Холст (Surface)</h2>
+<p>Допустим, мы хотим написать мини-графический редактор.</p>
+<p>Ведь каждый программист должен в своей жизни хотя бы раз:</p>
+<ol>
+<li>Отсортировать массив</li>
+<li>Написать свой мини-фотошоп</li>
+<li>Реализовать свой тетрис</li>
+</ol>
+<p>Шутка!</p>
+<p>Кстати, <a class="material__link" href="https://ru.wikipedia.org/wiki/Тетрис" rel="noopener noreferrer" target="_blank">Тетрис</a> — вполне хороший итоговый проект по этому модулю.</p>
+<p>Но вернемся к написанию своего графического редактора. Кажется, что все совсем просто. Возьмем предыдущий пример, уберем очистку экрана, перенесем строку <code>screen.fill((0, 0, 0))</code> за цикл — и все! Простейший фотошоп готов!</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># очищаем экран один раз в самом начале</span>
+screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> running<span class="token punctuation">:</span>
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+            running <span class="token operator">=</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEMOTION<span class="token punctuation">:</span>
+            pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>circle<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">)</span><span class="token punctuation">,</span> event<span class="token punctuation">.</span>pos<span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span>
+
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/sdraw.gif" width="600"/></div>
+<p>Рисовать он может только синим цветом, постоянно и от края экрана, но это легко исправить.</p>
+<p>Проблема возникнет в тот момент, когда мы захотим отменить последнее действие или, как в настоящих редакторах, сначала наметить место будущего прямоугольника, а потом уже нарисовать его.</p>
+<p>Принципиально есть два решения:</p>
+<ol>
+<li>Сохранять изображения в виде команд, построив таким образом аналог редакторов векторной графики</li>
+<li>Рисовать прямоугольник на отдельном холсте и накладывать новый холст на старый. Для этого в классе <var>Surface</var> предусмотрен метод <code>blit()</code>. Два его основных параметра: переменная холста и позиция, куда копировать. Если необходимо, третьим параметром можно указать, какую часть изображения копировать</li>
+</ol>
+<p>Реализуем задуманное вторым путем.</p>
+<p>Создадим второй холст и будем:</p>
+<ul>
+<li>Копировать второй холст на основной (на экран). Если мы в режиме рисования, то рисовать на экране текущий прямоугольник</li>
+<li>При <strong>нажатии</strong> на кнопку мыши — запоминать начальную вершину и включать режим «рисование»</li>
+<li>При <strong>движении</strong> мыши запоминать ширину и высоту</li>
+<li>При <strong>отпускании</strong> мыши копировать основной холст (экран) на второй холст: фиксировать изменения. И выключать режим «рисование»</li>
+</ul>
+<pre class="language-python"><code class="language-python">screen2 <span class="token operator">=</span> pygame<span class="token punctuation">.</span>Surface<span class="token punctuation">(</span>screen<span class="token punctuation">.</span>get_size<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> w<span class="token punctuation">,</span> h <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span>
+drawing <span class="token operator">=</span> <span class="token boolean">False</span>  <span class="token comment"># режим рисования выключен</span>
+<span class="token keyword">while</span> running<span class="token punctuation">:</span>
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+            running <span class="token operator">=</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEBUTTONDOWN<span class="token punctuation">:</span>
+            drawing <span class="token operator">=</span> <span class="token boolean">True</span>  <span class="token comment"># включаем режим рисования</span>
+            <span class="token comment"># запоминаем координаты одного угла</span>
+            x1<span class="token punctuation">,</span> y1 <span class="token operator">=</span> event<span class="token punctuation">.</span>pos
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEBUTTONUP<span class="token punctuation">:</span>
+            <span class="token comment"># сохраняем нарисованное (на втором холсте)</span>
+            screen2<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            drawing <span class="token operator">=</span> <span class="token boolean">False</span>
+            x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> w<span class="token punctuation">,</span> h <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEMOTION<span class="token punctuation">:</span>
+            <span class="token comment"># запоминаем текущие размеры</span>
+            <span class="token keyword">if</span> drawing<span class="token punctuation">:</span>
+                w<span class="token punctuation">,</span> h <span class="token operator">=</span> event<span class="token punctuation">.</span>pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> x1<span class="token punctuation">,</span> event<span class="token punctuation">.</span>pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> y1
+    <span class="token comment"># рисуем на экране сохранённое на втором холсте</span>
+    screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">'black'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    screen<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>screen2<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> drawing<span class="token punctuation">:</span>  <span class="token comment"># и, если надо, текущий прямоугольник</span>
+        <span class="token keyword">if</span> w <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token keyword">and</span> h <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>rect<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>x1<span class="token punctuation">,</span> y1<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>w<span class="token punctuation">,</span> h<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-2/drawrect2.gif" width="600"/></div>
+<p>На самом деле, мы уже пользовались вторым холстом на первом занятии, когда выводили текст:</p>
+<pre class="language-python"><code class="language-python">font <span class="token operator">=</span> pygame<span class="token punctuation">.</span>font<span class="token punctuation">.</span>Font<span class="token punctuation">(</span><span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+text <span class="token operator">=</span> font<span class="token punctuation">.</span>render<span class="token punctuation">(</span><span class="token string">"Hello, Pygame!"</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+text_x <span class="token operator">=</span> width <span class="token operator">//</span> <span class="token number">2</span> <span class="token operator">-</span> text<span class="token punctuation">.</span>get_width<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+text_y <span class="token operator">=</span> height <span class="token operator">//</span> <span class="token number">2</span> <span class="token operator">-</span> text<span class="token punctuation">.</span>get_height<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+text_w <span class="token operator">=</span> text<span class="token punctuation">.</span>get_width<span class="token punctuation">(</span><span class="token punctuation">)</span>
+text_h <span class="token operator">=</span> text<span class="token punctuation">.</span>get_height<span class="token punctuation">(</span><span class="token punctuation">)</span>
+screen<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>text<span class="token punctuation">,</span> <span class="token punctuation">(</span>text_x<span class="token punctuation">,</span> text_y<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В этом фрагменте переменная <var>text</var> — это тоже холст. Его создает метод <code>render()</code>, а дальше он просто копируется в нужное место методом <code>blit().</code></p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Памятка по решению задач</h2>
+<p>При решении задач считайте, что:</p>
+<ul>
+<li>Цвета соответствуют цветам, определенным в Pygame теми же названиями. Например, «желтый» соответствует <code>pygame.Color('yellow')</code></li>
+<li>Если цвет в условии не указан, считайте цвет фона черным, цвет рисования — белым</li>
+<li>Если толщина линии не указана, считайте, что фигуры должны быть нарисованы закрашенными</li>
+</ul>
+</section></article></section>

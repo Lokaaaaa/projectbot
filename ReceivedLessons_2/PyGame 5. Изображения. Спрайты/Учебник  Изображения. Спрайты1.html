@@ -1,0 +1,200 @@
+<section class="lesson-material__content"><article class="material"><h1>Изображения. Спрайты</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Изображения</a></li>
+<li><a class="material__link" href="#2">Спрайты</a></li>
+<li><a class="material__link" href="#3">Наследование спрайтов</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы начнем разговор об изображениях и спрайтах — анимационных элементах игры.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Изображения</h2>
+<p>До этого момента мы только рисовали на холсте. Однако игры, в которых не используются созданные профессиональными художниками изображения, встречаются очень редко.</p>
+<p>Поэтому в Pygame есть модуль <var>image</var> для работы с изображениями разных форматов. Документация на него находится <a class="material__link" href="http://pygame.org/docs/ref/image.html" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+<p>При этом в Pygame нет специального класса <var>Image</var> (как, например, в PIL или в PyQT), а изображения представлены объектами класса <var>Surface</var>, с которым мы познакомились еще на самом первом занятии. Чтобы создать простую картинку и вывести ее на экран, можно поступить так:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># загруженные изображения — это, фактически, обычный Surface</span>
+image <span class="token operator">=</span> pygame<span class="token punctuation">.</span>Surface<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+image<span class="token punctuation">.</span>fill<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">"red"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+screen<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>image<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Но, конечно, для нас интерес представляет именно <em>загрузка</em> готовых изображений. Это делается с помощью функции <code>load()</code> модуля <var>image</var>. Давайте напишем к ней собственную функцию-обертку, которая будет загружать изображение по имени файла, в котором оно хранится.</p>
+<p>Пусть ее сигнатура будет следующей:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">load_image</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> colorkey<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Помимо имени изображения у функции будет еще один необязательный параметр — <var>colorkey</var>, который мы будем использовать чуть позже, чтобы обрезать фон изображения.</p>
+<p>Игровые ресурсы (картинки, звуковые файлы, видеофрагменты) принято хранить в специальной папке отдельно от кода программы.</p>
+<p>Условимся, что мы <strong>храним все ресурсы в папке data</strong>.</p>
+<p>Кроме того, нужно учесть, что если файла с указанным именем не существует, нужно вывести сообщение об ошибке.</p>
+<p>В результате фрагмент загрузки изображения будет выглядеть следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">import</span> pygame
+
+<span class="token comment"># Изображение не получится загрузить </span>
+<span class="token comment"># без предварительной инициализации pygame</span>
+pygame<span class="token punctuation">.</span>init<span class="token punctuation">(</span><span class="token punctuation">)</span>
+size <span class="token operator">=</span> width<span class="token punctuation">,</span> height <span class="token operator">=</span> <span class="token number">500</span><span class="token punctuation">,</span> <span class="token number">500</span>
+screen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_mode<span class="token punctuation">(</span>size<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">load_image</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> colorkey<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    fullname <span class="token operator">=</span> os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token string">'data'</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+    <span class="token comment"># если файл не существует, то выходим</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>isfile<span class="token punctuation">(</span>fullname<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Файл с изображением '</span><span class="token interpolation"><span class="token punctuation">{</span>fullname<span class="token punctuation">}</span></span><span class="token string">' не найден"</span></span><span class="token punctuation">)</span>
+        sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    image <span class="token operator">=</span> pygame<span class="token punctuation">.</span>image<span class="token punctuation">.</span>load<span class="token punctuation">(</span>fullname<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> image
+</code></pre>
+<p>Обычно картинки должны быть с прозрачным фоном. Чтобы человечек выглядел именно человечком, а не черным или белым квадратиком, на котором нарисован человечек.</p>
+<p>Если при этом изображение уже прозрачно (это обычно бывает у картинок форматов png и gif), то после загрузки вызываем функцию <code>convert_alpha()</code>, и загруженное изображение сохранит прозрачность.</p>
+<p>Если изображение было непрозрачным, то используем функцию <var>Surface</var> <code>set_colorkey(colorkey)</code>, и тогда переданный ей цвет станет прозрачным.</p>
+<p>Сделаем функцию удобной: если мы передадим в качестве <var>colorkey</var> специальное значение (скажем, −1), функция сама возьмет прозрачным цветом левый верхний угол изображения (обычно это будет цвет фона, который хочется сделать прозрачным).</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> colorkey <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    image <span class="token operator">=</span> image<span class="token punctuation">.</span>convert<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> colorkey <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">:</span>
+        colorkey <span class="token operator">=</span> image<span class="token punctuation">.</span>get_at<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    image<span class="token punctuation">.</span>set_colorkey<span class="token punctuation">(</span>colorkey<span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    image <span class="token operator">=</span> image<span class="token punctuation">.</span>convert_alpha<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">return</span> image
+</code></pre>
+<p>Наша функция <code>load_image()</code> возвращает <var>Surface</var>, на котором расположено изображение «в натуральную величину».</p>
+<p>Лучше сразу подготавливать правильный размер изображения в графическом редакторе, но при необходимости можно изменить его с помощью функции <code>scale()</code> модуля <var>transform</var>:</p>
+<pre class="language-python"><code class="language-python">image <span class="token operator">=</span> load_image<span class="token punctuation">(</span><span class="token string">"owls.png"</span><span class="token punctuation">)</span>
+image1 <span class="token operator">=</span> pygame<span class="token punctuation">.</span>transform<span class="token punctuation">.</span>scale<span class="token punctuation">(</span>image<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">200</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+image2 <span class="token operator">=</span> pygame<span class="token punctuation">.</span>transform<span class="token punctuation">.</span>scale<span class="token punctuation">(</span>image<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Созданные изображения будут выглядеть так:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-5-1.png" width="600"/></div>
+<p>Если присмотреться, то видно, что у измененных изображений появляются артефакты. Именно поэтому предварительная подгонка изображений под нужные размеры является очень важным этапом создания игры.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-5-2.png" width="216"/></div>
+<p>На странице <a class="material__link" href="https://www.pygame.org/docs/ref/transform.html" rel="noopener noreferrer" target="_blank">документации модуля transform</a> есть много других функций по преобразованию изображений.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Спрайты</h2>
+<p>До этого момента мы работали с «клеточными» играми, в которых каждый объект занимал свою клетку на игровом поле.</p>
+<p>Но во многих играх объекты имеют произвольные размеры (не привязаны к клеткам), и при этом важно управлять движением и взаимоотношениями нескольких объектов (например, столкновениями: выстрел попадает в танк, человечек подходит к лестнице и т.д.). В этом нам помогут <strong>спрайты</strong>.</p>
+<p>Назовем <strong>спрайтом</strong> произвольный игровой графический объект. Этот объект может перемещаться по игровому полю или быть неподвижным, им может управлять игрок, или же его поведение контролируется непосредственно алгоритмом игры.</p>
+<p><strong>У спрайтов нет функции draw().</strong> Для того чтобы работать со спрайтами, их объединяют в группы. Потом достаточно отрисовать группу, и все спрайты, принадлежащие группе, будут отрисованы (мы уже сталкивались с подобным принципом). Спрайт может и обычно принадлежит нескольким группам одновременно.</p>
+<p>При создании спрайта нужно <strong>не забыть</strong> задать его вид (<var>image</var>) и размер (<var>rect</var>). Обычно для определения размеров берут прямоугольник, ограничивающий загруженное изображение.</p>
+<p>Для работы со спрайтами в Pygame есть специальный модуль — <a class="material__link" href="https://www.pygame.org/docs/ref/sprite.html" rel="noopener noreferrer" target="_blank">sprite</a>. По ссылке есть много интересной информации и дополнительных примеров.</p>
+<p>В простейшем случае спрайт можно создать так:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># создадим группу, содержащую все спрайты</span>
+all_sprites <span class="token operator">=</span> pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Group<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># создадим спрайт</span>
+sprite <span class="token operator">=</span> pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># определим его вид</span>
+sprite<span class="token punctuation">.</span>image <span class="token operator">=</span> load_image<span class="token punctuation">(</span><span class="token string">"bomb.png"</span><span class="token punctuation">)</span>
+<span class="token comment"># и размеры</span>
+sprite<span class="token punctuation">.</span>rect <span class="token operator">=</span> sprite<span class="token punctuation">.</span>image<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># добавим спрайт в группу</span>
+all_sprites<span class="token punctuation">.</span>add<span class="token punctuation">(</span>sprite<span class="token punctuation">)</span>
+</code></pre>
+<p>Для размещения спрайта на холсте надо задать координаты его левого верхнего угла:</p>
+<pre class="language-python"><code class="language-python">sprite<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x <span class="token operator">=</span> <span class="token number">5</span>
+sprite<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">=</span> <span class="token number">20</span>
+</code></pre>
+<p>При этом размеры спрайта нигде не указываются, а определяются размерами картинки, которая спрайт создает.</p>
+<p>Как уже говорилось, для изменения размеров самой картинки можно применять функцию <code>scale()</code> модуля <var>transform</var>, но такой способ не рекомендуется.</p>
+<p>Соответственно, если мы хотим разбросать пятьдесят бомбочек по экрану, нам поможет такой код:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># изображение должно лежать в папке data</span>
+bomb_image <span class="token operator">=</span> load_image<span class="token punctuation">(</span><span class="token string">"bomb.png"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># можно сразу создавать спрайты с указанием группы</span>
+    bomb <span class="token operator">=</span> pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">(</span>all_sprites<span class="token punctuation">)</span>
+    bomb<span class="token punctuation">.</span>image <span class="token operator">=</span> bomb_image
+    bomb<span class="token punctuation">.</span>rect <span class="token operator">=</span> bomb<span class="token punctuation">.</span>image<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># задаём случайное местоположение бомбочке</span>
+    bomb<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x <span class="token operator">=</span> random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span>width<span class="token punctuation">)</span>
+    bomb<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">=</span> random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span>height<span class="token punctuation">)</span>
+</code></pre>
+<p>В главном игровом цикле достаточно отрисовать группу одной командой:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># в главном игровом цикле</span>
+all_sprites<span class="token punctuation">.</span>draw<span class="token punctuation">(</span>screen<span class="token punctuation">)</span>
+</code></pre>
+<p>Попробуйте собрать все «кусочки» программы и получить следующий результат:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-5/pygame-5-3.png" width="500"/></div>
+<p>Можно заметить, что некоторые бомбочки не только залезают за край экрана, но и накладываются друг на друга. Пока закроем на это глаза. На следующем занятии мы подробно поговорим о пересечениях спрайтов. Это очень просто решит проблему наложения.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Наследование спрайтов</h2>
+<p>Код работы со спрайтами выглядит достаточно громоздким. Например, после создания спрайта его нужно «донастраивать» отдельными командами.</p>
+<p>Работа со спрайтами станет значительно проще, если использовать «объектный» подход и унаследовать новый класс-спрайт от <code>pygame.sprite.Sprite</code>.</p>
+<p>При наследовании важно не забыть вызвать конструктор базового класса. Иначе мы получим ошибку:</p>
+<pre class="language-python"><code class="language-python">AttributeError<span class="token punctuation">:</span> <span class="token string">'mysprite'</span> instance has no attribute <span class="token string">'_Sprite__g'</span>
+</code></pre>
+<p>В производном классе можно добавить свои функции, а также переопределить функцию <code>update()</code>. Тогда при вызове этой функции для группы, произойдет вызов <code>update()</code> для каждого спрайта, который входит в нее.</p>
+<p>Наши бомбочки в виде класса оформляются так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Bomb</span><span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    image <span class="token operator">=</span> load_image<span class="token punctuation">(</span><span class="token string">"bomb.png"</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> <span class="token operator">*</span>group<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># НЕОБХОДИМО вызвать конструктор родительского класса Sprite. </span>
+        <span class="token comment"># Это очень важно!!!</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token operator">*</span>group<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> Bomb<span class="token punctuation">.</span>image
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x <span class="token operator">=</span> random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span>width<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">=</span> random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span>height<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>move<span class="token punctuation">(</span>random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> 
+                                   random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Тогда код создания упростится:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    Bomb<span class="token punctuation">(</span>all_sprites<span class="token punctuation">)</span>
+</code></pre>
+<p>И при обновлении группы в главном игровом цикле</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># в главном игровом цикле</span>
+all_sprites<span class="token punctuation">.</span>draw<span class="token punctuation">(</span>screen<span class="token punctuation">)</span>
+all_sprites<span class="token punctuation">.</span>update<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>бомбочки начинают дрожать.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-5-4.gif" width="296"/></div>
+<p>Весь игровой мир можно реализовать на спрайтах.</p>
+<p>Чтобы мир стал интерактивным, спрайтам можно добавлять свои функции, в которые передавать события из главного игрового цикла.</p>
+<p>Но это не очень удобно: для вызова метода у всех спрайтов в группе придется перебирать все элементы в цикле (допустим, мы назвали наш метод <code>get_event()</code>):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEBUTTONDOWN<span class="token punctuation">:</span>
+    <span class="token keyword">for</span> bomb <span class="token keyword">in</span> all_sprites<span class="token punctuation">:</span>
+        bomb<span class="token punctuation">.</span>get_event<span class="token punctuation">(</span>event<span class="token punctuation">)</span>
+</code></pre>
+<p>Гораздо удобнее использовать для этого уже упомянутый метод <var>update</var>, который может принимать и дополнительные аргументы:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Bomb</span><span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    image <span class="token operator">=</span> load_image<span class="token punctuation">(</span><span class="token string">"bomb.png"</span><span class="token punctuation">)</span>
+    image_boom <span class="token operator">=</span> load_image<span class="token punctuation">(</span><span class="token string">"boom.png"</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> group<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># НЕОБХОДИМО вызвать конструктор родительского класса Sprite. </span>
+        <span class="token comment"># Это очень важно !!!</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>group<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> Bomb<span class="token punctuation">.</span>image
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x <span class="token operator">=</span> random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span>width<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">=</span> random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span>height<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>move<span class="token punctuation">(</span>random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> 
+                                   random<span class="token punctuation">.</span>randrange<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> args <span class="token keyword">and</span> args<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEBUTTONDOWN <span class="token keyword">and</span> \
+                self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>collidepoint<span class="token punctuation">(</span>args<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>pos<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>image <span class="token operator">=</span> self<span class="token punctuation">.</span>image_boom
+</code></pre>
+<p>Функция <code>rect.collidepoint(pos)</code> проверяет, находится ли точка с координатами <var>pos</var> внутри прямоугольника.</p>
+<p>Тогда код вызова проверки, стоит ли взрывать бомбочки, приобретет уже знакомый вид:</p>
+<pre class="language-python"><code class="language-python">all_sprites<span class="token punctuation">.</span>update<span class="token punctuation">(</span>event<span class="token punctuation">)</span>
+</code></pre>
+<p>Переданный <var>event</var> попадет в функции <var>update</var> всех элементов группы <var>all_sprites</var>.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-5/bombs3.gif" width="500"/></div>
+<p>Станет еще удобнее, если получится сделать класс группы спрайтов (своего рода «продвинутый» контейнер), принимающий события, и уже эта группа будет раздавать события своим элементам.</p>
+<p>Программирование игр очень редко обходится без готовых изображений. Мы полагаем, что и в вашем проекте обязательно должны использоваться спрайты.</p>
+</section></article></section>

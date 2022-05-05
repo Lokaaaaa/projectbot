@@ -1,0 +1,309 @@
+<section class="lesson-material__content"><article class="material"><h1>Переопределение функций и декораторы</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Переопределение функций</a></li>
+<li><a class="material__link" href="#2">Инструкция pass. Согласованность аргументов</a></li>
+<li><a class="material__link" href="#3">Инструкция def</a></li>
+<li><a class="material__link" href="#4">Предосторожности при переопределении функций</a></li>
+<li><a class="material__link" href="#5">Функция внутри функции</a></li>
+<li><a class="material__link" href="#6">Декораторы</a></li>
+<li><a class="material__link" href="#7">Нелокальные переменные</a></li>
+<li><a class="material__link" href="#8">Небольшие, но типичные детали реализации декоратора</a></li>
+<li><a class="material__link" href="#9">Захват значения из аргумента</a></li>
+<li><a class="material__link" href="#10">Немного о терминологии</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Этот урок содержит дополнительный материал для самостоятельного изучения.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Переопределение функций</h2>
+<p>Как вы уже знаете, функцию можно записать в переменную. Оказывается, помимо этого, с именем функции можно работать как с самой обыкновенной переменной. И значение, на которое <strong>указывает</strong> переменная с именем функции, можно изменить.</p>
+<p>Рассмотрим пример. У нас есть функция <code>input()</code>, которая читает данные из стандартного потока ввода. Давайте сделаем так, чтобы она не беспокоила пользователя и всегда давала один и тот же ввод. Для начала создадим свою функцию, которая будет работать вместо <code>input()</code>, а затем подменим значение <var>input</var> этой функцией.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">main_answer_in_the_universe</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token number">42</span>
+
+
+<span class="token builtin">input</span> <span class="token operator">=</span> main_answer_in_the_universe
+x <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token comment"># 42</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Инструкция pass. Согласованность аргументов</h2>
+<p>Теперь, чтобы совсем не отвлекать пользователя работой программы, давайте подменим еще и функцию <code>print()</code> так, чтобы она ничего не печатала на экран. На одном из прошлых занятий мы писали функцию <code>nop()</code>, которая не делала ничего, но принимала в себя любой набор аргументов. К ней и обратимся.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">nop</span><span class="token punctuation">(</span><span class="token operator">*</span>rest<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+<span class="token keyword">print</span> <span class="token operator">=</span> nop
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"(шепотом) Потише, пожалуйста!"</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь функция <code>print()</code> связана с объектом функции, которая при вызове не делает ничего. Привычная команда <code>print()</code> изменила поведение.</p>
+<p>Снова обращаем ваше внимание на то, что в аргументах функции <code>nop()</code> указано произвольное число аргументов (и произвольное число именованных аргументов). Благодаря этому мы можем передавать ей разное число аргументов, как и в старую функцию <code>print()</code>, и разные наборы опций, описываемые именованными аргументами (<var>sep</var>, <var>end</var> и т. п.). На самом деле теперь не вызывают ошибки даже те наборы аргументов, которые не работают со встроенной функцией <code>print()</code>: функция <code>print()</code> принимает не любые именованные параметры, а только небольшой список, а функция <code>nop()</code> (а значит, и переопределенный <code>print()</code>) — абсолютно любые.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Подменяя функцию, мы заботимся о том, чтобы ее аргументы соответствовали аргументам исходной функции. Иначе придется переписывать не только функцию, но и ее вызовы, а в таком случае гораздо лучше просто завести новую функцию.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="3">Инструкция def</h2>
+<p>Есть и более простой, но чуть менее гибкий способ заменить существующую функцию на другую. Для этого достаточно определить функцию с тем же именем — и она заменит существующую:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token number">42</span>
+
+
+x <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token comment"># 42</span>
+</code></pre>
+<p>Интересно, что инструкцию <var>def</var> можно использовать в разных сложных конструкциях, словно это абсолютно обычная команда вроде присваивания или вызова функции.</p>
+<p>Например, можно определять функцию по-разному в зависимости от некоторого условия:</p>
+<pre class="language-python"><code class="language-python">language <span class="token operator">=</span> <span class="token string">'fr'</span>
+<span class="token keyword">if</span> language <span class="token operator">==</span> <span class="token string">'ru'</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">hello</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Привет, '</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">hello</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Hi, '</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+
+hello<span class="token punctuation">(</span><span class="token string">'Joe'</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; Hi, Joe</span>
+</code></pre>
+<p>Дальше мы будем использовать более многословный способ.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Предосторожности при переопределении функций</h2>
+<p>Теперь, когда вы научились использовать такой сильный инструмент, как переопределение функций, давайте обсудим правила, которые надо соблюдать.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Стоит понимать, что <strong>изменять существующие функции очень опасно</strong>.</p>
+<p>Почти всегда есть способ обойтись без этого, и его стоит предпочесть. Переопределение функций делает программу плохо предсказуемой.</p>
+</section>
+<p>Когда вы пишете функцию, часто бывает, что ее поведение зависит от поведения других функций. И, если в дальнейшем вы поменяете поведение какой-то из этих функций, сломаются многие из них, которые опирались на измененную.</p>
+<p>Еще хуже — почти <strong>недопустимо — изменять встроенные функции</strong>, как мы недавно делали.</p>
+<p>Во-первых, в программе они используются настолько часто, что очень тяжело отследить все места, на которые они влияют. Например, представьте, что вы изменили функцию вычисления квадратного корня так, чтобы она не только считала его значение, но еще и печатала результат. Теперь, если вы попробуете вызвать функцию, решающую квадратные уравнения, вам не избежать вывода на экран корня из дискриминанта, даже если вы этого не хотели.</p>
+<p>Во-вторых, встроенные функции и функции стандартной библиотеки вполне могут зависеть друг от друга, а вы об этом даже не знаете. Вам будем казаться, что изменилось поведение одной функции, когда на самом деле это далеко не так.</p>
+<p>Теперь после предупреждения о том, что подменять функции опасно, мы рассмотрим, когда и как это можно делать с пользой (и как при этом ничего не испортить).</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Функция внутри функции</h2>
+<p>Аналогия функций с переменными имеет продолжение. Бывают функции, которые определены глобально, а бывают — определенные локально. Если внутри функции переопределить <code>print()</code>, это будет локальная функция <code>print()</code>, а глобальная не изменится. Когда мы выйдем из области видимости, в которой был объявлен локальный <code>print()</code>, слово <var>print</var> вновь будет ссылаться на функцию в глобальной области видимости и будет работать как прежде.</p>
+<p>Модификатор видимости <var>global</var>, кстати, с именами функций тоже работает (и им точно так же не рекомендуется пользоваться).</p>
+<p>Подменять существующую функцию локально, в пределах другой функции, обычно безопасно.</p>
+<p>Давайте сделаем функцию, которая разыгрывает короткий диалог с пользователем, но, чтобы программа казалась умнее, пока настоящий искусственный интеллект только разрабатывается, мы подменим функцию <code>answer()</code>, которая дает ответы на вопросы.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">answer</span><span class="token punctuation">(</span>question<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">'В разработке'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">dialog</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">answer</span><span class="token punctuation">(</span>question<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> question<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">'когда'</span><span class="token punctuation">)</span> <span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">'Никогда!'</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">'Разоблачили.'</span>
+            
+    question <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">while</span> question <span class="token operator">!=</span> <span class="token string">''</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>answer<span class="token punctuation">(</span>question<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        question <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+dialog<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># &lt;= Когда станет тепло?</span>
+<span class="token comment"># =&gt; Никогда!</span>
+<span class="token comment"># &lt;= Когда смогу найти богатство?</span>
+<span class="token comment"># =&gt; Никогда!</span>
+<span class="token comment"># &lt;= Какие в Чили существуют города?</span>
+<span class="token comment"># =&gt; Разоблачили</span>
+</code></pre>
+<p>Этот пример служит исключительно иллюстрацией, ни в коем случае не рекомендацией. Ведь мы могли не переименовывать функцию, а просто определить новую функцию.</p>
+<p><strong>Задача.</strong> Подмените функцию <code>print()</code> так, чтобы она ПЕЧАТАЛА ВЕСЬ ТЕКСТ В ВЕРХНЕМ РЕГИСТРЕ. Реализовывать работу с именованными аргументами (<var>sep</var>, <var>end</var>, ...) не нужно.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Декораторы</h2>
+<p>Вы научились переопределять функцию так, чтобы новая функция использовала старую. Такой процесс называется декорированием функции. Но мы это сделали не слишком удачно: у нас появилась лишняя переменная и функция <code>old_print()</code>. Чтобы не вводить лишнюю переменную в глобальной области видимости, мы определим функцию в локальной области видимости, т. е. внутри другой функции. Внутреннюю функцию мы вернем как результат выполнения внешней функции:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">use_uppercased_arguments</span><span class="token punctuation">(</span>old_func<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">new_func</span><span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        args_upcased <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">.</span>upper<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> arg <span class="token keyword">in</span> args<span class="token punctuation">]</span>
+        old_func<span class="token punctuation">(</span><span class="token operator">*</span>args_upcased<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span>
+        
+    <span class="token keyword">return</span> new_func
+
+
+<span class="token keyword">print</span> <span class="token operator">=</span> use_uppercased_arguments<span class="token punctuation">(</span><span class="token keyword">print</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В коде выше произошло следующее: мы определили функцию <code>use_uppercased_arguments()</code>, которая принимает одну функцию как аргумент и возвращает новую функцию, сделанную на основе старой. Функция, которая занимается этими превращениями, называется <strong>декоратором</strong>. Имя <var>new_func</var>, которое мы определили внутри декоратора, локальное. Как только мы выполним <code>return new_func</code>, это будет просто функция без имени.</p>
+<p>Этой новой функции мы даем имя, которое было у старой функции.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Декораторы</strong></p>
+<p>Такие функции, как <code>use_uppercased_arguments()</code>, называются декораторами потому, что обычно они добавляют какие-то штрихи (декор) к уже существующему поведению, не изменяя ее код.</p>
+</section>
+<p>Бывает так, что функцию (или, скорее, несколько) сразу пишут в расчете на то, что она будет декорирована определенным образом. Обычно так поступают, когда функции хотят добавить некоторое типичное поведение.</p>
+<p>Например:</p>
+<ul>
+<li>Когда каждый вызов функции нужно залоггировать, т. е. вывести при вызове сообщение о том, как и когда функция была вызвана</li>
+<li>Когда результат функции должен быть закеширован (т. е. после вычисления сохранен на будущее, чтобы не считать его повторно)</li>
+<li>Чтобы функция использовалась для ответа на запросы к веб-серверу</li>
+<li>Чтобы перед запуском проверялось какое-то условие (например, что пользователь имеет право доступа к выполнению функции)</li>
+</ul>
+<p>Мы напишем функцию, которая будет выводить журнал запусков и результатов декорированной функции. Каждый раз перед вызовом функции мы будем писать номер вызова, аргументы и значение, которое функция вернула. Мы хотим вести такой отчет для функции приготовления бургеров из прошлого занятия и для функции наливания, возвращающей тип напитка.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">logged</span><span class="token punctuation">(</span>func<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    count <span class="token operator">=</span> <span class="token number">0</span>
+
+    <span class="token keyword">def</span> <span class="token function">decorated_func</span><span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">nonlocal</span> count
+        count <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>count<span class="token punctuation">,</span> <span class="token string">'&gt;&gt;'</span><span class="token punctuation">,</span> <span class="token string">'Arguments:'</span><span class="token punctuation">,</span> args<span class="token punctuation">,</span> <span class="token string">'Named arguments:'</span><span class="token punctuation">,</span> kwargs<span class="token punctuation">)</span>
+        result <span class="token operator">=</span> func<span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'--'</span><span class="token punctuation">,</span> <span class="token string">'Result:'</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> result
+
+    <span class="token keyword">return</span> decorated_func
+
+
+@logged
+<span class="token keyword">def</span> <span class="token function">make_burger</span><span class="token punctuation">(</span>type_of_meat<span class="token punctuation">,</span> with_onion<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span> with_tomato<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Булочка'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> with_onion<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Луковые колечки'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> with_tomato<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ломтик помидора'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Котлета из'</span><span class="token punctuation">,</span> type_of_meat<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Булочка'</span><span class="token punctuation">)</span>
+
+
+@logged
+<span class="token keyword">def</span> <span class="token function">drinking_type</span><span class="token punctuation">(</span><span class="token builtin">type</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">'У нас есть только чай'</span>
+</code></pre>
+<p>Сначала посмотрите на определения функций <code>make_burger()</code> и <code>drinking_type()</code>.</p>
+<p>Тело функций представляет мало интереса, это очень простые функции.</p>
+<p>А вот <code>@logged</code> перед определением функции — новый для вас объект. Эта строчка говорит, что функция, которая идет дальше, будет задекорирована с помощью декоратора <var>logged</var>. Обратите внимание: задекорированы обе функции одним декоратором. И никаких промежуточных функций и вспомогательных переменных мы не использовали.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Нелокальные переменные</h2>
+<p>Теперь обратимся к декоратору. В нем есть моменты, которые вы раньше не встречали. По условию, мы должны посчитать каждый вызов функции. На одном из прошлых уроков мы делали функцию <code>ask_again()</code>, которая тоже считала вызовы. В тот раз мы использовали глобальную переменную-счетчик, чтобы хранить, сколько раз мы уже вызывали функцию.</p>
+<p>В этот раз мы используем похожую технику и определяем переменную <var>count</var>, но не глобальную, а локальную, для функции-декоратора. Затем мы создаем новую локальную функцию <code>decorated_func()</code>, которую позднее вернем в качестве результата. Эта функция должна иметь доступ к счетчику, который снаружи, но все-таки не в глобальной области видимости.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Нелокальные переменные</strong></p>
+<p>Эта промежуточная область видимости называется <strong>нелокальной</strong>. Внутренняя функция видит переменные в объемлющей функции, но, если она хочет такую переменную изменить, должна объявить ее <var>nonlocal</var>. В область поиска не входят глобальная и встроенная области видимости.</p>
+</section>
+<p>При поиске переменной или функции с указанными именем приоритет (или, как говорят, правило разрешения имен) следующий:</p>
+<ol>
+<li>Сначала ищем локальную переменную (функцию).</li>
+<li>Если не нашли локальную, ищем нелокальную.</li>
+<li>Затем — глобальную.</li>
+<li>И в самом конце — встроенную в язык.</li>
+</ol>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Если вложенность функций больше двух уровней, нелокальная переменная ищет в «ближайшей» области видимости, т. е. в функции вложенностью на один меньше. Если не находит, поиск переходит в самую ближнюю из внешних областей видимости, затем в чуть более далекую — и так далее, пока не найдется нужное имя. Фактически интерпретатор ищет, «где поближе».</p>
+</section>
+<p>Такая техника позволяет сделать внешнюю для функции переменную, но при этом спрятанную от посторонних глаз, в отличие от глобальной. Такие переменные нужны в первую очередь для того, чтобы хранить какие-то данные, относящиеся к функции, между вызовами функции. Локальные переменные стираются при выходе из функции, глобальные — сохраняются, но видны всему свету, а нелокальные — идеальное сочетание закрытости и «сохраняемости».</p>
+<p>В некоторых языках программирования принято называть такие переменные <strong>статическими</strong>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Если вы попробуете запустить две получившиеся функции, увидите, что их счетчики независимы. Это совершенно логично, поскольку эти переменные локальны для запусков самого декоратора <var>logged</var>. Когда мы оборачивали одну функцию, был создан один счетчик; когда оборачивали вторую — другой.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="8">Небольшие, но типичные детали реализации декоратора</h2>
+<p>Стоит также обратить внимание на список аргументов функции. Наша декорированная функция, в отличие от исходной, принимает любой набор аргументов, а когда вызывает исходную функцию, передает их в неизменном виде с помощью звездочек, раскрывающих список позиционных параметров и словарь именованных параметров.</p>
+<p>Это стандартный паттерн (то есть шаблон) для вызова функции, которую мы решили обернуть. Но не всегда список переданных аргументов бывает корректен, в этом случае обернутая функция просто завершится с ошибкой. Наконец, обратите внимание еще на одну стандартную конструкцию: мы сначала сохранили значение, которое вернула обернутая функция, а затем его же и вернули.</p>
+<p>Теперь мы пронумеруем и напечатанную строку с аргументами, и строку с результатом функции одним и тем же номером. Благодаря этому мы можем пронаблюдать дерево вызовов рекурсивной функции, т. е. такой, которая вызывает сама себя. Вы, возможно, помните, что мы делали однажды рекурсивную функцию для вычисления n-го числа Фибоначчи.</p>
+<p>Теперь обернем с помощью нашего декоратора ее и вызовем:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">logged</span><span class="token punctuation">(</span>func<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    count <span class="token operator">=</span> <span class="token number">0</span>
+
+    <span class="token keyword">def</span> <span class="token function">decorated_func</span><span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">nonlocal</span> count
+        count <span class="token operator">+=</span> <span class="token number">1</span>
+        current_index <span class="token operator">=</span> count
+        <span class="token keyword">print</span><span class="token punctuation">(</span>current_index<span class="token punctuation">,</span> <span class="token string">'&gt;&gt;'</span><span class="token punctuation">,</span> <span class="token string">'Arguments:'</span><span class="token punctuation">,</span> args<span class="token punctuation">,</span> 
+              <span class="token string">'Named arguments:'</span><span class="token punctuation">,</span> kwargs<span class="token punctuation">)</span>
+        result <span class="token operator">=</span> func<span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>current_index<span class="token punctuation">,</span> <span class="token string">'--'</span><span class="token punctuation">,</span> <span class="token string">'Result:'</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> result
+
+    <span class="token keyword">return</span> decorated_func
+
+
+@logged
+<span class="token keyword">def</span> <span class="token function">fib</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> n <span class="token operator">&lt;=</span> <span class="token number">2</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">)</span>
+
+
+fib<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Почему мы сделали <code>current_index = count</code>, а не использовали сам <var>count</var>, ведь <var>count</var> нигде в этой функции не изменяется? Но это иллюзия. <var>count</var> — нелокальная переменная, поэтому ее может изменить вызов другой функции, имеющей доступ к этой переменной. У нас как раз такая ситуация: функция вызывает саму себя и в процессе этого вызова переменная <var>count</var> изменяется. Чтобы такого не было, мы заранее сохраняем значение счетчика в отдельную переменную, которую не меняют вызовы других функций. А так как числа неизменяемы, «изменение» (присваивание нового значения) значения переменной <var>count</var> никак не повлияет на <var>current_index</var>.</p>
+<p><strong>Задача.</strong> Напишите декоратор <var>check_password</var>, который запрашивает пароль, прежде чем вызвать функцию и, если он неверный, возвращает None и печатает «В доступе отказано». Запарольте этим декоратором функцию вычисления числа Фибоначчи.</p>
+</section>
+<section class="material__chapter">
+<h2 id="9">Захват значения из аргумента</h2>
+<p>Иногда бывает удобно сделать функцию, которая создает другие функции на основе аргументов. Например, мы хотим создать функции квадрата и куба числа.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">power</span><span class="token punctuation">(</span>degree<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">func</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> x <span class="token operator">**</span> degree
+
+    <span class="token keyword">return</span> func
+
+
+square <span class="token operator">=</span> power<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>
+cube <span class="token operator">=</span> power<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>square<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># --&gt; 25</span>
+</code></pre>
+<p>Внутренняя функция взяла параметр <var>degree</var> из аргумента функции <code>power()</code>. Этот прием часто используется для того, чтобы зафиксировать какой-то набор параметров и сделать функцию с более коротким списком аргументов. Рассмотрим еще один пример. Пусть у нас есть функция <code>send_invitation(email, name, text, date, city)</code>. Мы хотим использовать ее, не перечисляя всякий раз весь этот внушительный список параметров.</p>
+<p>Например, вы знаете, что меняется только текст и адресат (имя и адрес), а город и дата мероприятия зафиксированы. Часть параметров будет браться из аргументов новой функции, часть — из аргументов старой.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">invitation_sender</span><span class="token punctuation">(</span>city<span class="token punctuation">,</span> date<span class="token punctuation">,</span> text<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">sender</span><span class="token punctuation">(</span>email<span class="token punctuation">,</span> name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> send_invitation<span class="token punctuation">(</span>email<span class="token punctuation">,</span> name<span class="token punctuation">,</span> text<span class="token punctuation">,</span> date<span class="token punctuation">,</span> city<span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> sender
+
+
+send_mail <span class="token operator">=</span> invitation_sender<span class="token punctuation">(</span><span class="token string">'Москва'</span><span class="token punctuation">,</span> <span class="token string">'1 апреля 2017 г'</span><span class="token punctuation">,</span> 
+                              <span class="token string">'Приглашаем вас на встречу'</span><span class="token punctuation">)</span>
+send_mail<span class="token punctuation">(</span><span class="token string">'vasiliy-petrov@yandex.ru'</span><span class="token punctuation">,</span> <span class="token string">'Василий Петров'</span><span class="token punctuation">)</span>
+send_mail<span class="token punctuation">(</span><span class="token string">'petr-alekseev@yandex.ru'</span><span class="token punctuation">,</span> <span class="token string">'Петр Алексеев'</span><span class="token punctuation">)</span>
+send_mail<span class="token punctuation">(</span><span class="token string">'vasiliy-vasilyev@yandex.ru'</span><span class="token punctuation">,</span> <span class="token string">'Василий Васильев'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Функция, которая захватила объект из внешнего контекста, удерживает его вечно. Хотя <var>degree</var> в функции <var>power</var> является локальной переменной, эта переменная не исчезнет бесследно после завершения работы функции <var>power</var>. Функция, которая будет возвращена, несет значение этой переменной <var>degree</var> с собой.</p>
+</section>
+<section class="material__chapter">
+<h2 id="10">Немного о терминологии</h2>
+<p>Программисты, как и любые другие специалисты, любят давать понятиям названия. Давайте дадим названия тем понятиям, которые вы уже узнали.</p>
+<p>Функция, которая использует внешние переменные, не являющиеся ее аргументами, называется <strong>замыканием</strong>. Если использует нелокальные переменные — она является замыканием (независимо от того, были они определены во внешней функции или пришли из аргументов внешней функции). Если функция использует глобальные переменные, это тоже замыкание. Но чаще всего замыканием называют все-таки функцию, которая использует нелокальные переменные. Такая функция как бы «таскает за собой» свои внешние переменные, но никому их не показывает.</p>
+<p>Функция, которая принимает функцию в качестве аргумента или же возвращает функцию, называется <strong>функцией высшего порядка</strong>.</p>
+<p>Функция, которая принимает функцию и возвращает функцию, называется <strong>декоратором</strong>. Но при этом предполагается, что возвращенная функция должна быть оберткой над переданной функцией.</p>
+<p><strong>Задача.</strong> Напишите генератор декораторов <var>check_password</var>, т. е. функцию, которая возвращает декоратор. Генератор декораторов принимает в качестве параметра пароль, и получившийся декоратор должен закрыть функцию этим паролем.</p>
+<p>Этот декоратор будет применяться следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@check_password</span><span class="token punctuation">(</span><span class="token string">'password'</span><span class="token punctuation">)</span>
+make_burger<span class="token punctuation">(</span>typeOfMeat<span class="token punctuation">,</span> withOnion<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span> withTomato<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># ...</span>
+</code></pre>
+<p>Т. е. при определении функции сначала вызывается функция <code>check_password()</code> c аргументом <var>'password'</var>, получается декоратор, а затем уже этот получившийся декоратор применяется к функции.</p>
+<p><strong>Задача.</strong> Напишите декоратор <var>cached</var>, который будет кешировать результат вызова функции.</p>
+<p>Когда задекорированная функция впервые вызывается с некоторым аргументом, необходимо выполнить исходную функцию и сохранить посчитанный результат. При последующих вызовах не надо вызывать исходную функцию, а следует найти сохраненное значение и вернуть его. Этот декоратор будет очень полезен для <strong>чистых вычислений</strong> (т. е. вычислений, зависящих только от переданных аргументов), которые занимают продолжительное время.</p>
+<p>Вы уже видели подобное использование функций в уроке про рекурсию. В примере оттуда рекурсивное вычисление числа Фибоначчи при помощи функции <code>fib()</code> занимает очень много времени.</p>
+<p>В этот раз задача сложнее: во-первых, задекорированная функция должна самостоятельно осуществлять кеширование. Во-вторых, кеширование должно зависеть от переданных параметров, т. е.  вам следует сохранять не один результат, а список посчитанных уже пар значений вида (набор параметров, результат).</p>
+<p>Мы предлагаем использовать словарь для решения данной задачи.</p>
+<p>Пример того, как можно будет использовать ваш декоратор:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@cached</span>
+<span class="token keyword">def</span> <span class="token function">fib</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> n <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword">or</span> n <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>fib<span class="token punctuation">(</span><span class="token number">60</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если рекурсивное вычисление числа Фибоначчи не закешировать, вы едва ли дождетесь того, что шестидесятое число последовательности посчитается. Версия же с кешированием сделает это очень быстро.</p>
+<p>Есть множество менее искусственных примеров, где такое кеширование может быть полезно: хотя в примере с числами Фибоначчи есть эффективный алгоритм их вычисления, вы не всегда знаете быстрый способ. А даже если знаете, иногда его слишком тяжело реализовать, тогда как сделать кеширование при помощи вашего декоратора займет всего одну строку.</p>
+<p>Кроме математических вычислений, бывают и другие долгие операции. Например, так можно сохранять результаты интернет-запросов (интернет-запрос — очень долгая операция по меркам компьютера).</p>
+</section></article></section>

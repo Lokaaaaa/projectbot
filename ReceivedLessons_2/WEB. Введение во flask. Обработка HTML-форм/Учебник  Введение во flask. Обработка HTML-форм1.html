@@ -1,0 +1,436 @@
+<section class="lesson-material__content"><article class="material"><h1>Введение во flask. Обработка HTML-форм</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Инструменты для разработки веб-приложений</a></li>
+<li><a class="material__link" href="#2">Первая страница на Flask</a></li>
+<li><a class="material__link" href="#3">Статический контент</a></li>
+<li><a class="material__link" href="#4">Наведем красоты (чуть-чуть)</a></li>
+<li><a class="material__link" href="#5">Передача параметров в адресной строке</a></li>
+<li><a class="material__link" href="#6">Обработка форм</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Наконец-то мы добрались до момента, когда мы будем использовать не чужие веб-приложения, а писать свои. И уже очень скоро мы убедимся, что с помощью Python это делать достаточно просто (особенно с использованием дополнительных сторонних библиотек).</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Инструменты для разработки веб-приложений</h2>
+<p>В письме про окончание первого курса мы просили вас за лето познакомиться с языком разметки HTML. Вот ссылки на курсы, которые мы рекомендовали:</p>
+<ul>
+<li><a class="material__link" href="https://htmlacademy.ru/courses" rel="noopener noreferrer" target="_blank">Интерактивные онлайн-курсы HTML Academy</a></li>
+<li><a class="material__link" href="https://getbootstrap.com/docs/4.2/getting-started/introduction/" rel="noopener noreferrer" target="_blank">Документация по фреймворку Bootstrap</a></li>
+<li><a class="material__link" href="https://stepik.org/course/38218/promo" rel="noopener noreferrer" target="_blank">Веб-разработка для начинающих: HTML и CSS от Stepik</a></li>
+<li><a class="material__link" href="https://stepik.org/course/2621/promo" rel="noopener noreferrer" target="_blank">ОСНОВЫ Html &amp; CSS от Stepik</a></li>
+</ul>
+<p>Если вдруг вы еще этого не сделали, отложите другие дела и посмотрите эти курсы. Дальше без базового знания HTML-разметки вам будет очень сложно разрабатывать собственные веб-приложения.</p>
+<p>В настоящее время разрабатывать веб-приложения можно практически на любом языке программирования, для каждого из которых создано не по одному десятку библиотек, облегчающих те или иные аспекты написания веб-приложений.</p>
+<p>Многие разработчики мобильных приложений и приложений для десктопа «хитрят» и в целях экономии времени и сил создают веб-приложения просто завернутые в веб-компоненту (встроенный браузер), где вся функциональность реализована, как совокупность веб-страниц.</p>
+<p>Одной из сильных областей Python является достаточно простое создание веб-страниц. В принципе, веб-приложения на Python можно писать и без установки дополнительных библиотек, только средствами «из коробки», так как интерпретатор поставляется со встроенным CGI (стандарт интерфейса, применяемого для связи внешней программы с веб-сервером) сервером. Для этого давайте создадим файл server.py и напишем там вот такой код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> http<span class="token punctuation">.</span>server <span class="token keyword">import</span> HTTPServer<span class="token punctuation">,</span> CGIHTTPRequestHandler
+
+
+server_address <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">,</span> <span class="token number">8000</span><span class="token punctuation">)</span>
+httpd <span class="token operator">=</span> HTTPServer<span class="token punctuation">(</span>server_address<span class="token punctuation">,</span> CGIHTTPRequestHandler<span class="token punctuation">)</span>
+httpd<span class="token punctuation">.</span>serve_forever<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Этот код создает простейший веб-сервер, и если мы перейдем по адресу localhost:8000 (или 127.0.0.1:8000), то увидим список файлов той директории, в которой запущен наш сервер.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-1-3.png" width="680"/></div>
+<p>Адрес в командной строке localhost (или 127.0.0.1) — это адрес вашего компьютера для самого этого компьютера, а цифры после двоеточия показывают номер порта. Порт необходим для того, чтобы на одной машине можно было запустить несколько приложений, которые ожидают сообщений. Если утрировать, то ip-адрес — это адрес только до многоквартирного дома, а порт — номер квартиры. Номер порта — целое число от 0 до 65536. Для многих протоколов прикладного уровня есть свои стандартные порты, например для HTTP чаще всего используются 80, 8000 и 8080.</p>
+<p>Для создания первой веб-страницы надо сделать еще несколько шагов. Давайте создадим рядом с нашим сервером папку с именем cgi-bin, внутри которой создадим скрипт с именем index.py следующего содержания:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Content-type: text/html; charset=utf-8"</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"&lt;h1&gt;Hello, Yandex!&lt;/h1&gt;"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь мы можем перейти по адресу localhost:8000/cgi-bin/index.py и увидеть результат выполнения нашего скрипта.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-1-4.png" width="680"/></div>
+<p>Как вы могли заметить, на деле такой подход к созданию веб-приложений излишен и неудобен, поэтому мы его применять не будем, а будем использовать гораздо более удобные инструменты, которые построены в том числе поверх только что рассмотренного механизма.</p>
+<p>Для Python разработано достаточно большое количество библиотек, которые значительно упрощают процесс создания веб-страниц. Некоторые из этих библиотек большие (Django, Twisted), а некоторые (Bottle, Flask) значительно меньше (их еще называют микро-фреймворками).</p>
+<p>С чем связан размер библиотек? С тем, насколько сильно библиотека управляет архитектурой вашей системы и поддерживает ее, насколько развиты ее подсистемы, например, интеграция с разными базами данных, настройками, файловыми хранилищами и т. д. Небольшие библиотеки всего лишь скрывают от вас сетевой уровень, давая вам возможность управлять формированием страницы в зависимости от параметров. Остальное вы должны реализовывать сами.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Первая страница на Flask</h2>
+<p>Разумеется, наши веб-приложения не будут огромными, сразу делать корпоративные <a class="material__link" href="https://ru.wikipedia.org/wiki/Интранет" rel="noopener noreferrer" target="_blank">интранет</a> порталы — довольно-таки непростая задача. Мы начнем с ресурсов с небольшим количеством страниц и ограниченной функциональностью, чтобы рассмотреть лишь базовые механизмы того, как все работает. К счастью, ключевые принципы построения веб-приложений одинаковы вне зависимости от используемого фреймворка.</p>
+<p>Для наших целей прекрасно подойдет микрофреймворк Flask. Он популярный, с хорошей документацией, легок в освоении и при этом вполне пригоден для создания больших промышленных веб-приложений. После его освоения вам не составит труда «пощупать» Bottle самостоятельно, так как принципы работы у них очень похожи, а затем перейти к другим библиотекам.</p>
+<p>Flask не входит в стандартную библиотеку Python, чтобы установить его необходимо выполнить команду:</p>
+<pre><code>pip install flask
+</code></pre>
+<p>После установки библиотеки давайте создадим наше первое веб-приложение на Flask:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> flask <span class="token keyword">import</span> Flask
+
+app <span class="token operator">=</span> Flask<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+
+
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span>
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/index'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">index</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">"Привет, Яндекс!"</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app<span class="token punctuation">.</span>run<span class="token punctuation">(</span>port<span class="token operator">=</span><span class="token number">8080</span><span class="token punctuation">,</span> host<span class="token operator">=</span><span class="token string">'127.0.0.1'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Наш скрипт создает объект приложения как экземпляр класса <var>Flask</var>, который мы предварительно импортировали из пакета flask. Декораторы <code>app.route</code> над функцией <var>index</var> используются для регистрации нашей функции, как функции обратного вызова для определенных событий. В нашем случае создается связь между адресом (URL) в браузере ('/' и '/index') и функцией <var>index</var>. Это означает, что когда веб-браузер запрашивает один из этих двух URL-адресов, Flask будет вызывать эту функцию и передать возвращаемое значение обратно в браузер в качестве ответа.</p>
+<p>Давайте запустим наш скрипт и перейдем на страницу http://127.0.0.1:8080, что соответствует URL '/', или на страницу http://127.0.0.1:8080/index, чтобы увидеть результат выполнения функции <var>index</var>.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-1-5.png" width="680"/></div>
+<p>С помощью декоратора <code>app.route</code> мы можем создавать сколько угодно страниц со своими собственными адресами. Давайте добавим еще одну страницу с обратным отсчетом:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/countdown'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">countdown</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    countdown_list <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    countdown_list<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token string">'Пуск!'</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token string">'&lt;/br&gt;'</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>countdown_list<span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-1-6.png" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="3">Статический контент</h2>
+<p>Практически любой веб-сайт содержит большое количество разнообразного статического контента, к которому могут относиться следующие виды информации:</p>
+<ul>
+<li>Изображения</li>
+<li>Таблицы стилей CSS</li>
+<li>Шрифты</li>
+<li>Файлы для скачивания</li>
+<li>Файлы скриптов JavaScript</li>
+<li>Музыка, видео</li>
+<li>И т. д.</li>
+</ul>
+<p>Всю подобную информацию Flask по умолчанию ищет в директории static, поэтому давайте ее создадим. Для более аккуратной организации файлов рекомендуется создавать подпапки в static для каждого типа статического контента, который у вас есть, например, static/img, static/fonts и т. д.</p>
+<p><strong>Важное замечание:</strong> если тут и далее после изменения что-то не отображается, возможно, вы не перезапустили ваше веб-приложение; запустили новую версию параллельно со старой и браузер посылает запросы именно предыдущей версии; или браузер закешировал какие-то данные (сохранил к себе, чтобы отдавать пользователю без запроса к серверу для ускорения работы). Чтобы это поправить, обновите страницу с очисткой кеша — Shift + F5.</p>
+<p>Давайте разместим хорошо известную нам сову Риану на отдельной странице.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-1-7.jpeg" width="680"/></div>
+<p>Для этого в папке static создадим подпапку img, разместим там наше изображение, импортируем из модуля flask функцию <var>url_for</var>. И добавим в наше веб-приложение следующий код:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/image_sample'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">image</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'''&lt;img src="</span><span class="token interpolation"><span class="token punctuation">{</span>url_for<span class="token punctuation">(</span><span class="token string">'static'</span><span class="token punctuation">,</span> filename<span class="token operator">=</span><span class="token string">'img/riana.jpg'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">" 
+           alt="здесь должна была быть картинка, но не нашлась"&gt;'''</span></span>
+</code></pre>
+<p>Если бы название файла с картинкой было на русском языке, оно перекодировалось бы в коды символов Unicode, что можно увидеть, посмотрев код страницы в браузере.</p>
+<p>В принципе, никто нам не запрещает написать путь к файлу вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">return</span> <span class="token triple-quoted-string string">'''&lt;img src="/static/img/riana.jpg" alt="здесь должна была быть картинка, но не нашлась"&gt;'''</span>
+</code></pre>
+<p>Однако при создании даже небольшого проекта вы можете столкнуться с тем, что ваши пути перестанут работать, так как кто-то переопределил у микро-фреймворка параметр, отвечающий за местонахождение директории со статическими файлами, а наш первоначальный вариант сохранит работоспособность.</p>
+<p>Точно по такому же принципу работает и остальной статический контент. Давайте рассмотрим еще один пример: сделаем обработчик <var>return_sample_page</var>, который вернет пользователю нашу первую HTML-страницу, сверстанную по всем правилам:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/sample_page'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">return_sample_page</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token triple-quoted-string string">"""&lt;!doctype html&gt;
+                &lt;html lang="en"&gt;
+                  &lt;head&gt;
+                    &lt;meta charset="utf-8"&gt;
+                    &lt;title&gt;Привет, Яндекс!&lt;/title&gt;
+                  &lt;/head&gt;
+                  &lt;body&gt;
+                    &lt;h1&gt;Первая HTML-страница&lt;/h1&gt;
+                  &lt;/body&gt;
+                &lt;/html&gt;"""</span>
+</code></pre>
+<p>А теперь давайте добавим css-файл, который заменит цвет текста на красный. Для этого создадим в папке css внутри папки со статическим контентом файл style.css со следующим текстом:</p>
+<pre class="language-python"><code class="language-python">h1 <span class="token punctuation">{</span>
+   color<span class="token punctuation">:</span> <span class="token comment">#d22e3a</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Заменим возвращаемое значение на:</p>
+<pre class="language-python"><code class="language-python"><span class="token string-interpolation"><span class="token string">f"""&lt;!doctype html&gt;
+                &lt;html lang="en"&gt;
+                  &lt;head&gt;
+                    &lt;meta charset="utf-8"&gt;
+                    &lt;link rel="stylesheet" type="text/css" href="</span><span class="token interpolation"><span class="token punctuation">{</span>url_for<span class="token punctuation">(</span><span class="token string">'static'</span><span class="token punctuation">,</span> filename<span class="token operator">=</span><span class="token string">'css/style.css'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">" /&gt;
+                    &lt;title&gt;Привет, Яндекс!&lt;/title&gt;
+                  &lt;/head&gt;
+                  &lt;body&gt;
+                    &lt;h1&gt;Первая HTML-страница&lt;/h1&gt;
+                  &lt;/body&gt;
+                &lt;/html&gt;"""</span></span>
+</code></pre>
+<p>Перезапустим приложение, обновим страницу и убедимся, что цвет текста изменился на указанный.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Наведем красоты (чуть-чуть)</h2>
+<p>Наш курс ориентирован на изучение технологий, которые используются при создании промышленных приложений, и, к сожалению, создание стилей и верстка HTML не входит в цели нашего курса (да и просто времени не хватит, так как это отдельная большая тема). Но, согласитесь, хочется как-то относительно просто делать веб-приложения, которые выглядят симпатично, поэтому давайте обратимся к такому набору инструментов, как Bootstrap.</p>
+<p>Bootstrap — это свободный набор инструментов для создания сайтов и веб-приложений, который включает в себя скрипты, стили, иконки и многое другое. Набор расширяемый и достаточно гибкий. Кроме того, у него огромное сообщество, которое предлагает большое количество уже готовых тем и компонентов для Bootstrap, большая часть которых либо свободно распространяемая, либо бесплатная, либо стоит не запредельно много даже по меркам бюджета школьного/студенческого проекта.</p>
+<p>В своем первоначальном виде Bootstrap частенько используется программистами как отправная точка для создания веб-приложения без участия дизайнеров и верстальщиков. Инструкцию по подключению и использованию Bootstrap можно найти на <a class="material__link" href="https://getbootstrap.com/" rel="noopener noreferrer" target="_blank">официальном сайте</a>. Само подключение состоит из нескольких частей:</p>
+<ul>
+<li>Подключение стилей</li>
+<li>Подключение JavaScript</li>
+</ul>
+<p>Для нашего следующего примера достаточно подключить только стили, но для использования всех возможностей Bootstrap необходимо выполнить оба шага.</p>
+<p>Давайте сделаем функцию, которая будет нам отдавать простую страничку с подключением Bootstrap и несколькими элементами на ней. Примерно вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/bootstrap_sample'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">bootstrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token triple-quoted-string string">'''&lt;!doctype html&gt;
+                &lt;html lang="en"&gt;
+                  &lt;head&gt;
+                    &lt;meta charset="utf-8"&gt;
+                    &lt;meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"&gt;
+                    &lt;link rel="stylesheet" 
+                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
+                    integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+                    crossorigin="anonymous"&gt;
+                    &lt;title&gt;Привет, Яндекс!&lt;/title&gt;
+                  &lt;/head&gt;
+                  &lt;body&gt;
+                    &lt;h1&gt;Привет, Яндекс!&lt;/h1&gt;
+                    &lt;div class="alert alert-primary" role="alert"&gt;
+                      А мы тут компонентами Bootstrap балуемся
+                    &lt;/div&gt;
+                  &lt;/body&gt;
+                &lt;/html&gt;'''</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-1-8.png" width="680"/></div>
+<p>Как вы могли заметить, даже создание простых страниц напрямую из кода выглядит громоздко, а при небольшом увеличении сложности страницы трудоемкость написания и поддержки возрастает значительно. Поэтому вариант, который мы сегодня рассматривали, годится только для того, чтобы попрактиковаться с библиотекой и языком разметки HTML. На следующем уроке мы рассмотрим, как решается эта проблема.</p>
+<p>Сейчас же мы добавим в наше приложение некоторую динамику путем передачи информации от пользователя на сервер. В общем-то, мы можем влиять на состояние сервера и сейчас, например, изменяя значение глобальной переменной:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> flask <span class="token keyword">import</span> Flask<span class="token punctuation">,</span> url_for
+i <span class="token operator">=</span> <span class="token number">0</span>
+app <span class="token operator">=</span> Flask<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+
+
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/i'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">show_i</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> i
+    i <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">return</span> <span class="token builtin">str</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+</code></pre>
+<p>Но это плохая практика, не делайте так, если от этого не зависит ваша жизнь. Единственное, на что можно обратить внимание в этом примере, это тот факт, что если мы попробуем возвратить этой функцией просто число, то получим страницу с ошибкой следующего содержания:</p>
+<pre><samp>TypeError: 'int' object is not callable
+The view function did not return a valid response.
+The return type must be a string, tuple, Response instance,
+or WSGI callable, but it was a int.</samp></pre>
+<p>Данное сообщение недвусмысленно намекнет нам на то, каким может быть возвращаемое значение у функций, украшенных декоратором <code>app.route</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Передача параметров в адресной строке</h2>
+<p>Статичные страницы делать не интересно, поэтому давайте рассмотрим то, как мы можем взаимодействовать с пользователем нашего веб-приложения. Таких способов несколько, давайте начнем с передачи параметров в адресной строке.</p>
+<p>Декоратор <code>app.route</code> умеет принимать на вход значение одного или нескольких параметров, которые пишется после завершающего слэша в пути внутри треугольных скобок &lt;&gt;, вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/greeting/&lt;username&gt;'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">greeting</span><span class="token punctuation">(</span>username<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'''&lt;!doctype html&gt;
+                &lt;html lang="en"&gt;
+                  &lt;head&gt;
+                    &lt;meta charset="utf-8"&gt;
+                    &lt;meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"&gt;
+                   &lt;link rel="stylesheet"
+                   href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                   integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                   crossorigin="anonymous"&gt;
+                    &lt;title&gt;Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>username<span class="token punctuation">}</span></span><span class="token string">&lt;/title&gt;
+                  &lt;/head&gt;
+                  &lt;body&gt;
+                    &lt;h1&gt;Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>username<span class="token punctuation">}</span></span><span class="token string">!&lt;/h1&gt;
+                  &lt;/body&gt;
+                &lt;/html&gt;'''</span></span>
+</code></pre>
+<p>Обратите внимание, что в данном случае меняется и сигнатура функции, которая теперь принимает на вход одноименный параметр. Кроме того, этот параметр — обязательный.</p>
+<p>Flask позволяет указывать несколько параметров, а также явно определять их тип с помощью конвертера. Рассмотрим обе этих возможности в следующем примере:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/two_params/&lt;username&gt;/&lt;int:number&gt;'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">two_params</span><span class="token punctuation">(</span>username<span class="token punctuation">,</span> number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'''&lt;!doctype html&gt;
+                &lt;html lang="en"&gt;
+                  &lt;head&gt;
+                    &lt;meta charset="utf-8"&gt;
+                    &lt;meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"&gt;
+                    &lt;link rel="stylesheet"
+                   href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                   integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                   crossorigin="anonymous"&gt;
+                    &lt;title&gt;Пример с несколькими параметрами&lt;/title&gt;
+                  &lt;/head&gt;
+                  &lt;body&gt;
+                    &lt;h2&gt;</span><span class="token interpolation"><span class="token punctuation">{</span>username<span class="token punctuation">}</span></span><span class="token string">&lt;/h2&gt;
+                    &lt;div&gt;Это первый параметр и его тип: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token builtin">str</span><span class="token punctuation">(</span><span class="token builtin">type</span><span class="token punctuation">(</span>username<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token format-spec">-1]</span><span class="token punctuation">}</span></span><span class="token string">&lt;/div&gt;
+                    &lt;h2&gt;</span><span class="token interpolation"><span class="token punctuation">{</span>number<span class="token punctuation">}</span></span><span class="token string">&lt;/h2&gt;
+                    &lt;div&gt;Это второй параметр и его тип: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token builtin">str</span><span class="token punctuation">(</span><span class="token builtin">type</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token format-spec">-1]</span><span class="token punctuation">}</span></span><span class="token string">&lt;/div&gt;
+                  &lt;/body&gt;
+                &lt;/html&gt;'''</span></span>
+</code></pre>
+<p>Всего таких конвертеров пять:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<thead>
+<tr>
+<th>Имя конвертера</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>string</td>
+<td>(по умолчанию) любой текст без слешей</td>
+</tr>
+<tr>
+<td>int</td>
+<td>положительное целое число</td>
+</tr>
+<tr>
+<td>float</td>
+<td>положительное дробное число</td>
+</tr>
+<tr>
+<td>path</td>
+<td>строка, но может содержать слеши, для передачи некоторого URL-пути</td>
+</tr>
+<tr>
+<td>uuid</td>
+<td>стандарт строк-идентификаторов из 16 байт в шестнадцатеричном представлении. Выглядит примерно так:<br/>550e8400-e29b-41d4-a716-446655440000</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Передача параметров в адресе командной строки используется достаточно часто для динамического формирования однотипных страниц. Например, на сайте pypi.org такой способ применяется для формирования страниц с информацией о каждом конкретном модуле.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Обработка форм</h2>
+<p>Передача параметра в адресной строке — это скорее не инструмент взаимодействия с пользователем, а динамическое формирование для него ссылок на разные объекты внутри веб-приложения. Для непосредственного общения с пользователем такой способ неудобен, так как в общем случае параметров может быть много, а предлагать пользователю заносить их в адресную строку руками — не лучшая идея.</p>
+<p>Для взаимодействия с пользователем применяется другой механизм — формы. HTML-разметка позволяет создавать элементы для ввода данных разных типов, с которыми Flask, конечно, умеет работать. Давайте вспомним, какие типы элементов ввода поддерживает HTML.</p>
+<p>Вообще говоря, разных типов полей ввода довольно много, и периодически в новые версии языка разметки добавляются дополнительные. Вот некоторые из таких типов:</p>
+<ul>
+<li>button — кнопка</li>
+<li>checkbox — множественный выбор</li>
+<li>color — поле выбора цвета</li>
+<li>date, datetime, datetime-local, month, time, week — ввод даты и времени</li>
+<li>email — поле для ввода адреса электронной почты</li>
+<li>file — поле для выбора файла</li>
+<li>number — поле для ввода числовой информации</li>
+<li>password — поле для ввода пароля</li>
+<li>radio — выбор одного из нескольких вариантов</li>
+<li>range — ползунок (как в музыкальном или видео-плеере)</li>
+<li>submit — кнопка для отправки формы</li>
+<li>tel — поле для ввода телефона</li>
+<li>text — поле для ввода текста</li>
+<li>url — поле для ввода адреса в Интернете</li>
+</ul>
+<p>Давайте сделаем форму с несколькими самыми распространенными типами полей ввода, для их стилизации используем Bootstrap. Чтобы увидеть, в каком виде информация из этих полей придет на сервер нашего веб-приложения, напишем такой код (предварительно импортировав request из Flask):</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/form_sample'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'POST'</span><span class="token punctuation">,</span> <span class="token string">'GET'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">form_sample</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> request<span class="token punctuation">.</span>method <span class="token operator">==</span> <span class="token string">'GET'</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'''&lt;!doctype html&gt;
+                        &lt;html lang="en"&gt;
+                          &lt;head&gt;
+                            &lt;meta charset="utf-8"&gt;
+                            &lt;meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"&gt;
+                            &lt;link rel="stylesheet"
+                            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                            integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                            crossorigin="anonymous"&gt;
+                            &lt;link rel="stylesheet" type="text/css" href="</span><span class="token interpolation"><span class="token punctuation">{</span>url_for<span class="token punctuation">(</span><span class="token string">'static'</span><span class="token punctuation">,</span> filename<span class="token operator">=</span><span class="token string">'css/style.css'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">" /&gt;
+                            &lt;title&gt;Пример формы&lt;/title&gt;
+                          &lt;/head&gt;
+                          &lt;body&gt;
+                            &lt;h1&gt;Форма для регистрации в суперсекретной системе&lt;/h1&gt;
+                            &lt;div&gt;
+                                &lt;form class="login_form" method="post"&gt;
+                                    &lt;input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Введите адрес почты" name="email"&gt;
+                                    &lt;input type="password" class="form-control" id="password" placeholder="Введите пароль" name="password"&gt;
+                                    &lt;div class="form-group"&gt;
+                                        &lt;label for="classSelect"&gt;В каком вы классе&lt;/label&gt;
+                                        &lt;select class="form-control" id="classSelect" name="class"&gt;
+                                          &lt;option&gt;7&lt;/option&gt;
+                                          &lt;option&gt;8&lt;/option&gt;
+                                          &lt;option&gt;9&lt;/option&gt;
+                                          &lt;option&gt;10&lt;/option&gt;
+                                          &lt;option&gt;11&lt;/option&gt;
+                                        &lt;/select&gt;
+                                     &lt;/div&gt;
+                                    &lt;div class="form-group"&gt;
+                                        &lt;label for="about"&gt;Немного о себе&lt;/label&gt;
+                                        &lt;textarea class="form-control" id="about" rows="3" name="about"&gt;&lt;/textarea&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="form-group"&gt;
+                                        &lt;label for="photo"&gt;Приложите фотографию&lt;/label&gt;
+                                        &lt;input type="file" class="form-control-file" id="photo" name="file"&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="form-group"&gt;
+                                        &lt;label for="form-check"&gt;Укажите пол&lt;/label&gt;
+                                        &lt;div class="form-check"&gt;
+                                          &lt;input class="form-check-input" type="radio" name="sex" id="male" value="male" checked&gt;
+                                          &lt;label class="form-check-label" for="male"&gt;
+                                            Мужской
+                                          &lt;/label&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="form-check"&gt;
+                                          &lt;input class="form-check-input" type="radio" name="sex" id="female" value="female"&gt;
+                                          &lt;label class="form-check-label" for="female"&gt;
+                                            Женский
+                                          &lt;/label&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="form-group form-check"&gt;
+                                        &lt;input type="checkbox" class="form-check-input" id="acceptRules" name="accept"&gt;
+                                        &lt;label class="form-check-label" for="acceptRules"&gt;Готов быть добровольцем&lt;/label&gt;
+                                    &lt;/div&gt;
+                                    &lt;button type="submit" class="btn btn-primary"&gt;Записаться&lt;/button&gt;
+                                &lt;/form&gt;
+                            &lt;/div&gt;
+                          &lt;/body&gt;
+                        &lt;/html&gt;'''</span></span>
+    <span class="token keyword">elif</span> request<span class="token punctuation">.</span>method <span class="token operator">==</span> <span class="token string">'POST'</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>form<span class="token punctuation">[</span><span class="token string">'email'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>form<span class="token punctuation">[</span><span class="token string">'password'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>form<span class="token punctuation">[</span><span class="token string">'class'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>form<span class="token punctuation">[</span><span class="token string">'file'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>form<span class="token punctuation">[</span><span class="token string">'about'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>form<span class="token punctuation">[</span><span class="token string">'accept'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>form<span class="token punctuation">[</span><span class="token string">'sex'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token string">"Форма отправлена"</span>
+</code></pre>
+<p>Заодно давайте настроим нашу форму в style.css, который подключим после стилей Bootstrap:</p>
+<pre class="language-python"><code class="language-python">form<span class="token punctuation">.</span>login_form <span class="token punctuation">{</span>
+    margin<span class="token operator">-</span>left<span class="token punctuation">:</span> auto<span class="token punctuation">;</span>
+    margin<span class="token operator">-</span>right<span class="token punctuation">:</span> auto<span class="token punctuation">;</span>
+    <span class="token builtin">max</span><span class="token operator">-</span>width<span class="token punctuation">:</span> 450px<span class="token punctuation">;</span>
+    background<span class="token operator">-</span>color<span class="token punctuation">:</span> <span class="token comment">#ffcc00;</span>
+    border<span class="token punctuation">:</span> 1px solid gray<span class="token punctuation">;</span>
+    border<span class="token operator">-</span>radius<span class="token punctuation">:</span> 5px<span class="token punctuation">;</span>
+    padding<span class="token punctuation">:</span> 10px<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Если мы все сделали правильно, увидим вот такой впечатляющий результат.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/flask-1.png" width="680"/></div>
+<p>Мы дополнили наш декоратор <code>app.route</code> новым параметром — списком методов протокола HTTP, с которыми он работает. Всего методов довольно много, но мы будем говорить только о пяти из них:</p>
+<ol>
+<li>GET — запрашивает данные, не меняя состояния сервера («прочитать»).</li>
+<li>POST — отправляет данные на сервер («отправить»).</li>
+<li>PUT — заменяет все текущие данные сервера данными запроса («заменить»).</li>
+<li>DELETE — удаляет указанные данные («удалить»).</li>
+<li>PATCH — используется для частичного изменения данных («изменить»).</li>
+</ol>
+<p>Таким образом, наша функция <var>form_sample</var> работает с двумя методами. Если мы хотим получить данные с сервера, тогда отрабатывает ветка условия, в которой мы отправляем пользователю форму для заполнения. Когда пользователь заполнил форму и нажал на кнопку «Записаться», данные формы заворачиваются в специальный аналог словаря в сущности <var>request</var>, которая хранит всю информацию о пользовательском запросе.</p>
+<p>Обратите внимание: поскольку данные формы заворачиваются в аналог словаря, может случиться ситуация, когда по ключу мы не сможем найти значение (например, если пользователь не отметит чекбокс), и тогда выбросится исключение. Чтобы этого избежать, лучше обращаться к данным не напрямую по ключу, а через метод <var>get</var>. Таким образом, более корректная обработка значения чекбокса будет выглядеть так:</p>
+<pre class="language-python"><code class="language-python">request<span class="token punctuation">.</span>form<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'accept'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Как вы могли заметить, произошла небольшая странность с приложенным файлом: мы достали только его название, а не содержимое. Это произошло потому, что содержимое файла хранится в другом месте. Давайте напишем еще один пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/sample_file_upload'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'POST'</span><span class="token punctuation">,</span> <span class="token string">'GET'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">sample_file_upload</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> request<span class="token punctuation">.</span>method <span class="token operator">==</span> <span class="token string">'GET'</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'''&lt;!doctype html&gt;
+                        &lt;html lang="en"&gt;
+                          &lt;head&gt;
+                            &lt;meta charset="utf-8"&gt;
+                            &lt;meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"&gt;
+                             &lt;link rel="stylesheet"
+                             href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                             integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                             crossorigin="anonymous"&gt;
+                            &lt;link rel="stylesheet" type="text/css" href="</span><span class="token interpolation"><span class="token punctuation">{</span>url_for<span class="token punctuation">(</span><span class="token string">'static'</span><span class="token punctuation">,</span> filename<span class="token operator">=</span><span class="token string">'css/style.css'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">" /&gt;
+                            &lt;title&gt;Пример загрузки файла&lt;/title&gt;
+                          &lt;/head&gt;
+                          &lt;body&gt;
+                            &lt;h1&gt;Загрузим файл&lt;/h1&gt;
+                            &lt;form method="post" enctype="multipart/form-data"&gt;
+                               &lt;div class="form-group"&gt;
+                                    &lt;label for="photo"&gt;Выберите файл&lt;/label&gt;
+                                    &lt;input type="file" class="form-control-file" id="photo" name="file"&gt;
+                                &lt;/div&gt;
+                                &lt;button type="submit" class="btn btn-primary"&gt;Отправить&lt;/button&gt;
+                            &lt;/form&gt;
+                          &lt;/body&gt;
+                        &lt;/html&gt;'''</span></span>
+    <span class="token keyword">elif</span> request<span class="token punctuation">.</span>method <span class="token operator">==</span> <span class="token string">'POST'</span><span class="token punctuation">:</span>
+        f <span class="token operator">=</span> request<span class="token punctuation">.</span>files<span class="token punctuation">[</span><span class="token string">'file'</span><span class="token punctuation">]</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token string">"Форма отправлена"</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-2-2.png" width="500"/></div>
+<p>Обратите внимание: кроме доступа к файлу в <var>request.files</var> мы немного изменили саму разметку формы, добавив в нее параметр</p>
+<pre class="language-python"><code class="language-python">enctype<span class="token operator">=</span><span class="token string">"multipart/form-data"</span>
+</code></pre>
+<p>Иначе форма так и продолжит отправлять только имена файлов, а при попытке доступа к самому файлу мы получим ошибку.</p>
+<p>Все достаточно просто, не так ли? Пока самая большая сложность, которая нас преследует — это громоздкая и неудобная генерация HTML-разметки внутри функции, от этого недостатка мы избавимся уже на следующем уроке.</p>
+</section></article></section>

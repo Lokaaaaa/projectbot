@@ -1,0 +1,279 @@
+<section class="lesson-material__content"><article class="material"><h1>Функции с переменным числом аргументов</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Распаковка и запаковка значений</a></li>
+<li><a class="material__link" href="#2">Аргументы по умолчанию</a></li>
+<li><a class="material__link" href="#3">Именованные аргументы</a></li>
+<li><a class="material__link" href="#4">Инструкция pass. Согласованность аргументов</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы научимся писать сложные функции, принимающие неопределенное число аргументов, и передавать в функцию именованные параметры. Попутно мы немного поговорим о том, как работает множественное присваивание.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Распаковка и запаковка значений</h2>
+<p>В конце урока про возврат значений из функции мы коснулись темы возврата нескольких значений и множественного присваивания получившихся значений нескольким переменным.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_coordinates</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span>
+
+
+x<span class="token punctuation">,</span> y <span class="token operator">=</span> get_coordinates<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token comment"># =&gt; 1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span> <span class="token comment"># =&gt; 2</span>
+</code></pre>
+<p>Хотя этот прием с присваиванием результата нескольким значениям часто используется именно в применении к функциям, на самом деле никакого отношения к механике работы функций не имеет. В приведенном примере функция просто возвращает кортеж, а всю дальнейшую работу делает механизм множественного присваивания, а точнее, процедура «распаковывания». Вы с ней уже сталкивались, когда обсуждали кортежи. Сейчас мы посмотрим на возможности множественного присваивания внимательнее.</p>
+<p>Итак, вы можете написать:</p>
+<pre class="language-python"><code class="language-python">x<span class="token punctuation">,</span> y <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1.5</span><span class="token punctuation">,</span> <span class="token number">2.5</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В момент присваивания кортеж будет распакован, его первый элемент будет записан в <var>x</var>, второй — в <var>y</var>. Распаковать можно не только кортежи, но и списки: <code>x, y = [1.5, 2.5]</code> будет работать точно так же.</p>
+<p>Если при множественном присваивании (когда слева больше одной переменной) число элементов слева и справа не совпадает, возникает ошибка времени исполнения. Вы это видели, когда разбирали запись трех координат в две переменные или двух — в три.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Распаковка значений</strong></p>
+<p>Есть способ собрать сразу <strong>несколько значений в одну переменную</strong>. Это делается при помощи звездочки перед именем переменной:</p>
+<pre class="language-python"><code class="language-python">x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> <span class="token operator">*</span>rest <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span>
+</code></pre>
+</section>
+<p>В этом случае в <var>x</var> будет записана единица, в <var>y</var> — 2, а в <var>rest</var> — список, состоящий из всех аргументов, которые не попали в обычные переменные. В данном случае <var>rest</var> будет равен <code>[3, 4, 5, 6]</code>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Учтите, что <var>rest</var> всегда будет списком, даже когда в него попадает лишь один элемент или даже ноль:</p>
+<pre class="language-python"><code class="language-python">x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> <span class="token operator">*</span>rest <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>rest<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [3]</span>
+</code></pre>
+</section>
+<pre class="language-python"><code class="language-python">x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> <span class="token operator">*</span>rest <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>rest<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; []</span>
+
+x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> z<span class="token punctuation">,</span> <span class="token operator">*</span>rest <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span>
+<span class="token comment"># Ошибка выполнения</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Звездочка может быть только у одного аргумента, но необязательно у последнего:</p>
+<pre class="language-python"><code class="language-python"><span class="token operator">*</span>names<span class="token punctuation">,</span> surname <span class="token operator">=</span> <span class="token string">'Анна Мария Луиза Медичи'</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>names<span class="token punctuation">)</span>   <span class="token comment"># =&gt; ['Анна', 'Мария', 'Луиза']</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>surname<span class="token punctuation">)</span> <span class="token comment"># =&gt; Медичи</span>
+</code></pre>
+</section>
+<p>Такой аргумент может стоять и посередине:</p>
+<pre class="language-python"><code class="language-python">li <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">"Дейнерис"</span><span class="token punctuation">,</span>
+      <span class="token string">'королева андалов, ройнаров и Первых Людей'</span><span class="token punctuation">,</span>
+      <span class="token string">'королева Миэрина'</span><span class="token punctuation">,</span>
+      <span class="token string">'кхалиси Великого Травяного моря'</span><span class="token punctuation">,</span>
+      <span class="token string">'Неопалимая'</span><span class="token punctuation">,</span>
+      <span class="token string">'Бурерожденная'</span><span class="token punctuation">,</span>
+      <span class="token string">'Матерь Драконов'</span><span class="token punctuation">,</span>
+      <span class="token string">'Разрушительница Оков'</span><span class="token punctuation">,</span>
+      <span class="token string">'Низвергательница Колдунов'</span><span class="token punctuation">,</span>
+      <span class="token string">'Таргариен'</span><span class="token punctuation">]</span>
+name<span class="token punctuation">,</span> <span class="token operator">*</span>titles<span class="token punctuation">,</span> surname <span class="token operator">=</span> li
+<span class="token keyword">print</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>titles<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>surname<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Дейнерис
+['королева андалов, ройнаров и Первых Людей', 'королева Миэрина', 'кхалиси Великого Травяного моря', 'Неопалимая', 'Бурерожденная', 'Матерь Драконов', 'Разрушительница Оков', 'Низвергательница Колдунов']
+Таргариен</samp></pre>
+<p>Также есть возможность <strong>распаковывать вложенные списки</strong>. Например:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">,</span> <span class="token punctuation">(</span>b<span class="token punctuation">,</span> c<span class="token punctuation">)</span><span class="token punctuation">,</span> d <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">]</span>
+</code></pre>
+<p>запишет в переменные <var>a</var>, <var>b</var>, <var>c</var>, <var>d</var> значения 1, 2, 3 и 4 соответственно.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Если вы хотите <strong>распаковать единственное значение в кортеже</strong>, после имени переменной должна идти запятая:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token punctuation">)</span>
+b<span class="token punctuation">,</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>  <span class="token comment"># =&gt; (1,)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>  <span class="token comment"># =&gt; 1</span>
+</code></pre>
+</section>
+<p>Помимо распаковывания, есть и операция <strong>запаковывания</strong>. Она выполняется всегда, когда справа от знака равенства стоит больше одного значения. Например, можно написать: <code>values = 1, 2, 3</code>. Тогда значения в правой части автоматически будут запакованы в кортеж <code>(1, 2, 3)</code>.</p>
+<p>Запаковывание можно комбинировать с распаковыванием:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">,</span> <span class="token operator">*</span>b <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 1 [2, 3]</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Общее правило такое: при любых нестандартных присваиваниях <strong>сначала происходит запаковывание значений в правой части, а затем распаковка их в переменные, стоящие в левой части</strong>.</p>
+</section>
+<p>Вообще, лучший способ понять операции с запаковыванием и распаковыванием значений — поэкспериментировать с ними.</p>
+<p>Техника запаковывания и распаковывания переменных со звездочкой используется не только в операциях присваивания. Похожий механизм применяется для написания функций, которые могут принимать переменное число аргументов. И синтаксис для этого используется похожий на тот, который применяется в множественном присваивании. В списке аргументов функции один из аргументов может быть помечен звездочкой, тогда в него попадут все значения на соответствующей позиции, которые еще не присвоены другим аргументам.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Но есть и отличие. При <strong>множественном присваивании</strong> переменная со звездочкой получает <strong>список</strong> значений. А когда <strong>аргумент функции</strong> указан со звездочкой, он получает <strong>кортеж</strong> значений.</p>
+</section>
+<p>Например, функция <var>print</var> принимает сколько угодно аргументов и дает таким образом возможность выводить на экран неограниченное число значений.</p>
+<p>Разработчики языка Python могли поступить иначе и сделать функцию, принимающую всегда ровно один аргумент-список, и выводить на экран элементы этого списка. С точки зрения функциональности результат был бы аналогичным, но такую функцию было бы не так удобно использовать.</p>
+<p>Мы сделаем свою функцию для вычисления произведения всех аргументов.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">product</span><span class="token punctuation">(</span>first<span class="token punctuation">,</span> <span class="token operator">*</span>rest<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    result <span class="token operator">=</span> first
+    <span class="token keyword">for</span> value <span class="token keyword">in</span> rest<span class="token punctuation">:</span>
+        result <span class="token operator">*=</span> value
+    <span class="token keyword">return</span> result
+
+
+product<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">,</span><span class="token number">7</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 210</span>
+</code></pre>
+<p>Эта функция принимает как минимум один аргумент — <var>first</var>. Это не позволяет вызвать функцию без аргументов, что было бы бессмысленно. Все аргументы, кроме первого, попадают в кортеж <var>rest</var>.</p>
+<p>Не всем функциям необходимо произвольное число элементов. Бывает так, что функции требуется просто разное число аргументов. В этом случае можно поступить следующим образом: поставить звездочку, которая формально позволяет использовать любое число аргументов, а внутри функции вручную проверять, что число переданных элементов — правильное.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Звездочку можно использовать не только для того, чтобы запаковать аргументы. Распаковать их тоже можно. Если при вызове функции вы поставите звездочку перед переданным аргументом-списком, список раскроется и как бы «потеряет границы». Элементы списка станут аргументами функции.</p>
+</section>
+<pre class="language-python"><code class="language-python">arr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'cd'</span><span class="token punctuation">,</span> <span class="token string">'ef'</span><span class="token punctuation">,</span> <span class="token string">'gh'</span><span class="token punctuation">]</span>
+<span class="token comment"># Здесь мы передаем просто список как один аргумент</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span> <span class="token comment"># =&gt; ['cd', 'ef', 'gh']</span>
+
+<span class="token comment"># А здесь мы раскрыли список и </span>
+<span class="token comment">#   функция print получила три отдельных аргумента</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>arr<span class="token punctuation">)</span> <span class="token comment"># =&gt; cd ef gh</span>
+<span class="token comment"># Это аналогично вызову</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'сd'</span><span class="token punctuation">,</span> <span class="token string">'ef'</span><span class="token punctuation">,</span> <span class="token string">'gh'</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; cd ef gh</span>
+
+<span class="token comment"># Раскрытие списка можно комбинировать с любыми аргументами</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'ab'</span><span class="token punctuation">,</span> <span class="token operator">*</span>arr<span class="token punctuation">,</span> <span class="token string">'yz'</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; ab cd ef gh yz</span>
+<span class="token comment"># При раскрытии может быть несколько аргументов со звездочкой</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>arr<span class="token punctuation">,</span> <span class="token operator">*</span>arr<span class="token punctuation">)</span> <span class="token comment"># =&gt; cd ef gh cd ef gh</span>
+</code></pre>
+<p>Такую технику применяют, когда вам надо передать в функцию заранее неизвестное число аргументов. Вы делаете отдельную переменную, хранящую список аргументов, а затем просто раскрываете ее при помощи звездочки. На следующем уроке нам придется написать несколько таких функций.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Аргументы по умолчанию</h2>
+<p>Бывает так, что какой-то параметр функции часто принимает одно и то же значение.</p>
+<p>Например, хорошо известная вам функция <var>int</var> принимает два параметра: строка, которую нужно преобразовать в число, а также основание системы счисления. Это позволяет ей считывать числа в различных системах счисления, например, двоичное число 101 мы можем считать так:</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token string">'101'</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; 5</span>
+</code></pre>
+<p>Но чаще всего эта функция используется для считывания из строки чисел, записанных в десятичной системе счисления. Было бы неудобно каждый раз писать 10 вторым аргументом. На такой случай Python позволяет задавать некоторым аргументам значения по умолчанию. У функции <var>int</var> второй аргумент по умолчанию равен 10, и потому можно вызывать эту функцию с одним аргументом. Значение второго подставится автоматически.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Аргументы по умолчанию</strong></p>
+<p>Для того чтобы определить аргумент по умолчанию, в списке аргументов функции достаточно после имени переменной написать знак равенства и нужное значение. Аргументы, имеющие значение по умолчанию, должны идти в конце, ведь иначе интерпретатор не смог бы понять, какой из аргументов указан, а какой пропущен (и значит, для него нужно использовать значение по умолчанию).</p>
+</section>
+<p>В качестве примера сделаем функцию, которая будет готовить бургеры с котлетами разного типа и по умолчанию добавлять туда помидоры, но не добавлять лук. Тогда функция приготовления будет выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">make_burger</span><span class="token punctuation">(</span>type_of_meat<span class="token punctuation">,</span> with_onion<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span> with_tomato<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Булочка'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> with_onion<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Луковые колечки'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> with_tomato<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ломтик помидора'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Котлета из'</span><span class="token punctuation">,</span> type_of_meat<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Булочка'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь команда <code>make_burger('свинина')</code> будет делать бургер из свинины, в котором нет колечек и есть помидоры. Но если вам хочется поменять состав бургера, вы легко можете это сделать: <code>make_burger('свинина', True)</code> сделает вам бургер и с луком, и с помидорами (они по умолчанию включены), а <code>make_burger('свинина', False, False)</code> сделает вам бургер, в котором, кроме булочки и котлеты, ничего нет.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>Обратите внимание: при объявлении аргументов по умолчанию не ставится пробел вокруг знака равенства.</p>
+</section>
+<p>Первыми стоит указывать более важные аргументы (в нашем примере мы считаем, что класть или не класть лук, — более важное решение, чем класть или не класть помидор). Если вы укажете только одно дополнительное значение, оно будет присвоено первому аргументу по умолчанию, а второй аргумент так и останется со значением по умолчанию. Если укажете два значения, значения будут присвоены обеим переменным.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Именованные аргументы</h2>
+<p>Еще одна проблема функций заключается в том, что программист вынужден помнить (или каждый раз узнавать в документации) порядок аргументов. В некоторых случаях тяжело угадать логичный порядок аргументов. Чтобы не запоминать эти малозначительные детали, можно передавать аргументы в функцию с указанием имени аргумента, в таком случае порядок аргументов неважен. Вы уже сталкивались с именованными аргументами. Встроенная функция <var>print</var> часто используется с несколькими такими параметрами: <code>sep=' '</code> - для разделения аргументов при выводе (по умолчанию — пробелами) и <code>end='\n'</code> для того, чтобы в конце добавлялся символ перевода строки. Так, нам не надо беспокоиться о том, какой параметр — <var>sep</var> или <var>end</var> — указывать первым.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Позиционные и именованные аргументы</strong></p>
+<p>Аргументы, которые передаются без указания имен, называются <strong>позиционными</strong>, потому что функция по положению аргумента понимает, какому параметру он соответствует. Аргументы, которые передаются с именами, называются <strong>именованными</strong>.</p>
+</section>
+<p>Чтобы вашу функцию можно было вызывать, используя именованные аргументы, буквально ничего не нужно делать. Все функции, которые вы писали на предыдущих уроках, уже можно вызывать, передавая им именованные аргументы.</p>
+<p>Если у функции есть аргументы, при вызове можно использовать имена параметров, которые вы использовали в определении функции (исключение составляют списки аргументов неопределенной длины, в которых используются аргументы со звездочкой). Это еще один повод давать аргументам значащие, а не однобуквенные имена. Можно вспомнить или догадаться, что функция <var>matrix_has_value</var> имеет параметры <var>matrix</var> и <var>value</var>, но совершенно невозможно будет вспомнить про имена параметров, такие как <var>a</var>, <var>b</var> или <var>m</var>, <var>v</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Именованные аргументы можно использовать вместе со значениями по умолчанию. Например, мы можем вызвать нашу функцию для создания бургеров, передав ей нужные именованные аргументы, а остальные оставив значениями по умолчанию (так как мы используем именованные аргументы, нам теперь неважно, в каком порядке мы их определяли):</p>
+<pre class="language-python"><code class="language-python">make_burger<span class="token punctuation">(</span>type_of_meat<span class="token operator">=</span><span class="token string">'говядина'</span><span class="token punctuation">,</span> with_tomato<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Именованные и позиционные аргументы не всегда хорошо ладят друг с другом. При вызове функции позиционные аргументы должны обязательно идти перед именованными аргументами. Достаточно сложно сформулировать точные правила поведения аргументов функции при использовании одновременно аргументов со звездочкой и именованных аргументов. Чем запоминать точные правила, в таких случаях лучше пользоваться здравым смыслом.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Общие рекомендации</strong></p>
+<ul>
+<li>Если вам приходится долго думать о том, как оформить список аргументов, чтобы он работал корректно, лучше использовать более простую версию. Ведь код, который тяжело писать, с большой вероятностью будет тяжело читать</li>
+<li>Если ваш вызов функции не работает, попробуйте прочитать его глазами интерпретатора. Однозначно ли он читается или вы можете придумать несколько вариантов разложить переданные в вызове функции параметры по аргументам? Если вы можете трактовать код несколькими способами, с большой вероятностью интерпретатор столкнется с теми же трудностями. В ситуации, когда код неоднозначен, интерпретатор Python не пытается угадать, что программист имел ввиду, а сообщает об ошибке. Часто это считается синтаксической ошибкой, и ошибка возникает еще до того, как программа начинает выполняться</li>
+</ul>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>При указании значения именованных аргументов при вызове функции знак равенства, как вы наверняка помните из необязательных параметров функции <var>print</var>, не окружается пробелами.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="4">Инструкция pass. Согласованность аргументов</h2>
+<p>В языке Python есть эталонно бесполезная инструкция <var>pass</var>. Инструкция <var>pass</var> — инструкция-заглушка, которая не делает ничего. Дело в том, что синтаксис языка Python не позволяет в некоторых местах обойтись без команд.</p>
+<p>Например, не может быть функции с пустым телом. Ветвь условного оператора или тело цикла тоже должны выполнять какие-либо действия, но иногда программист хочет отложить их написание и ставит такую заглушку.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> game_is_over<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span> <span class="token comment"># TODO: написать вывод итогового результата</span>
+</code></pre>
+<p>Давайте теперь напишем функцию, которая при вызове не делает ничего. Наша первая попытка будет такой:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">nop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+nop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Было бы удобно, если можно было завести функцию, которая принимает любые аргументы и, игнорируя их все, не делает ничего. Для захвата произвольного числа параметров, воспользуемся аргументом со звездочкой:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">nop</span><span class="token punctuation">(</span><span class="token operator">*</span>rest<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+nop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+nop<span class="token punctuation">(</span><span class="token string">"Любое"</span><span class="token punctuation">,</span> <span class="token string">"сказанное"</span><span class="token punctuation">,</span> <span class="token string">"вами слово"</span><span class="token punctuation">,</span> <span class="token string">"будет проигнорировано"</span><span class="token punctuation">)</span>
+nop<span class="token punctuation">(</span><span class="token number">100500</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p><strong>Задание</strong> (необязательное): мы хотим, чтобы функция <var>nop</var> принимала такие же аргументы, как функция <var>print</var>. Тогда можно будет отключать вывод на экран, просто заменив <var>print</var> на <var>nop</var>.</p>
+<p>Попробуйте «сломать» нашу функцию <var>nop</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">nop</span><span class="token punctuation">(</span><span class="token operator">*</span>rest<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+<p>То есть придумайте такой набор аргументов, который работает, если использовать функцию <var>print</var>, но выдает ошибку, если использовать функцию <var>nop</var>.</p>
+<p>Объясните, почему эта команда ломает функцию <var>nop</var>, и попробуйте поправить функцию <var>nop</var> известными вам средствами так, чтобы она не ломалась.</p>
+<p>Чтобы написать функцию, которая игнорирует любой список аргументов, необходимо разрешить ей принимать произвольное число позиционных аргументов и произвольное число именованных аргументов:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">nop</span><span class="token punctuation">(</span><span class="token operator">*</span>rest<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+nop<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">,</span> debug<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token operator">=</span><span class="token string">"debug.log"</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>**kwargs</strong></p>
+<p>Аргумент с двумя звездочками <code>**kwargs</code> — специальный аргумент, который может перехватить все «лишние» именованные аргументы, переданные в функцию. Лишними аргументами будут все именованные аргументы в команде вызова функции, для которых нет соответствующего параметра в определении функции.</p>
+</section>
+<p>Этот аргумент, как и аргумент с одной звездочкой, захватывающий «лишние» позиционные аргументы, можно использовать в комбинации с обычными аргументами. Например, сделаем и вызовем функцию, распечатывающую информацию о пользователе:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">profile</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> surname<span class="token punctuation">,</span> city<span class="token punctuation">,</span> <span class="token operator">*</span>children<span class="token punctuation">,</span> <span class="token operator">**</span>additional_info<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Имя:"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Фамилия:"</span><span class="token punctuation">,</span> surname<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Город проживания:"</span><span class="token punctuation">,</span> city<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>children<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Дети:"</span><span class="token punctuation">,</span> <span class="token string">", "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>children<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>additional_info<span class="token punctuation">)</span>
+
+
+profile<span class="token punctuation">(</span><span class="token string">"Сергей"</span><span class="token punctuation">,</span> <span class="token string">"Михалков"</span><span class="token punctuation">,</span> <span class="token string">"Москва"</span><span class="token punctuation">,</span> <span class="token string">"Никита Михалков"</span><span class="token punctuation">,</span> 
+        <span class="token string">"Андрей Кончаловский"</span><span class="token punctuation">,</span> occupation<span class="token operator">=</span><span class="token string">"writer"</span><span class="token punctuation">,</span> diedIn<span class="token operator">=</span><span class="token number">2009</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Имя: Сергей
+Фамилия: Михалков
+Город проживания: Москва
+Дети: Никита Михалков, Андрей Кончаловский
+{'occupation': 'writer', 'diedIn': 2009}</samp></pre>
+<p>Как вы уже знаете, параметр <var>children</var> будет списком лишних позиционных аргументов. А вот <var>additional_info</var> будет словарем лишних именованных аргументов. В последней строке мы распечатали переданный словарь, он выглядит так:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token string">'diedIn'</span><span class="token punctuation">:</span> <span class="token number">2009</span><span class="token punctuation">,</span> <span class="token string">'occupation'</span><span class="token punctuation">:</span> <span class="token string">'writer'</span><span class="token punctuation">}</span>
+</code></pre>
+<p>Вы уже знаете, что звездочка может не только запаковывать аргументы, но и распаковывать их, если передать в функцию список со звездочкой перед ним:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'Массив'</span><span class="token punctuation">,</span> <span class="token string">'из'</span><span class="token punctuation">,</span> <span class="token string">'четырех'</span><span class="token punctuation">,</span> <span class="token string">'аргументов'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; ['Массив', 'из', 'четырех', 'аргументов']</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">[</span><span class="token string">'Просто'</span><span class="token punctuation">,</span> <span class="token string">'три'</span><span class="token punctuation">,</span> <span class="token string">'аргумента'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; Просто три аргумента</span>
+</code></pre>
+<p>Две звездочки также позволяют не только запаковывать именованные аргументы в словарь, но и распаковывать словарь в набор именованных аргументов.</p>
+<p>Часто в функции используется запаковывание, а затем распаковывание. Например, сделаем собственную функцию <var>perforated_print</var>, которая будет делать все то же самое, что функция <var>print</var>, но при этом будет печатать горизонтальную линию над распечатанным текстом и под ним. Мы хотим использовать все опции функции <var>print</var>, но не хотим их самостоятельно обрабатывать. Поэтому мы перехватываем все опции (<var>sep</var>, <var>end</var> и т. п.), переданные в нашу функцию <var>perforated_print</var>, а затем передаем их без изменений в функцию <var>print</var>. С позиционными аргументами поступаем так же:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">perforated_print</span><span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span><span class="token operator">**</span>kwargs<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'-'</span> <span class="token operator">*</span> <span class="token number">20</span><span class="token punctuation">)</span>
+
+
+perforated_print<span class="token punctuation">(</span><span class="token string">'Теперь текст выводится с линией перфорации.'</span><span class="token punctuation">)</span>
+perforated_print<span class="token punctuation">(</span><span class="token string">'И'</span><span class="token punctuation">,</span> <span class="token string">'можно'</span><span class="token punctuation">,</span> <span class="token string">'использовать'</span><span class="token punctuation">,</span> <span class="token string">'любые'</span><span class="token punctuation">,</span> <span class="token string">'опции'</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">':\n'</span><span class="token punctuation">)</span>
+perforated_print<span class="token punctuation">(</span><span class="token string">'end'</span><span class="token punctuation">,</span> <span class="token string">'sep'</span><span class="token punctuation">,</span> <span class="token string">'прочие'</span><span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">', '</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">'!\n'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Вы можете использовать распаковывание только что запакованных аргументов для того, чтобы усложнять поведение функции, подобно тому, как мы добавили черту к функции <var>print</var>. В дополнительных материалах вы узнаете, как создавать декораторы и модифицировать поведение уже существующих функций.</p>
+</section></article></section>

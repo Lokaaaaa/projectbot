@@ -1,0 +1,222 @@
+<section class="lesson-material__content"><article class="material"><h1>Введение в Pygame</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение</a></li>
+<li><a class="material__link" href="#2">Pygame — самая популярная библиотека для разработки игр</a></li>
+<li><a class="material__link" href="#3">Установка pygame</a></li>
+<li><a class="material__link" href="#4">Hello, Pygame</a></li>
+<li><a class="material__link" href="#5">Рисование</a></li>
+<li><a class="material__link" href="#6">Цвета</a></li>
+<li><a class="material__link" href="#7">Система координат</a></li>
+<li><a class="material__link" href="#8">Surface, Rect</a></li>
+<li><a class="material__link" href="#9">Функции рисования</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом занятии мы начинаем блок, посвященный созданию игр c помощью библиотеки pygame.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Введение</h2>
+<p>В этом модуле вам предстоит написать игру.</p>
+<p>С одной стороны, игры — дело несерьезное. Конференции и конкурсы программных проектов очень редко рассматривают такие работы.</p>
+<p>С другой, разработка игр — это сложная задача, включающая в себя много процессов и требующая использовать различные технологии.</p>
+<p>Можно утверждать, что любая <strong>игра — это Объекты + Графика + Физика + ...</strong></p>
+<p>Для того чтобы было удобно программировать все это многообразие, используют фреймворки. Одним из самых известных и популярных фреймворков для разработки игр на Python является <img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-1-1.png" width="100"/>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Pygame — самая популярная библиотека для разработки игр</h2>
+<p>Разработка pygame началась в 2000 году Питером Шиннерсом. Тогда он активно программировал на Си и познакомился с Python (версии 1.5.2) и библиотекой <a class="material__link" href="http://www.libsdl.org/" rel="noopener noreferrer" target="_blank">SDL</a>. В то время она была очень популярна, на ней разрабатывались сотни игр, в том числе коммерческих, и идея подключить ее к Python показалась ему очень интересной.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-1-2.png" width="300"/></div>
+<p>Начиная примерно с 2004-2005 года, pygame поддерживается и развивается сообществом свободного программного обеспечения.</p>
+<p>Pygame включает в себя все, что необходимо для разработки игр: удобную работу с графикой (например, поддержку спрайтов), c методами-детекторами столкновений, звук и многое другое.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Установка pygame</h2>
+<p>Благодаря утилите pip, установить pygame очень просто:</p>
+<pre><code>pip install pygame
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Hello, Pygame</h2>
+<p>Для начала работы нужно подключить модуль <var>pygame</var>, вызвать функцию <code>init()</code> и создать холст.</p>
+<p>Например:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pygame
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    pygame<span class="token punctuation">.</span>init<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    size <span class="token operator">=</span> width<span class="token punctuation">,</span> height <span class="token operator">=</span> <span class="token number">800</span><span class="token punctuation">,</span> <span class="token number">600</span>
+    screen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_mode<span class="token punctuation">(</span>size<span class="token punctuation">)</span>
+</code></pre>
+<p>И теперь можно свободно рисовать, вернее, формировать кадр на холсте с именем <var>screen</var>.</p>
+<p>Что же всегда волновало авторов компьютерных игр? Правильно, их очень заботила проблема сделать движения героев, смены кадров и прочие анимационные вещи плавными, то есть создать эффект анимации.</p>
+<p>Для того чтобы движение объектов было плавным, pygame использует двойную буферизацию. Пока пользователь смотрит на один кадр, следующий уже строится в памяти, при этом у пользователя ничего не меняется. Как только новый кадр нарисован, он помещается на видимый экран. Это происходит очень быстро, и пользователь не видит процесса рисования, который на большой скорости обновления выглядит как мерцание.</p>
+<p>Для пользователя смена изображений происходит мгновенно.</p>
+<p>Функция <code>flip()</code> как раз и выполняет эту смену. Поэтому после отрисовки кадра обязательно требуется команда:</p>
+<pre class="language-python"><code class="language-python">pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Давайте дождёмся того момента, когда пользователь закроет окно. Сделаем это так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">while</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>wait<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">!=</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+<p>Мы подробно разберем условие этого цикла на следующем занятии.</p>
+<p>После этого, в конце работы программы нужно вызвать функцию <code>quit()</code> модуля <var>pygame</var>.</p>
+<p>Таким образом, самая простая корректная программа на <var>pygame</var> выглядит так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pygame
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    <span class="token comment"># инициализация Pygame:</span>
+    pygame<span class="token punctuation">.</span>init<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># размеры окна: </span>
+    size <span class="token operator">=</span> width<span class="token punctuation">,</span> height <span class="token operator">=</span> <span class="token number">800</span><span class="token punctuation">,</span> <span class="token number">600</span>
+    <span class="token comment"># screen — холст, на котором нужно рисовать:</span>
+    screen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>set_mode<span class="token punctuation">(</span>size<span class="token punctuation">)</span>
+    <span class="token comment"># формирование кадра:</span>
+    <span class="token comment"># команды рисования на холсте</span>
+    <span class="token comment"># ...</span>
+    <span class="token comment"># ...</span>
+    <span class="token comment"># смена (отрисовка) кадра:</span>
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># ожидание закрытия окна:</span>
+    <span class="token keyword">while</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>wait<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">!=</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+    <span class="token comment"># завершение работы:</span>
+    pygame<span class="token punctuation">.</span>quit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь вынесем рисование в отдельную функцию:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">draw</span><span class="token punctuation">(</span>screen<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    font <span class="token operator">=</span> pygame<span class="token punctuation">.</span>font<span class="token punctuation">.</span>Font<span class="token punctuation">(</span><span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+    text <span class="token operator">=</span> font<span class="token punctuation">.</span>render<span class="token punctuation">(</span><span class="token string">"Hello, Pygame!"</span><span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    text_x <span class="token operator">=</span> width <span class="token operator">//</span> <span class="token number">2</span> <span class="token operator">-</span> text<span class="token punctuation">.</span>get_width<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+    text_y <span class="token operator">=</span> height <span class="token operator">//</span> <span class="token number">2</span> <span class="token operator">-</span> text<span class="token punctuation">.</span>get_height<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+    text_w <span class="token operator">=</span> text<span class="token punctuation">.</span>get_width<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    text_h <span class="token operator">=</span> text<span class="token punctuation">.</span>get_height<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    screen<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>text<span class="token punctuation">,</span> <span class="token punctuation">(</span>text_x<span class="token punctuation">,</span> text_y<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>rect<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>text_x <span class="token operator">-</span> <span class="token number">10</span><span class="token punctuation">,</span> text_y <span class="token operator">-</span> <span class="token number">10</span><span class="token punctuation">,</span>
+                                           text_w <span class="token operator">+</span> <span class="token number">20</span><span class="token punctuation">,</span> text_h <span class="token operator">+</span> <span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь, если добавить вызов этой функции в основной цикл, мы получим результат:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-1-3.png" width="502"/></div>
+<p><strong>Тренировочное задание.</strong> Попробуйте воспроизвести самостоятельно приведенный пример и напишите программу Hello, pygame.</p>
+<p>Сама функция <code>draw()</code> содержит несколько новых команд, мы их рассмотрим в следующих разделах.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Рисование</h2>
+<p>Конечно, при оценке игры в первую очередь смотрят на ее графику. Обычно в играх используют готовые изображения, которые загружаются из дополнительных файлов. Но на этом занятии мы принципиально не будем использовать изображения. Наша основная задача «привыкнуть» к экранным координатам и изучить возможности модуля <a class="material__link" href="https://www.pygame.org/docs/ref/draw.html#comment_pygame_draw_rect" rel="noopener noreferrer" target="_blank">draw</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Цвета</h2>
+<p>Давайте вспомним, как устроены цвета в компьютерном мире.</p>
+<p>Рисование на экране в конечном итоге — это появление <strong>пикселей</strong> (точек) разного цвета. Практически все команды рисования принимают цвет в качестве параметра.</p>
+<p>Цвета каждого пикселя на мониторах формируется тремя световыми источниками:</p>
+<ul>
+<li>Красным</li>
+<li>Синим</li>
+<li>Зеленым</li>
+</ul>
+<p>Каждая компонента-источник может иметь 256 градаций интенсивности (0 — совсем не горит, 255 — горит очень ярко).</p>
+<p>Например,</p>
+<p><strong>(0, 0, 0)</strong> — это черный цвет,</p>
+<p><strong>(255, 255, 255)</strong> — белый цвет.</p>
+<p>Вообще, все цвета, имеющие одинаковые значения компонент — серые разной интенсивности.</p>
+<p><strong>(255, 0, 0)</strong> — красный,</p>
+<p><strong>(255, 100, 100)</strong> — светло-красный.</p>
+<p>Для цветов в pygame используется отдельный модуль <a class="material__link" href="https://www.pygame.org/docs/ref/color.html" rel="noopener noreferrer" target="_blank">Color</a>.</p>
+<p>Цвета в pygame — это объекты типа <var>Color</var>. Их могут создавать конструкторы:</p>
+<pre class="language-python"><code class="language-python">Color<span class="token punctuation">(</span>name<span class="token punctuation">)</span>       <span class="token comment"># строкой, например, "yellow"</span>
+Color<span class="token punctuation">(</span>r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b<span class="token punctuation">,</span> a<span class="token punctuation">)</span> <span class="token comment"># красный, зеленый, синий и прозрачность</span>
+Color<span class="token punctuation">(</span>rgbvalue<span class="token punctuation">)</span>
+</code></pre>
+<p>Последний конструктор может принимать как число, соответствующее цвету, так и строки в HTML-формате (#rrggbbaa или #rrggbb).</p>
+<p>Таким образом, для создания цветов можно использовать такой код:</p>
+<pre class="language-python"><code class="language-python">lightred <span class="token operator">=</span> pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+darkgreen <span class="token operator">=</span> pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">'#008000'</span><span class="token punctuation">)</span>
+yellow <span class="token operator">=</span> pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">'yellow'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В Интернете есть много <a class="material__link" href="https://yandex.ru/search/?text=RGB%20online&amp;lr=213" rel="noopener noreferrer" target="_blank">инструментов по RGB-представлению цветов</a>.</p>
+<p>Полезно знать, что существуют и другие форматы представления цвета (не только RGB).</p>
+<p>Очень важным является HSV формат (Hue, Saturation, Value — тон, насыщенность, значение) или HSB (Hue, Saturation, Brightness — тон, насыщенность, яркость).</p>
+<p>Возможные значения в диапазонах: H = [0, 360], S = [0, 100], V = [0, 100].</p>
+<p>Яркость и насыщенность задаются в процентах, оттенок — положением на цветовом круге:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-1-4.png" width="300"/></div>
+<p>Использование такого формата позволяет удобно менять «освещенность», не меняя оттенка. Например, квадрат с «тенью»</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-1-5.png" width="155"/></div>
+<p>можно нарисовать так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">draw_square</span><span class="token punctuation">(</span>screen<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    color <span class="token operator">=</span> pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+    <span class="token comment"># рисуем "тень"</span>
+    pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>rect<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> color<span class="token punctuation">,</span>
+                     <span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+    hsv <span class="token operator">=</span> color<span class="token punctuation">.</span>hsva
+    <span class="token comment"># увеличиваем параметр Value, который влияет на яркость</span>
+    color<span class="token punctuation">.</span>hsva <span class="token operator">=</span> <span class="token punctuation">(</span>hsv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> hsv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> hsv<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">30</span><span class="token punctuation">,</span> hsv<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token comment"># рисуем сам объект</span>
+    pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>rect<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> color<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Но если сложные преобразования цветов не нужны, можно обойтись и триплетами.</p>
+<p>Функции модуля <var>draw</var> принимают кортежи в качестве цвета, например:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># нарисуем красный квадрат</span>
+pygame<span class="token punctuation">.</span>draw<span class="token punctuation">.</span>rect<span class="token punctuation">(</span>screen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<p><strong>Тренировочное задание.</strong> Выведите надпись «Hello, Pygame» в программе из предыдущего раздела <a class="material__link" href="https://yandex.ru/search/?text=цвет%20Яндекса&amp;lr=213" rel="noopener noreferrer" target="_blank">цветом Яндекса</a>.</p>
+<p>Несмотря на то, что цвета можно создать с полупрозрачностью, рисование фигур модулем <var>draw</var> не поддерживает прозрачность.</p>
+<p>Конечно, прозрачность в Pygame использовать возможно, но мы подробно поговорим об этом позже.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Система координат</h2>
+<p>Экран pygame устроен обычно для компьютерных графических систем (и необычно для математиков). Точка (0;0) — в верхнем левом углу, а ось Y направлена вниз.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-1/pygame-x-y.svg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="8">Surface, Rect</h2>
+<p>В pygame рисование происходит на Surface. Хоть это слово дословно переводится как <strong>Поверхность</strong>, мы чаще будем использовать термин <strong>Холст</strong>. Объект именно этого класса возвращается методом <code>set_mode()</code> модуля <var>display</var>.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-1/pygame-screen.svg" width="680"/></div>
+<p>Мы будем достаточно редко вызывать методы этого объекта, чаще передавать его в функции рисования модуля <var>draw</var>, но один метод используется чаще других.</p>
+<p>При помощи метода <code>fill()</code> можно залить весь холст. Ему передается цвет заливки. Например,</p>
+<pre class="language-python"><code class="language-python">screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>зальет весь холст белым.</p>
+<p>В этот метод можно передать и прямоугольник, тогда будет залита только область, заданная прямоугольником.</p>
+<p>Для представления прямоугольников в pygame используется класс <var>Rect</var>. Объекты этого класса можно создать при помощи конструкторов:</p>
+<pre class="language-python"><code class="language-python">Rect<span class="token punctuation">(</span>left<span class="token punctuation">,</span> top<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span>
+Rect<span class="token punctuation">(</span><span class="token punctuation">(</span>left<span class="token punctuation">,</span> top<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span>
+Rect<span class="token punctuation">(</span>rect<span class="token punctuation">)</span> 
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-1/pygame-rect.svg" width="680"/></div>
+<p>Последний конструктор принимает в себя другой прямоугольник. При этом создается копия передаваемого прямоугольника.</p>
+<p>Таким образом, для рисования красного квадрата на зеленом фоне можно написать:</p>
+<pre class="language-python"><code class="language-python">screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> pygame<span class="token punctuation">.</span>Rect<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>При программировании компьютерной графики прямоугольники встречаются очень часто, поэтому в pygame все функции, принимающие прямоугольники в качестве параметров, могут принимать и кортеж из четырех чисел. При этом прямоугольник будет создан «на лету».</p>
+<p>Например, последнюю строчку можно упростить:</p>
+<pre class="language-python"><code class="language-python">screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В pygame не предусмотрена специальная команда рисования пикселя, но ее можно сэмулировать методом <code>fill()</code>.</p>
+<p>Например, код</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10000</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">'white'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token punctuation">(</span>random<span class="token punctuation">.</span>random<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> width<span class="token punctuation">,</span> 
+                 random<span class="token punctuation">.</span>random<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> height<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>выведет на черный экран 10 тысяч случайных белых точек.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pygame-1/pygame-1-dots.png" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="9">Функции рисования</h2>
+<p>Основные функции рисования фигур расположены в модуле <a class="material__link" href="https://www.pygame.org/docs/ref/draw.html#comment_pygame_draw_rect" rel="noopener noreferrer" target="_blank">draw</a>.</p>
+<p>Функции очень похожи друг на друга. Практически всем функциям передается Surface-объект, цвет (или кортеж значений, его задающих) и параметры.</p>
+<p>Для того чтобы нарисовать <strong>линию</strong>, применяют функцию</p>
+<pre class="language-python"><code class="language-python">line<span class="token punctuation">(</span>Surface<span class="token punctuation">,</span> color<span class="token punctuation">,</span> start_pos<span class="token punctuation">,</span> end_pos<span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Она принимает два кортежа, содержащие координаты начальной и конечной точек. Последний параметр задает толщину линии.</p>
+<p>Для рисования <strong>прямоугольника</strong>, стороны которого параллельны осям координат, используют функцию</p>
+<pre class="language-python"><code class="language-python">rect<span class="token punctuation">(</span>Surface<span class="token punctuation">,</span> color<span class="token punctuation">,</span> Rect<span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если последний параметр не задан (тогда он по умолчанию равен нулю), рисуется залитый прямоугольник, иначе — только рамка. Заметим, что закрашенный прямоугольник быстрее рисовать методом <a class="material__link" href="https://www.pygame.org/docs/ref/surface.html#pygame.Surface.fill" rel="noopener noreferrer" target="_blank">fill()</a> холста. Вторым параметром метод <var>fill</var> принимает прямоугольник (<var>Rect</var>) (или кортеж, которым он задается).</p>
+<p>Для рисования <strong>многоугольника (полигона)</strong> функции <code>polygon()</code> необходимо передать список его вершин.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-1-9.png" width="600"/></div>
+<p>Разберитесь по <a class="material__link" href="https://www.pygame.org/docs/ref/draw.html" rel="noopener noreferrer" target="_blank">документации</a> с функциями рисования окружности, эллипса и дуг самостоятельно.</p>
+<p>Давайте перейдем к практике.</p>
+</section></article></section>

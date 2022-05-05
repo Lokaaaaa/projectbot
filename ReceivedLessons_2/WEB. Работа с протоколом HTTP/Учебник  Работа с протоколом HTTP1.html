@@ -1,0 +1,180 @@
+<section class="lesson-material__content"><article class="material"><h1>Работа с протоколом HTTP</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Повторение</a></li>
+<li><a class="material__link" href="#2">Задание параметров url</a></li>
+<li><a class="material__link" href="#3">Поисковое приложение</a></li>
+<li><a class="material__link" href="#4">API Поиска по организациям</a></li>
+<li><a class="material__link" href="#5">Еще немного о возможностях requests</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке продолжается рассказ про использование HTTP-API. Показан пример поискового приложения, формирующего запросы к HTTP-API на основании результатов других запросов. Рассматривается API поиска по организациям с примерами задач.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Повторение</h2>
+<p>На одном из прошлых уроков мы начали разговор о разных видах API. Практическую часть мы посвятили использованию HTTP-API на примере Yandex.Maps.StaticAPI и Yandex.Maps.Geocoder. Давайте вспомним, как выглядит это взаимодействие с точки зрения Python-приложения.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Задание параметров url</h2>
+<p>В наших примерах запрос к API был представлен константной строкой, поскольку этого достаточно для первого знакомства с возможностями API. В более сложных задачах запрос приходится формировать в ходе выполнения программы, основываясь на данных, введенных пользователем или полученных иным образом. Делать это путем конкатенации строк или каким-то подобным образом крайне неудобно (это будет работать, но мы настоятельно не рекомендуем так делать) и порождает километровые строки в коде программы. К тому же надо решать вопросы с кодированием различных специальных символов. Про кодирование url-запросов (замены пробелов на «+», %-кодирование) можно прочитать <a class="material__link" href="https://ru.wikipedia.org/wiki/URL#Кодирование_URL" rel="noopener noreferrer" target="_blank">в Википедии</a>.</p>
+<p>Разумеется, есть и более удобный способ. Для удобства формирования запросов в функциях <code>requests.request()</code> и <code>requests.get()</code> есть именованный параметр <var>params</var>, представляющий собой словарь (dict). В нем содержится отображение из названий параметров в их значения. Давайте рассмотрим пример из предыдущей лекции:</p>
+<pre class="language-python"><code class="language-python">map_request <span class="token operator">=</span> <span class="token string">"http://static-maps.yandex.ru/1.x/?ll=37.530887,55.703118&amp;spn=0.002,0.002&amp;l=map"</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>map_request<span class="token punctuation">)</span>
+</code></pre>
+<p>Этот код можно переписать вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> requests
+api_server <span class="token operator">=</span> <span class="token string">"http://static-maps.yandex.ru/1.x/"</span>
+
+lon <span class="token operator">=</span> <span class="token string">"37.530887"</span>
+lat <span class="token operator">=</span> <span class="token string">"55.703118"</span>
+delta <span class="token operator">=</span> <span class="token string">"0.002"</span>
+
+params <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">"ll"</span><span class="token punctuation">:</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>lon<span class="token punctuation">,</span> lat<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">"spn"</span><span class="token punctuation">:</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>delta<span class="token punctuation">,</span> delta<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">"l"</span><span class="token punctuation">:</span> <span class="token string">"map"</span>
+<span class="token punctuation">}</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>api_server<span class="token punctuation">,</span> params<span class="token operator">=</span>params<span class="token punctuation">)</span>
+</code></pre>
+<p>Результаты выполнения двух вариантов кода будут идентичными. Понятно, что первый вариант использовать проще и быстрее, если нам нужно выполнить всего один константный запрос. Второй же вариант предпочтительнее, когда надо формировать запрос на лету. Например, если координаты нам ввел пользователь или мы получили их, например, в ответе геокодера.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Поисковое приложение</h2>
+<p>Давайте напишем простое поисковое приложение. Пользователь печатает в командной строке запрос, а наша задача состоит в том, чтобы найти координаты запрошенного объекта и показать его на карте, выбрав соответствующий масштаб и позицию карты.</p>
+<p>Часть кода, которая выполняет запросы к API, может выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+<span class="token keyword">from</span> io <span class="token keyword">import</span> BytesIO
+<span class="token comment"># Этот класс поможет нам сделать картинку из потока байт</span>
+
+<span class="token keyword">import</span> requests
+<span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+
+<span class="token comment"># Пусть наше приложение предполагает запуск:</span>
+<span class="token comment"># python search.py Москва, ул. Ак. Королева, 12</span>
+<span class="token comment"># Тогда запрос к геокодеру формируется следующим образом:</span>
+toponym_to_find <span class="token operator">=</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+geocoder_api_server <span class="token operator">=</span> <span class="token string">"http://geocode-maps.yandex.ru/1.x/"</span>
+
+geocoder_params <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">"apikey"</span><span class="token punctuation">:</span> <span class="token string">"40d1649f-0493-4b70-98ba-98533de7710b"</span><span class="token punctuation">,</span>
+    <span class="token string">"geocode"</span><span class="token punctuation">:</span> toponym_to_find<span class="token punctuation">,</span>
+    <span class="token string">"format"</span><span class="token punctuation">:</span> <span class="token string">"json"</span><span class="token punctuation">}</span>
+
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>geocoder_api_server<span class="token punctuation">,</span> params<span class="token operator">=</span>geocoder_params<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> <span class="token keyword">not</span> response<span class="token punctuation">:</span>
+    <span class="token comment"># обработка ошибочной ситуации</span>
+    <span class="token keyword">pass</span>
+
+<span class="token comment"># Преобразуем ответ в json-объект</span>
+json_response <span class="token operator">=</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># Получаем первый топоним из ответа геокодера.</span>
+toponym <span class="token operator">=</span> json_response<span class="token punctuation">[</span><span class="token string">"response"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"GeoObjectCollection"</span><span class="token punctuation">]</span><span class="token punctuation">[</span>
+    <span class="token string">"featureMember"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"GeoObject"</span><span class="token punctuation">]</span>
+<span class="token comment"># Координаты центра топонима:</span>
+toponym_coodrinates <span class="token operator">=</span> toponym<span class="token punctuation">[</span><span class="token string">"Point"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"pos"</span><span class="token punctuation">]</span>
+<span class="token comment"># Долгота и широта:</span>
+toponym_longitude<span class="token punctuation">,</span> toponym_lattitude <span class="token operator">=</span> toponym_coodrinates<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span>
+
+delta <span class="token operator">=</span> <span class="token string">"0.005"</span>
+
+<span class="token comment"># Собираем параметры для запроса к StaticMapsAPI:</span>
+map_params <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">"ll"</span><span class="token punctuation">:</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>toponym_longitude<span class="token punctuation">,</span> toponym_lattitude<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">"spn"</span><span class="token punctuation">:</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>delta<span class="token punctuation">,</span> delta<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">"l"</span><span class="token punctuation">:</span> <span class="token string">"map"</span>
+<span class="token punctuation">}</span>
+
+map_api_server <span class="token operator">=</span> <span class="token string">"http://static-maps.yandex.ru/1.x/"</span>
+<span class="token comment"># ... и выполняем запрос</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>map_api_server<span class="token punctuation">,</span> params<span class="token operator">=</span>map_params<span class="token punctuation">)</span>
+
+Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span>BytesIO<span class="token punctuation">(</span>
+    response<span class="token punctuation">.</span>content<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># Создадим картинку</span>
+<span class="token comment"># и тут же ее покажем встроенным просмотрщиком операционной системы</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">API Поиска по организациям</h2>
+<p>Мы рассмотрели две части Yandex.Maps.API из трех. Давайте познакомимся и с третьей, Поиском по организациям. Или Адресным справочником.</p>
+<p>Страница API: <a class="material__link" href="https://tech.yandex.ru/maps/geosearch/" rel="noopener noreferrer" target="_blank">https://tech.yandex.ru/maps/geosearch/</a></p>
+<p>Прочтите описание/соглашение и найдите отличие от того, с чем нам приходилось работать раньше.</p>
+<p>Для этого API нужен ключ. Для задач учебного курса ключ с необходимыми правами доступа получен заранее (dda3ddba-c9ea-4ead-9010-f43fbc15c6e3). Этот ключ позволяет выполнить лимитированное число запросов, поэтому пользоваться им разрешается только при решении задач этого курса. После курса ключ будет деактивирован, и запросы с ним перестанут работать. Если же для своих проектов вам понадобится доступ к API поиска по организациям, необходимо получить ключ самостоятельно. Для этого нужно заполнить форму, указав данные для связи, а также сайт, на котором предполагается использовать данное API. Мы говорили о том, что по условиям результаты надо обязательно использовать на сайте — обратите на это внимание. Исключение сделано только для наших учебных проектов.</p>
+<p><em>Ключ для сервиса можно бесплатно получить по адресу:</em> <a class="material__link" href="https://developer.tech.yandex.ru/services/" rel="noopener noreferrer" target="_blank">https://developer.tech.yandex.ru/services/</a></p>
+<p>Прочитайте о возможностях API поиска по организациям.</p>
+<p>Формат диалога с Поиском по организациям похож на формат геокодера. Давайте найдем ближайшую аптеку к вашему дому. Будет похоже на написанную раньше программу поиска объекта по адресу.</p>
+<p>Формат запроса описан на <a class="material__link" href="https://tech.yandex.ru/maps/doc/geosearch/concepts/request-docpage/" rel="noopener noreferrer" target="_blank">странице</a>.</p>
+<pre class="language-python"><code class="language-python">search_api_server <span class="token operator">=</span> <span class="token string">"https://search-maps.yandex.ru/v1/"</span>
+api_key <span class="token operator">=</span> <span class="token string">"..."</span>
+
+address_ll <span class="token operator">=</span> <span class="token string">"37.588392,55.734036"</span>
+
+search_params <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">"apikey"</span><span class="token punctuation">:</span> api_key<span class="token punctuation">,</span>
+    <span class="token string">"text"</span><span class="token punctuation">:</span> <span class="token string">"аптека"</span><span class="token punctuation">,</span>
+    <span class="token string">"lang"</span><span class="token punctuation">:</span> <span class="token string">"ru_RU"</span><span class="token punctuation">,</span>
+    <span class="token string">"ll"</span><span class="token punctuation">:</span> address_ll<span class="token punctuation">,</span>
+    <span class="token string">"type"</span><span class="token punctuation">:</span> <span class="token string">"biz"</span>
+<span class="token punctuation">}</span>
+
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>search_api_server<span class="token punctuation">,</span> params<span class="token operator">=</span>search_params<span class="token punctuation">)</span>
+<span class="token keyword">if</span> <span class="token keyword">not</span> response<span class="token punctuation">:</span>
+    <span class="token comment">#...</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+<p>Формат ответа смотрите на странице: <a class="material__link" href="https://tech.yandex.ru/maps/doc/geosearch/concepts/response_structure_business-docpage/" rel="noopener noreferrer" target="_blank">https://tech.yandex.ru/maps/doc/geosearch/concepts/response_structure_business-docpage/</a></p>
+<p>Продолжим разбор примера:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Преобразуем ответ в json-объект</span>
+json_response <span class="token operator">=</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Получаем первую найденную организацию.</span>
+organization <span class="token operator">=</span> json_response<span class="token punctuation">[</span><span class="token string">"features"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token comment"># Название организации.</span>
+org_name <span class="token operator">=</span> organization<span class="token punctuation">[</span><span class="token string">"properties"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"CompanyMetaData"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"name"</span><span class="token punctuation">]</span>
+<span class="token comment"># Адрес организации.</span>
+org_address <span class="token operator">=</span> organization<span class="token punctuation">[</span><span class="token string">"properties"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"CompanyMetaData"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"address"</span><span class="token punctuation">]</span>
+
+<span class="token comment"># Получаем координаты ответа.</span>
+point <span class="token operator">=</span> organization<span class="token punctuation">[</span><span class="token string">"geometry"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"coordinates"</span><span class="token punctuation">]</span>
+org_point <span class="token operator">=</span> <span class="token string">"{0},{1}"</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>point<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> point<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+delta <span class="token operator">=</span> <span class="token string">"0.005"</span>
+
+<span class="token comment"># Собираем параметры для запроса к StaticMapsAPI:</span>
+map_params <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token comment"># позиционируем карту центром на наш исходный адрес</span>
+    <span class="token string">"ll"</span><span class="token punctuation">:</span> address_ll<span class="token punctuation">,</span>
+    <span class="token string">"spn"</span><span class="token punctuation">:</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>delta<span class="token punctuation">,</span> delta<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">"l"</span><span class="token punctuation">:</span> <span class="token string">"map"</span><span class="token punctuation">,</span>
+    <span class="token comment"># добавим точку, чтобы указать найденную аптеку</span>
+    <span class="token string">"pt"</span><span class="token punctuation">:</span> <span class="token string">"{0},pm2dgl"</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>org_point<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+map_api_server <span class="token operator">=</span> <span class="token string">"http://static-maps.yandex.ru/1.x/"</span>
+<span class="token comment"># ... и выполняем запрос</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>map_api_server<span class="token punctuation">,</span> params<span class="token operator">=</span>map_params<span class="token punctuation">)</span>
+
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Еще немного о возможностях requests</h2>
+<p>Библиотека requests прекрасно умеет работать не только со строками и числами, но и преобразовывать в аргументы запроса и более сложные типы, например, списки.</p>
+<pre class="language-python"><code class="language-python">params <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'list_param'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">'value1'</span><span class="token punctuation">,</span> <span class="token string">'value2'</span><span class="token punctuation">]</span><span class="token punctuation">}</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'адрес_сайта'</span><span class="token punctuation">,</span> params<span class="token operator">=</span>params<span class="token punctuation">)</span>
+</code></pre>
+<p>Списки преобразуются в запросе вот к такому виду:</p>
+<pre><code>адрес_сайта?list_param=value1&amp;list_param=value2
+</code></pre>
+<p>Посмотреть получившийся запрос можно с помощью атрибута <var>url</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>response<span class="token punctuation">.</span>url<span class="token punctuation">)</span>
+</code></pre>
+<p>Кроме того, можно влиять на служебную информацию, которая передается вместе с запросом в заголовках запроса. На некоторых сервисах код доступа к API передается именно в заголовке, или можно притвориться каким-нибудь браузером, переопределив значение <var>user-agent</var> запроса. Подробнее про стандартные HTTP заголовки можно почитать <a class="material__link" href="https://ru.wikipedia.org/wiki/Список_заголовков_HTTP" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>Задать заголовки можно с помощью параметра <var>headers</var>, в который передается словарь из заголовков и их значений.</p>
+<pre class="language-python"><code class="language-python">headers <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'user-agent'</span><span class="token punctuation">:</span> <span class="token string">'yandexlyceum/1.1.1'</span><span class="token punctuation">}</span>
+response <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> headers<span class="token operator">=</span>headers<span class="token punctuation">)</span>
+</code></pre>
+<p>Это далеко не все возможности requests, про некоторые из оставшихся мы еще поговорим в курсе далее.</p>
+</section></article></section>

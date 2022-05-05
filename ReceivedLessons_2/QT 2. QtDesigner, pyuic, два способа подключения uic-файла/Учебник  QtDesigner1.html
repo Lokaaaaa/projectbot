@@ -1,0 +1,296 @@
+<section class="lesson-material__content"><article class="material"><h1>QtDesigner, pyuic, два способа подключения uic-файла</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Установка QtDesigner и первый запуск</a></li>
+<li><a class="material__link" href="#2">Подключение дизайна к программе</a></li>
+<li><a class="material__link" href="#3">Размещение виджетов</a></li>
+<li><a class="material__link" href="#4">Настройка PyCharm для работы с графическим интерфейсом</a></li>
+<li><a class="material__link" href="#5">Экраны с высоким разрешением (HiRes)</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке разбирается популярный способ создания графических интерфейсов — с помощью программы QtDesigner.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Установка QtDesigner и первый запуск</h2>
+<p>Когда на прошлом занятии мы создавали интерфейсы «руками» и размещали виджеты «на глазок», вы наверняка подумали, что есть какой-то более простой способ. И он действительно есть. Это программа <strong>QtDesigner</strong>, которая включена в сборку PyQT5. Но для ее использования необходимо установить библиотек<strong>QtDesigner</strong>у <var>pyqt5-tools</var>.</p>
+<pre><code>pip install pyqt5-tools
+</code></pre>
+<p>Теперь программа находится на вашем компьютере по адресу:</p>
+<pre><code>Путь_к_папке_где_установлен_Python\Lib\site-packages\qt5_applications\Qt\bin\designer.exe
+</code></pre>
+<p>или (для старых версий):</p>
+<pre><code>Путь_к_папке_где_установлен_Python\Lib\site-packages\pyqt5_tools\designer.exe
+</code></pre>
+<p>Создайте ярлык к этой программе, поскольку использовать ее придется часто.</p>
+<p>Так же можно скачать и установить программу <strong>QtDesigner</strong> в виде отдельного приложения. Для этого перейдите по <a class="material__link" href="https://build-system.fman.io/qt-designer-download" rel="noopener noreferrer" target="_blank">ссылке</a> и скачайте установщик приложения дла вашей операционной системы.</p>
+<p>Давайте запустим программу и посмотрим, что в ней можно сделать.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/pyqt-2-1.png" width="680"/></div>
+<p>При запуске открывается окно с предложением выбрать шаблон для формы или виджет, на основе которого мы будем делать свой интерфейс. Выберем <strong>Main Window</strong>. Откроется пустое окно.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/pyqt-2-2.png" width="680"/></div>
+<p>Теперь рассмотрим, что у нас есть, кроме пустой формы, которую мы будем заполнять.</p>
+<p>Слева — меню виджетов, <strong>Widget Box</strong>. В нем они сгруппированы в зависимости от их функциональности. Отдельно кнопки, отдельно виджеты для ввода данных и так далее.</p>
+<p>Справа — Инспектор объектов (<strong>Object Inspector</strong>), Редактор свойств (<strong>Property Editor</strong>) и Браузер ресурсов (<strong>Resourse Browser</strong>). Остановимся на первых двух. В <strong>Инспекторе объектов</strong> отображается информация об используемых виджетах. Для каждого виджета указывается его имя и класс. Кроме того, можно увидеть иерархическую структуру всего интерфейса.</p>
+<p>Чтобы разместить виджет на форме, его надо просто перетащить из меню виджетов. При этом информация об этом виджете автоматически появится в Инспекторе объектов.</p>
+<p><strong>Редактор свойств</strong> помогает изменять значения тех или иных атрибутов виджета (например, текст или размер). Расположение свойств меняется кнопкой с изображением гаечного ключа.</p>
+<p>Попробуйте создать простейший интерфейс из кнопки (<var>PushButton</var>) и текстового поля (<var>TextLabel</var>), поиграйте с <strong>Редактором свойств</strong>, разберитесь, где поменять название и размеры кнопки, как изменить шрифт в <var>TextLabel</var>. После того как у вас вышло что-то похожее на картинку, ниже сохраните полученный дизайн. Для сохранения в меню <strong>Файл</strong> выберите вкладку <strong>Сохранить как</strong>, найдите папку проекта и впишите имя.</p>
+<p>Помните: название объекта (атрибут <var>objectName</var>) и текст, который может быть на нем показан (атрибут <var>text</var>), — это разные вещи.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/pyqt-2-3.png" width="371"/></div>
+<p>Давайте посмотрим, как выглядит наш дизайн с точки зрения компьютера. Для этого откроем созданный нами файл с помощью любого текстового редактора. Лучше использовать не просто Блокнот, а, например, SublimeText, Notepad++ или VS Code. Содержимое файла будет примерно вот таким:</p>
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;ui version="4.0"&gt;
+ &lt;class&gt;MainWindow&lt;/class&gt;
+ &lt;widget class="QMainWindow" name="MainWindow"&gt;
+  &lt;property name="geometry"&gt;
+   &lt;rect&gt;
+    &lt;x&gt;0&lt;/x&gt;
+    &lt;y&gt;0&lt;/y&gt;
+    &lt;width&gt;554&lt;/width&gt;
+    &lt;height&gt;379&lt;/height&gt;
+   &lt;/rect&gt;
+  &lt;/property&gt;
+  &lt;property name="windowTitle"&gt;
+   &lt;string&gt;MainWindow&lt;/string&gt;
+  &lt;/property&gt;
+  &lt;widget class="QWidget" name="centralwidget"&gt;
+   &lt;widget class="QPushButton" name="pushButton"&gt;
+    &lt;property name="geometry"&gt;
+     &lt;rect&gt;
+      &lt;x&gt;210&lt;/x&gt;
+      &lt;y&gt;200&lt;/y&gt;
+      &lt;width&gt;93&lt;/width&gt;
+      &lt;height&gt;28&lt;/height&gt;
+     &lt;/rect&gt;
+    &lt;/property&gt;
+    &lt;property name="text"&gt;
+     &lt;string&gt;Нажми меня&lt;/string&gt;
+    &lt;/property&gt;
+    &lt;property name="checkable"&gt;
+     &lt;bool&gt;true&lt;/bool&gt;
+    &lt;/property&gt;
+   &lt;/widget&gt;
+   &lt;widget class="QLabel" name="label"&gt;
+    &lt;property name="geometry"&gt;
+     &lt;rect&gt;
+      &lt;x&gt;130&lt;/x&gt;
+      &lt;y&gt;80&lt;/y&gt;
+      &lt;width&gt;281&lt;/width&gt;
+      &lt;height&gt;61&lt;/height&gt;
+     &lt;/rect&gt;
+    &lt;/property&gt;
+    &lt;property name="font"&gt;
+     &lt;font&gt;
+      &lt;pointsize&gt;24&lt;/pointsize&gt;
+     &lt;/font&gt;
+    &lt;/property&gt;
+    &lt;property name="text"&gt;
+     &lt;string&gt;Текст на метке&lt;/string&gt;
+    &lt;/property&gt;
+    &lt;property name="textFormat"&gt;
+     &lt;enum&gt;Qt::AutoText&lt;/enum&gt;
+    &lt;/property&gt;
+   &lt;/widget&gt;
+  &lt;/widget&gt;
+  &lt;widget class="QMenuBar" name="menubar"&gt;
+   &lt;property name="geometry"&gt;
+    &lt;rect&gt;
+     &lt;x&gt;0&lt;/x&gt;
+     &lt;y&gt;0&lt;/y&gt;
+     &lt;width&gt;554&lt;/width&gt;
+     &lt;height&gt;26&lt;/height&gt;
+    &lt;/rect&gt;
+   &lt;/property&gt;
+  &lt;/widget&gt;
+  &lt;widget class="QStatusBar" name="statusbar"/&gt;
+ &lt;/widget&gt;
+ &lt;resources/&gt;
+ &lt;connections/&gt;
+&lt;/ui&gt;
+</code></pre>
+<p>Если вы послушали наш совет и посмотрели в течение лета материалы по HTML, то наверняка увидите знакомые конструкции. Конечно, это не HTML, а язык разметки XML. Если присмотреться, мы увидим, что внутри этого документа описаны все наши виджеты и их свойства, а также показана их вложенность друг в друга.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Подключение дизайна к программе</h2>
+<p>Теперь у нас есть дизайн, но нам надо подключить его к программе. Для этого есть два способа.</p>
+<p><strong>Способ первый: загрузка ui-файла</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> uic  <span class="token comment"># Импортируем uic</span>
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QMainWindow
+
+
+<span class="token keyword">class</span> <span class="token class-name">MyWidget</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        uic<span class="token punctuation">.</span>loadUi<span class="token punctuation">(</span><span class="token string">'01.ui'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>  <span class="token comment"># Загружаем дизайн</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>run<span class="token punctuation">)</span>
+        <span class="token comment"># Обратите внимание: имя элемента такое же как в QTDesigner</span>
+
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"OK"</span><span class="token punctuation">)</span>
+        <span class="token comment"># Имя элемента совпадает с objectName в QTDesigner</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> MyWidget<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span>exec_<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для загрузки ui-файла импортируйте класс <var>uic</var>, а затем в конструкторе вызовите метод <var>loadUi</var>, где одним из параметров указывается файл с интерфейсом. В нашем примере он называется 01.ui и лежит в той же папке, что и запускаемый нами скрипт.</p>
+<p>После выполнения метода <var>loadUi</var> все виджеты становятся полями класса, имена для которых мы задали в редакторе свойств. Затем можно работать с ними точно так же, как в предыдущем уроке. Что мы и делаем, подключая обработчик нажатия кнопки.</p>
+<p><strong>Способ второй: использование pyuic</strong></p>
+<p>Второй способ — конвертирование ui-файла в класс Python. Для этого нужна консольная утилита <strong>pyuic5</strong>.</p>
+<p>Чтобы ею воспользоваться, нужно открыть командную строку (терминал), перейти в ту папку, где лежит ваш ui-файл, и выполнить следующую команду:</p>
+<pre><code>pyuic5 ui_file.ui -o ui_file.py
+</code></pre>
+<p>Давайте посмотрим, что находится внутри получившегося файла. (В зависимости от того, что вы сделали в QtDesigner, содержимое файла будет отличаться, но смысл останется неизменным.)</p>
+<pre class="language-python"><code class="language-python">
+<span class="token comment"># -*- coding: utf-8 -*-</span>
+
+<span class="token comment"># Form implementation generated from reading ui file '01.ui'</span>
+<span class="token comment">#</span>
+<span class="token comment"># Created by: PyQt5 UI code generator 5.15.1</span>
+<span class="token comment">#</span>
+<span class="token comment"># WARNING: Any manual changes made to this file will be lost when pyuic5 is</span>
+<span class="token comment"># run again.  Do not edit this file unless you know what you are doing.</span>
+
+
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> QtCore<span class="token punctuation">,</span> QtGui<span class="token punctuation">,</span> QtWidgets
+
+
+<span class="token keyword">class</span> <span class="token class-name">Ui_MainWindow</span><span class="token punctuation">(</span><span class="token builtin">object</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">setupUi</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> MainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        MainWindow<span class="token punctuation">.</span>setObjectName<span class="token punctuation">(</span><span class="token string">"MainWindow"</span><span class="token punctuation">)</span>
+        MainWindow<span class="token punctuation">.</span>resize<span class="token punctuation">(</span><span class="token number">554</span><span class="token punctuation">,</span> <span class="token number">379</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>centralwidget <span class="token operator">=</span> QtWidgets<span class="token punctuation">.</span>QWidget<span class="token punctuation">(</span>MainWindow<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>centralwidget<span class="token punctuation">.</span>setObjectName<span class="token punctuation">(</span><span class="token string">"centralwidget"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton <span class="token operator">=</span> QtWidgets<span class="token punctuation">.</span>QPushButton<span class="token punctuation">(</span>self<span class="token punctuation">.</span>centralwidget<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>QRect<span class="token punctuation">(</span><span class="token number">180</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">,</span> <span class="token number">111</span><span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>setCheckable<span class="token punctuation">(</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>setObjectName<span class="token punctuation">(</span><span class="token string">"pushButton"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label <span class="token operator">=</span> QtWidgets<span class="token punctuation">.</span>QLabel<span class="token punctuation">(</span>self<span class="token punctuation">.</span>centralwidget<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>QRect<span class="token punctuation">(</span><span class="token number">130</span><span class="token punctuation">,</span> <span class="token number">80</span><span class="token punctuation">,</span> <span class="token number">281</span><span class="token punctuation">,</span> <span class="token number">61</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        font <span class="token operator">=</span> QtGui<span class="token punctuation">.</span>QFont<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        font<span class="token punctuation">.</span>setPointSize<span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setFont<span class="token punctuation">(</span>font<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setTextFormat<span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>Qt<span class="token punctuation">.</span>AutoText<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setObjectName<span class="token punctuation">(</span><span class="token string">"label"</span><span class="token punctuation">)</span>
+        MainWindow<span class="token punctuation">.</span>setCentralWidget<span class="token punctuation">(</span>self<span class="token punctuation">.</span>centralwidget<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>menubar <span class="token operator">=</span> QtWidgets<span class="token punctuation">.</span>QMenuBar<span class="token punctuation">(</span>MainWindow<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>menubar<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>QRect<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">554</span><span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>menubar<span class="token punctuation">.</span>setObjectName<span class="token punctuation">(</span><span class="token string">"menubar"</span><span class="token punctuation">)</span>
+        MainWindow<span class="token punctuation">.</span>setMenuBar<span class="token punctuation">(</span>self<span class="token punctuation">.</span>menubar<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>statusbar <span class="token operator">=</span> QtWidgets<span class="token punctuation">.</span>QStatusBar<span class="token punctuation">(</span>MainWindow<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>statusbar<span class="token punctuation">.</span>setObjectName<span class="token punctuation">(</span><span class="token string">"statusbar"</span><span class="token punctuation">)</span>
+        MainWindow<span class="token punctuation">.</span>setStatusBar<span class="token punctuation">(</span>self<span class="token punctuation">.</span>statusbar<span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>retranslateUi<span class="token punctuation">(</span>MainWindow<span class="token punctuation">)</span>
+        QtCore<span class="token punctuation">.</span>QMetaObject<span class="token punctuation">.</span>connectSlotsByName<span class="token punctuation">(</span>MainWindow<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">retranslateUi</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> MainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        _translate <span class="token operator">=</span> QtCore<span class="token punctuation">.</span>QCoreApplication<span class="token punctuation">.</span>translate
+        MainWindow<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span>_translate<span class="token punctuation">(</span><span class="token string">"MainWindow"</span><span class="token punctuation">,</span> <span class="token string">"MainWindow"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>setText<span class="token punctuation">(</span>_translate<span class="token punctuation">(</span><span class="token string">"MainWindow"</span><span class="token punctuation">,</span> <span class="token string">"Нажми меня"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span>_translate<span class="token punctuation">(</span><span class="token string">"MainWindow"</span><span class="token punctuation">,</span> <span class="token string">"Текст на метке"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Очень похоже на то, что мы делали на прошлом уроке, не правда ли? Только весь код написан не в инициализаторе, а в методе <code>setupUi()</code>. Утилита pyuic5 конвертирует XML-описание разметки из ui-файла в класс Python с кодом, создающим точно такой же интерфейс.</p>
+<p>В получившемся файле нет кода для запуска приложения и никаких обработчиков событий. Есть соблазн дописать код в получившийся файл, но делать этого не стоит, и вот почему: никто из нас не идеален и не может написать интерфейс сразу так, чтобы в него никогда потом не пришлось вносить изменения. Поэтому если мы перемешаем код интерфейса и наш код с логикой, а потом поправим дизайн, после конвертации вся наша работа пропадет. К счастью, есть простой выход из ситуации.</p>
+<p>В блоке по ООП мы говорили про множественное наследование, и говорили, что использовать его надо аккуратно и далеко не всегда. Ситуация с разделением интерфейса и логики исполнения — как раз звездный час для множественного наследования.</p>
+<p>Давайте создадим новый py-файл рядом с классом, который получился после конвертации интерфейса, вот с таким кодом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QMainWindow
+<span class="token keyword">from</span> ui_01 <span class="token keyword">import</span> Ui_MainWindow
+
+
+<span class="token comment"># Наследуемся от виджета из PyQt5.QtWidgets и от класса с интерфейсом</span>
+<span class="token keyword">class</span> <span class="token class-name">MyWidget</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">,</span> Ui_MainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token comment"># Вызываем метод для загрузки интерфейса из класса Ui_MainWindow,</span>
+        <span class="token comment"># остальное без изменений</span>
+        self<span class="token punctuation">.</span>setupUi<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>run<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"OK"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> MyWidget<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span>exec_<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+</code></pre>
+<p>Предками нашего класса <var>MyWidget</var> являются и <var>QMainWindow</var>, и <var>Ui_MainWindow</var>. От первого унаследованы методы, а от второго — дизайн. В остальном работа схожа: мы вызываем метод <var>setupUi</var> из <var>Ui_MainWindow</var>, а затем просто работаем с полями.</p>
+<p><strong>Какой способ лучше?</strong></p>
+<p>Так какой же способ лучше? Ответ на этот вопрос неожиданный — оба метода уместны в определенных ситуациях.</p>
+<p>Загрузка ui-файла очень удобна, когда наше приложение находится на стадии разработки и нам постоянно надо вносить какие-либо изменения в наш интерфейс. В таких случаях постоянная конвертация файла только замедляет процесс разработки. На самом деле конвертация происходит и в этом случае: метод <code>uic.loadUi()</code> выполняет эту конвертацию каждый раз при запуске приложения (а точнее каждый раз, когда выполняется эта строчка кода), что может сильно снизить производительность приложения.</p>
+<p>Поэтому хорошим советом будет следующий:</p>
+<ul>
+<li>На этапе разработки подключайте интерфейс с помощью ui-файлов</li>
+<li>Для релиза сконвертируйте весь интерфейс в классы Python</li>
+</ul>
+</section>
+<section class="material__chapter">
+<h2 id="3">Размещение виджетов</h2>
+<p>Простое «накидывание» виджетов в QtDesigner или из кода работает неплохо. Проблемы начинаются, когда мы попытаемся каким-либо образом изменять размеры окна нашего приложения. В этом случае какие-то виджеты перестают частично или полностью попадать в поле зрения пользователя, и приложением становится неудобно пользоваться. Однако и с этой проблемой мы можем легко справиться, как программно, так и при помощи QtDesigner.</p>
+<p>В QtDesigner можно размещать виджеты на экране не хаотично, а упорядоченно. Этот процесс называется разметкой. Для этого есть виджеты, которые называются <strong>Layout</strong> (Разметка): Vertical, Horizontal, Grid и Form Layout.</p>
+<p>Но они нужны не только для красивого размещения элементов интерфейса, но и для создания групп из виджетов, например, для Radio Button (элемент интерфейса, который позволяет пользователю выбрать одну опцию (пункт) из предопределенного набора (группы)). Когда мы работаем с радиокнопками, можем выбрать только одну из них. А как поступить в том случае, когда у нас несколько логических групп, в каждой их которых нужно сделать выбор? Если мы просто разместим все Radio Button на нашем виджете, то никак не сможем выбрать два. А вот если часть из них поместить в какой-нибудь Layout — легко.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/pyqt-2-4.png" width="418"/></div>
+<p>Давайте посмотрим на то, как будут выглядеть привычные нам <var>PushButton</var> при применении к ним различных layout-ов.</p>
+<p>Разместим изначально наши кнопки на форме в случайном порядке.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/qt-res-2-1.png" width="417"/></div>
+<p>Затем поместим их внутрь <strong>Vertical Layout</strong>.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/qt-res-2-2.png" width="416"/></div>
+<p>Теперь — в <strong>Horizontal Layout</strong>.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/qt-res-2-3.png" width="518"/></div>
+<p>В случае использования <strong>Grid Layout</strong> появляются различные варианты:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/qt-res-2-4.png" width="666"/></div>
+<p>А <strong>Form Layout</strong> является подвидом <strong>Grid Layout</strong>. У него фиксированное число столбцов, равное двум. Как можно догадаться по названию, такой layout удобнее всего использовать для создания форм, где в первый столбец размещаются подсказки для полей, а во второй — виджеты для ввода значения.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/qt-res-2-5.png" width="516"/></div>
+<p>Создавать Layout можно и из кода напрямую, точно также, как мы это делали с другими виджетами. Для добавления элементов в Layout у них всех существует метод <code>addWidget()</code>, который принимает виджет, который надо разместить, и дополнительные настройки размещения. Например, чтобы добавить виджет в Grid Layout, можно написать такой код: <code>grid.addWidget(elem, x, y)</code>. В качестве параметров метода выступают виджет, а также координаты ячейки, по которым его нужно расположить. Подробнее можно почитать в <a class="material__link" href="https://doc.qt.io/qtforpython/PySide2/QtWidgets/QLayout.html" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+<p>Кроме Layout, существуют и виджеты для создания виртуальных групп (вроде <var>QButtonGroup</var>). Чаще всего они нужны, когда у нас есть много виджетов с одинаковыми функциями. Например, у нас много Radio Button, но они все отвечают за один и тот же параметр — цвет. Чтобы объединить Radio Button в группу в QtDesigner, необходимо выделить их, нажать на правую кнопку мыши, кликнуть пункт меню <strong>Assign to button group</strong> и выбрать либо пункт создания новой группы (<strong>New button group</strong>), либо уже созданную. Чтобы «повесить» на всю группу обработчик событий, нужно вызвать уже знакомый нам метод <var>connect</var>.</p>
+<pre class="language-python"><code class="language-python">self<span class="token punctuation">.</span>buttonGroup<span class="token punctuation">.</span>buttonClicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>run<span class="token punctuation">)</span>
+</code></pre>
+<p>А чтобы получить список всех кнопок группы, примените метод <code>.buttons()</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Настройка PyCharm для работы с графическим интерфейсом</h2>
+<p>Как вы, наверное, уже могли заметить, PyCharm «из коробки» не очень-то дружит с ui-файлами, а конвертация файлов, пусть и не сложная, но требует некоторых манипуляций в командной строке. Давайте попробуем немного облегчить себе жизнь.</p>
+<p>Сначала добавим открытие ui-файлов в QtDesigner непосредственно из PyCharm. Для этого зайдем в настройки PyCharm, перейдем по пути Settings → Tools → External Editor и нажмем плюсик.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/pyqt-2-5.png" width="680"/></div>
+<p>В появившейся форме введем следующую информацию:</p>
+<ul>
+<li>Name: <strong>Qt Designer</strong></li>
+<li>Program: <strong>Путь_к_папке_где_установлен_Python\Lib\site-packages\qt5_applications\Qt\bin\designer.exe</strong> (Например: C:\Python37\Lib\site-packages\qt5_applications\Qt\bin\designer.exe )</li>
+<li>Arguments: <strong>$FileName$</strong></li>
+<li>Working Directory: <strong>$FileDir$</strong></li>
+</ul>
+<p>Теперь добавим возможность быстрого конвертирования ui-файл в py-файл. Снова жмем плюсик, находясь в там же настройках (по пути Settings → Tools → External Editor):</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/pyqt-2-6.png" width="680"/></div>
+<p>В появившейся форме введем следующую информацию:</p>
+<ul>
+<li>Name: <strong>Pyuic</strong></li>
+<li>Prorgam: <strong>&lt;Папка с питоном&gt;\Scripts\pyuic5.exe</strong> (Например: C:\Python37\Scripts\pyuic5.exe )</li>
+<li>Arguments: <strong>$FileName$ -o $FileNameWithoutAllExtensions$.py</strong></li>
+<li>Working Directory: <strong>$ProjectFileDir$</strong></li>
+</ul>
+<p>Теперь мы в проекте можем нажать правой кнопкой на ui-файл и, выбрав в меню External Tools, выбрать нужную опцию: либо открыть его для редактирования в QtDesigner, либо конвертировать в py-файл.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-2/pyqt-2-7.png" width="471"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="5">Экраны с высоким разрешением (HiRes)</h2>
+На экранах с высоким разрешением некоторые интерфейсы, разработанные для стандартного разрешения, могут выглядеть не корректно или мелко. Есть много способов решения этой проблемы. Вот один из них. До начала запуска основного приложения Qt и до описания своих виджетов добавьте вот такие строки:
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> QtCore<span class="token punctuation">,</span> QtWidgets
+
+<span class="token keyword">if</span> <span class="token builtin">hasattr</span><span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>Qt<span class="token punctuation">,</span> <span class="token string">'AA_EnableHighDpiScaling'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    QtWidgets<span class="token punctuation">.</span>QApplication<span class="token punctuation">.</span>setAttribute<span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>Qt<span class="token punctuation">.</span>AA_EnableHighDpiScaling<span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> <span class="token builtin">hasattr</span><span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>Qt<span class="token punctuation">,</span> <span class="token string">'AA_UseHighDpiPixmaps'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    QtWidgets<span class="token punctuation">.</span>QApplication<span class="token punctuation">.</span>setAttribute<span class="token punctuation">(</span>QtCore<span class="token punctuation">.</span>Qt<span class="token punctuation">.</span>AA_UseHighDpiPixmaps<span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">)</span>
+    </code></pre>
+</section></article></section>

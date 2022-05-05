@@ -1,0 +1,220 @@
+<section class="lesson-material__content"><article class="material"><h1>Простые встроенные функции</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Повторение</a></li>
+<li><a class="material__link" href="#2">Типы данных</a></li>
+<li><a class="material__link" href="#3">Операции над числами</a></li>
+<li><a class="material__link" href="#4">Целочисленное деление</a></li>
+<li><a class="material__link" href="#5">Приоритет операций</a></li>
+<li><a class="material__link" href="#6">Простейшие функции</a></li>
+<li><a class="material__link" href="#7">Обмен значениями переменных</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы познакомимся с типами данных, научимся работать с числами и узнаем о простейших функциях.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Повторение</h2>
+<p>На прошлом уроке мы рассмотрели условный оператор, который позволяет выполнять различные ветки кода в зависимости от заданных условий. Научились составлять сложные условия при помощи операций <var>not</var>, <var>and</var> и <var>or</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Типы данных</h2>
+<p>Пока единственным типом данных, с которым мы работали, были строки. Теперь нам предстоит рассмотреть целые и вещественные числа. У каждого элемента данных, который встречается в программе, есть свой тип. (В случае с Python более правильный термин — «класс объекта», но об этом мы будем говорить гораздо позже).</p>
+<p>Например, «привет» — это строка, а вот 15.3 — это число (дробное). Даже если данные не записаны прямо в программе, а получаются откуда-то еще, у них есть совершенно определенный тип. Например, на место <var>input()</var> всегда подставляется строка, а <code>2 + 2</code> даст именно число 4, а не строку "4".</p>
+<p>Пользователь может ввести с клавиатуры какие-то цифры, но в результате <code>input()</code> вернет строку, состоящую из этих цифр. Если мы попытаемся, например, прибавить к этой строке 1, получим ошибку.</p>
+<p>Давайте попробуем это сделать:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Сохраните и запустите программу. Введите любое число и посмотрите, что получится.</p>
+<p>Ошибка возникнет потому, что в переменную <var>а</var> у нас попадает строка, а в функции <var>print</var> мы пытаемся сложить эту строку из переменной <var>а</var> и число 1. Исправьте программу так, чтобы она работала.</p>
+<p>А если нам надо работать с числами? Мы пока будем рассматривать целые и вещественные числа.</p>
+<section class="material__note">
+<p>Когда речь идет о числовых данных, они записываются <strong>без кавычек</strong>.</p>
+<p>А для вещественных чисел, чтобы отделить дробную часть от целой, используют <strong>точку</strong>.</p>
+</section>
+<p>На прошлом занятии мы складывали две строки:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'10'</span> <span class="token operator">+</span> <span class="token string">'20'</span><span class="token punctuation">)</span> 
+</code></pre>
+<p>И получали результат — строку "1020".</p>
+<p>Давайте попробуем в этом примере убрать кавычки. В таком случае речь пойдет уже не о строках, а о двух целых числах.</p>
+<p>И результатом функции <code>print(10 + 20)</code> будет целое число 30.</p>
+<p>А если мы попробуем сложить два вещественных числа <code>print(10.0 + 20.0)</code>, результатом будет вещественное число 30.0.</p>
+<p>Попробуйте предположить, что будет, если сложить вещественное число и целое число <code>print(10.0 + 20)</code>. Почему?</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Операции над числами</h2>
+<p>Мы выполняли сложение двух чисел внутри функции <var>print</var>, но мы можем переменным давать нужные значения и выполнять действия над переменными.</p>
+<p>Давайте напишем программу, которая задаст нужные значения двум переменным (10 и 20), потом вычислит их сумму, положит это значение в третью переменную и выведет на экран полученный результат. Допишите начальные строки, чтобы программа решала поставленную задачу:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>summ<span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p>Обратите внимание: если в качестве имени переменной для суммы взять <var>sum</var>, оно выделяется цветом. Это означает, что такое имя знакомо среде и принадлежит какой-то функции, в качестве имени переменной его лучше не использовать.</p>
+</section>
+<p>Как складывать два числа, мы научились. Еще числа можно вычитать, умножать, делить, возводить в степень, получать целую часть от деления и остаток от деления нацело. Давайте разберем эти операции на примерах.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">30</span> <span class="token operator">-</span> <span class="token number">10</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">30.0</span> <span class="token operator">-</span> <span class="token number">10</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">3</span> <span class="token operator">*</span> <span class="token number">3</span><span class="token punctuation">)</span>
+</code></pre>
+<p>С вычитанием и умножением все понятно, они аналогичны сложению.</p>
+<p>Возведение в степень обозначается двумя звездочками <code>**</code>, которые должны записываться без разделителей.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">9</span> <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: результат деления всегда вещественный, даже если мы делим два целых числа, которые делятся нацело.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Попробуйте поделить на 0. Посмотрите, как будет выглядеть ошибка деления на 0.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Целочисленное деление</h2>
+<section class="material__note">
+<p>Для реализации целочисленного деления существуют два действия: деление нацело и остаток от деления нацело. Получение целой части от деления обозначается как удвоенный знак деления, а остатка от деления нацело — <code>%</code>.</p>
+</section>
+<p>Давайте подробнее разберем эти операции. Что будет выведено в результате этих действий?</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">//</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">10</span> <span class="token operator">%</span> <span class="token number">3</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">//</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span> <span class="token operator">%</span> <span class="token number">5</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">//</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">10</span> <span class="token operator">%</span> <span class="token number">11</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Допустим, вам известны результаты <code>a // b</code>, <code>a % b</code> и число <var>b</var>, напишите формулу, как найти число <var>a</var>?</p>
+<p>Давайте проверим вашу формулу:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token number">10</span>
+b <span class="token operator">=</span> <span class="token number">3</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>…А сюда напишем формулу…<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание на порядок выполнения действий в вашей формуле. Целочисленное деление имеет тот же приоритет, что и обычное деление, значит, будет выполнятся раньше, чем вычитание и сложение. Для изменения приоритета выполнения операций используются скобки, все так же, как в математике.</p>
+<p>А теперь, немного разобравшись с этими операциями, попробуйте предположить, что выведется на экран после выполнения следующего куска кода:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">//</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">10</span> <span class="token operator">%</span> <span class="token number">3</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">10</span> <span class="token operator">//</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">10</span> <span class="token operator">%</span> <span class="token number">3</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Определите, что будет выведено на экран?</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token number">4</span>
+b <span class="token operator">=</span> <span class="token number">15</span>
+c <span class="token operator">=</span> b <span class="token operator">/</span> <span class="token number">5</span> <span class="token operator">*</span> <span class="token number">3</span> <span class="token operator">-</span> a
+<span class="token keyword">print</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Приоритет операций</h2>
+<p>Мы уже изучили несколько типов операций в языке Python:</p>
+<ul>
+<li>Операции присваивания (<code>=</code>, <code>+=</code>, <code>-=</code>, <code>*=</code> и т. д.)</li>
+<li>Операции сравнения (<code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>)</li>
+<li>Арифметические операции (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>//</code>)</li>
+<li>Логические операции (<code>and</code>, <code>or</code>, <code>not</code>)</li>
+</ul>
+<p>Есть и другие, с которыми познакомимся позднее. Все эти операции могут использоваться совместно в довольно сложных конструкциях, поэтому нужно помнить о приоритете операций и в случае необходимости менять его при помощи скобок.</p>
+<p>Итак, приоритет выполнения операций в Python от высшего (выполняется первой) до низшего:</p>
+<ol>
+<li>Возведение в степень (<code>**</code>).</li>
+<li>Унарный минус (<code>-</code>). Используется для получения, например, противоположного числа.</li>
+<li>Умножение, деление (<code>* / % //</code>).</li>
+<li>Сложение и вычитание (<code>+ -</code>).</li>
+<li>Операции сравнения (<code>&lt;= &lt; &gt; &gt;=</code>).</li>
+<li>Операции равенства (<code>== !=</code>).</li>
+<li>Логические операции (<code>not or and</code>).</li>
+<li>Операции присваивания (<code>=</code>).</li>
+</ol>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>По обе стороны бинарной операции нужно обязательно ставить по одному пробелу. Но операции, состоящие из двойных символов (<code>&lt;= &gt;= == != -= +=</code>), пробелами не разделяются.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="6">Простейшие функции</h2>
+<p>С действиями над числами определились, осталось разобраться, как получать числа из ввода. Здесь нам поможет важное новое понятие — <strong>функция</strong>. В математике функция из одного числа (или даже нескольких) делает другое.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция</strong></p>
+<p>В программировании (и в Python, в частности) функция — это сущность, которая из одного (или даже нескольких) значений делает другое. При этом она может еще и выполнять какие-то действия.</p>
+<p>Например, есть функция модуля у = |x|, аналогично в Python есть функция <code>y = abs(x)</code>.</p>
+<p>Но функции в Python необязательно принимают только числа.</p>
+</section>
+<p>Для того чтобы вводить числа с клавиатуры и потом работать с ними, необходимо найти функцию, которая из строки делает число. И такие функции есть!</p>
+<section class="material__note">
+<p>Тип данных целых чисел в Python называется <strong>int</strong>, дробных чисел — <strong>float</strong>.</p>
+<p>Одноименные функции принимают в качестве аргумента строку и возвращают число, если в этой строке было записано число (иначе выдают ошибку):</p>
+</section>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+b <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Или можно написать даже так:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+</code></pre>
+<p>что будет означать — «получи строку из ввода, сделай из нее целое число и результат помести в переменную <var>а</var>».</p>
+<p>И тогда предыдущая программа может быть записана в виде:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Но можно сократить код еще, написав вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Функция int может быть применена и для получения целого числа из вещественного, в таком случае дробная часть будет отброшена (без округления).</p>
+<p>Например, <code>print(int(20.5 + 34.1))</code> выдаст на экран число 54, хотя, если сложить эти числа и не отправлять их в функцию <var>int</var>, результат будет 54.6.</p>
+<p>В Python cуществует огромное количество различных функций, мы будем знакомиться с ними постепенно. Так, например, для строки можно определить еще и ее длину.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Длина строки</strong></p>
+<p>Длина строки — это количество символов в строке.</p>
+<p>Для определения длины строки используется стандартная функция Python <strong>len()</strong>.</p>
+</section>
+<p>На примере функции <var>len</var> разберемся с основными понятиями, связанными с использованием функций. Изучите код:</p>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+length <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы ввели слово длиной'</span><span class="token punctuation">,</span> length<span class="token punctuation">,</span> <span class="token string">'букв.'</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p>Использование в программе функции называется «вызов функции». Он устроен так: пишем имя функции — <var>len</var>, а затем в скобках те данные, которые мы передаем этой функции, чтобы она что-то с ними сделала. Такие данные называются <strong>аргументами</strong>.</p>
+</section>
+<p>В нашем примере данные в скобках должны быть строкой. Мы выбрали в качестве данных значение переменной <var>word</var>, которое пользователь до этого ввел с клавиатуры. То есть значение переменной <var>word</var> выступает здесь в роли аргумента. А функция <var>len</var> выдает длину этой строки. Если пользователь ввел, например, «привет», <var>word</var> оказывается равно строке «привет», и на место <code>len(word)</code> подставляется длина строки «привет», то есть 6.</p>
+<p>Обратите внимание: каждый раз, когда мы пишем имя переменной (кроме самого первого раза — в операции присваивания слева от знака равно), вместо этого имени интерпретатор подставляет значение переменной.</p>
+<section class="material__note">
+<p>Точно так же на место вызова функции (то есть имени функции и ее аргументов в скобках) подставляется результат ее работы, это называется <strong>возвращаемое значение функции</strong>.</p>
+</section>
+<p>Таким образом, функция <var>len</var> возвращает длину своего аргумента. <var>input</var> — тоже функция (отсюда скобки), она может работать, не принимая никаких аргументов, а может в качестве аргумента принимать сообщение, которое надо вывести перед ожиданием пользовательского ввода. Но всегда считывает строку с клавиатуры и возвращает ее.</p>
+<p><var>print</var> — тоже функция, она не возвращает никакого осмысленного значения, зато выводит свои аргументы на экран. Эта функция может принимать не один аргумент, а сколько угодно. Несколько аргументов одной функции следует разделять запятыми.</p>
+<p>На самом деле функция сама по себе — это фактически небольшая программа, но об этом позже.</p>
+<p>Функции безразлично происхождение значений, которые ей передали в качестве аргумента. Это может быть значение переменной, результат работы другой функции или записанное прямо в коде значение:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Это слово длиной'</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span><span class="token string">'абракадабра'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">'букв.'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: в предыдущем примере значение переменной <var>word</var> вообще никак не изменилось от вызова функции <var>len</var>. C другой стороны, вызов функции может стоять где угодно, необязательно сразу класть возвращаемое значение в переменную.</p>
+<p>Как существует функция <var>int</var>, которая пытается сделать из того, что ей передали, целое число, так же существует и функция <var>str</var>, которая возвращает строку из тех данных, что в нее передали.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># выведет '1020'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token string">'10'</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token string">'20'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># выведет 30</span>
+</code></pre>
+<p>Каждый раз, когда вы пишете программу, важно понимать, какой тип имеет каждое значение и каждая переменная.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Обмен значениями переменных</h2>
+<p>Мы изучили операции с различными типами данных.</p>
+<p>Давайте попробуем написать программу, которая поменяет местами содержимое переменных <var>а</var> и <var>b</var>. Пусть есть такой код:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token number">3</span>
+b <span class="token operator">=</span> <span class="token number">5</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+</code></pre>
+<p>Что надо вписать в пропущенные места, чтобы в <var>а</var> лежало 5, а в <var>b</var> лежало 3? При этом числами 3 и 5 пользоваться нельзя.</p>
+<p>Как один из вариантов можно использовать дополнительную переменную:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token number">3</span>
+b <span class="token operator">=</span> <span class="token number">5</span>
+с <span class="token operator">=</span> a
+a <span class="token operator">=</span> b
+b <span class="token operator">=</span> c
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+</code></pre>
+<p>А теперь попробуйте написать вариант без дополнительной переменной, через сумму двух чисел.</p>
+<p>Но нам повезло, что мы изучаем язык Python, потому что он и поддерживает более простой вариант записи:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token number">3</span>
+b <span class="token operator">=</span> <span class="token number">5</span>
+a<span class="token punctuation">,</span> b <span class="token operator">=</span> b<span class="token punctuation">,</span> a
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+</code></pre>
+<p>Значения переменных, которые расположены справа от знака «присвоить», в указанном порядке помещаются в переменные слева, в порядке их указания.</p>
+<p>Так, используя множественное присваивание, можно задавать нескольким переменным одно значение:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> b <span class="token operator">=</span> c <span class="token operator">=</span> <span class="token number">5</span>
+</code></pre>
+</section></article></section>

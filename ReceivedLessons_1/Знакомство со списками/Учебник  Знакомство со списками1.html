@@ -1,0 +1,193 @@
+<section class="lesson-material__content"><article class="material"><h1>Знакомство со списками</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Списки</a></li>
+<li><a class="material__link" href="#2">Создание списков</a></li>
+<li><a class="material__link" href="#3">Индексация в списках</a></li>
+<li><a class="material__link" href="#4">Добавление элемента в список</a></li>
+<li><a class="material__link" href="#5">Перебор элементов списка</a></li>
+<li><a class="material__link" href="#6">Срезы списков</a></li>
+<li><a class="material__link" href="#7">Удаление элементов</a></li>
+<li><a class="material__link" href="#8">Списки и массивы</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке рассматривается новый тип данных — списки (<var>list</var>), обращение к элементам списка по индексу (аналогично строкам, но с возможностью изменения элементов списка), метод <var>append</var> и вопросы перебора элементов списка и срезов списка.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Списки</h2>
+<p>Мы уже знаем тип данных, который называется <strong>множество</strong> и является <strong>коллекцией</strong> (<strong>контейнером</strong>), то есть позволяет хранить несколько элементов данных, и тип, который тоже обладает свойствами коллекции и называется <strong>строка</strong>. Сегодня мы познакомимся с еще одним типом-коллекцией, который называется <strong>список</strong> (<var>list</var>). Никогда не создавайте переменные с таким именем!</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Списки</strong></p>
+<p>Списки являются очень гибкой структурой данных и широко используются в программах. Давайте рассмотрим основные свойства списка в сравнении с теми коллекциями, которые мы уже знаем:</p>
+<ul>
+<li>Список хранит несколько элементов под одним именем (<em>как и множество</em>)</li>
+<li>Элементы списка могут повторяться (<em>в отличие от множества</em>)</li>
+<li>Элементы списка упорядочены и проиндексированы, доступна операция среза (<em>как в строке</em>)</li>
+<li>Элементы списка можно изменять (<em>в отличие от строки</em>)</li>
+<li>Элементами списка могут быть значения любого типа: целые и действительные числа, строки и даже другие списки</li>
+</ul>
+</section>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-12/list-set-str.svg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="2">Создание списков</h2>
+<p>Чтобы работать со списком, нужно его создать. Для этого используется операция присваивания.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Создание списка</strong></p>
+<p>Чтобы задать готовый список, нужно справа от знака присваивания в квадратных скобках перечислить его элементы через запятую. Здесь создается список из первых пяти простых чисел, который помещается в переменную <var>primes</var> («простые числа»):</p>
+<pre class="language-python"><code class="language-python">primes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>primes<span class="token punctuation">)</span>  <span class="token comment"># выводим на экран список целиком</span>
+</code></pre>
+</section>
+<p>Для того чтобы создать пустой список, можно воспользоваться конструкцией <code>[]</code> или функцией <var>list</var>.</p>
+<pre class="language-python"><code class="language-python">empt1 <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token comment"># это пустой список</span>
+empt2 <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># и это тоже пустой список </span>
+</code></pre>
+<p>Теперь вспомним один из рассмотренных нами ранее способов создания cтроки из заданного количества повторяющихся подстрок. Такую строку можно легко составить путем умножения на число:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"'$' * 5 --&gt;"</span><span class="token punctuation">,</span> <span class="token string">'$'</span> <span class="token operator">*</span> <span class="token number">5</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"'-|' * 4 + '-' --&gt;"</span><span class="token punctuation">,</span> <span class="token string">'-|'</span> <span class="token operator">*</span> <span class="token number">4</span> <span class="token operator">+</span> <span class="token string">'-'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>'$' * 5 --&gt; $$$$$
+'-|' * 4 + '-' --&gt; -|-|-|-|-</samp></pre>
+<p>Аналогично поступают и со списками:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">4</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>[2, 3, 2, 3, 2, 3, 2, 3]</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Для генерации списков и строк, состоящих строго из повторяющихся элементов (например, список из заданного количества нулей), умножение на число — самый короткий и красивый метод.</p>
+<pre class="language-python"><code class="language-python">my_list <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">4</span>
+</code></pre>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="3">Индексация в списках</h2>
+<p>Чтобы получить отдельный элемент списка, нужно записать после него (или имени переменой, связанной с данным списком) в квадратных скобках номер (индекс) нужного элемента. Индекс отсчитывается с нуля, как в строках. Так же, как и в строках, для нумерации с конца разрешены отрицательные индексы.</p>
+<p>Таким образом, мы умеем использовать квадратные скобки в Python уже для трех вещей: задания нового списка (тогда внутри этих скобок перечисляются его элементы), получения элемента списка или строки по индексу (тогда в скобках указывается индекс) и получения среза строки.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Сумма первых двух простых чисел:'</span><span class="token punctuation">,</span> primes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> primes<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Последнее из простых чисел в нашем списке:'</span><span class="token punctuation">,</span> primes<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Как и в строках, попытка обратиться к элементу с несуществующим индексом вызовет ошибку:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>primes<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># ошибка: index out of range</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Добавление элемента в список</h2>
+<p>Добавление элемента в конец списка делается при помощи метода <var>append</var> (этот метод аналогичен методу <var>add</var>, используемому для добавления элементов в множество):</p>
+<pre class="language-python"><code class="language-python">primes<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">)</span>
+primes<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">15</span><span class="token punctuation">)</span>  <span class="token comment"># ой, ошиблись — 15 составное число!</span>
+</code></pre>
+<p>Обратите внимание: для того чтобы воспользоваться методом <var>append</var>, нужно, чтобы список был создан (при этом он может быть пустым).</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Попытка применить метод <var>append</var> к несуществующему списку приведет к ошибке. Заметьте: два вызова метода <var>append</var> в следующем примере добавляют элемент к двум разным спискам.</p>
+</section>
+<pre class="language-python"><code class="language-python">odd_numbers <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">13</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">,</span> <span class="token number">17</span><span class="token punctuation">]</span>
+primes<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">19</span><span class="token punctuation">)</span>
+odd_numbers<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">19</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Кроме того, вы можете расширить имеющийся список любым итерабельным (перечисляемым) объектом с помощью метода <var>extend</var>:</p>
+<pre class="language-python"><code class="language-python">my_list <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span>
+another_list <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">]</span>
+my_list<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>another_list<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_list<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[1, 2, 3, 4, 5, 6]</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Расширение списка строкой</strong></p>
+<p>Имейте в виду, что строка является итерируемой, поэтому, если вы расширите список строкой, вы добавите каждый символ, когда будете перебирать строку (что может быть не так, как вы хотите):</p>
+<pre class="language-python"><code class="language-python">my_list <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span>
+another_list <span class="token operator">=</span> <span class="token string">"привет"</span>
+my_list<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>another_list<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_list<span class="token punctuation">)</span> <span class="token comment"># [1, 2, 3, 'п', 'р', 'и', 'в', 'е', 'т']</span>
+</code></pre>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Расширение списка множеством</strong></p>
+<p>Множество также является итерируемым типом, поэтому если расширить список множеством, то элементы множества добавятся в конец списка, но в произвольном порядке:</p>
+<pre class="language-python"><code class="language-python">my_list <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span>
+another_set <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'п'</span><span class="token punctuation">,</span> <span class="token string">'р'</span><span class="token punctuation">,</span> <span class="token string">'и'</span><span class="token punctuation">,</span> <span class="token string">'в'</span><span class="token punctuation">,</span> <span class="token string">'е'</span><span class="token punctuation">,</span> <span class="token string">'т'</span><span class="token punctuation">}</span>
+my_list<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>another_set<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_list<span class="token punctuation">)</span> <span class="token comment"># [1, 2, 3, 'в', 'и', 'р', 'т', 'е', 'п']</span>
+</code></pre>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Изменение элемента списка</strong></p>
+<p>В отличие от отдельных символов в строках, элемент списка можно поместить слева от "=" в операторе присваивания и тем самым изменить этот элемент:</p>
+<pre class="language-python"><code class="language-python">primes<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">17</span>  <span class="token comment"># Исправляем ошибку:</span>
+<span class="token comment">#  седьмое (нумерация элементов списка - с нуля!)</span>
+<span class="token comment">#  простое число - не 15, а 17.</span>
+</code></pre>
+</section>
+<p>Тем не менее многие вещи, которые можно делать со строками, можно делать и со списками:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>primes<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># выводим длину списка</span>
+primes <span class="token operator">+=</span> <span class="token punctuation">[</span><span class="token number">23</span><span class="token punctuation">,</span> <span class="token number">29</span><span class="token punctuation">]</span>  <span class="token comment"># списки можно складывать, как и строки</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>primes<span class="token punctuation">)</span>  <span class="token comment"># выведет [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]</span>
+<span class="token keyword">if</span> <span class="token number">1</span> <span class="token keyword">in</span> primes<span class="token punctuation">:</span>  <span class="token comment"># можно проверять, содержится ли в списке элемент</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Мы считаем единицу простым числом.'</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Мы, как и всё остальное человечество, не считаем 1 простым числом.'</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Перебор элементов списка</h2>
+<p>Во время выполнения программы текущее количество элементов списка всегда известно. Поэтому, если нужно что-то сделать с каждым элементом списка (например, напечатать его на экране), можно перебрать элементы с помощью цикла <var>for</var>. При этом, как и для строк, возможны два варианта перебора — перебор индексов и перебор самих элементов.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>primes<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># выведем по очереди все элементы списка...</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Простое число номер'</span><span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'-'</span><span class="token punctuation">,</span> primes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> p <span class="token keyword">in</span> primes<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Квадрат числа'</span><span class="token punctuation">,</span> p<span class="token punctuation">,</span> <span class="token string">'-'</span><span class="token punctuation">,</span> p <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span>  <span class="token comment"># и их квадраты</span>
+</code></pre>
+<p>Заметьте, что при использовании конструкции <code>for i in range(len(имя_списка))</code> индексы перебираются в цикле очень удобно: от 0 включительно до длины списка не включительно. Таким образом, можно перебрать все элементы списка.</p>
+<p>Цикл <var>for</var> нередко используется и для формирования списка, если мы заранее знаем, сколько элементов в нем должно быть:</p>
+<pre class="language-python"><code class="language-python">n <span class="token operator">=</span> <span class="token number">10</span>
+a <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Введите'</span><span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token string">'значений:'</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    a<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Получился список строк:'</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="6">Срезы списков</h2>
+<p>Как и для строк, для списков определена операция взятия среза:</p>
+<pre class="language-python"><code class="language-python">months <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'январь'</span><span class="token punctuation">,</span> <span class="token string">'февраль'</span><span class="token punctuation">,</span> <span class="token string">'март'</span><span class="token punctuation">,</span> <span class="token string">'апрель'</span><span class="token punctuation">,</span> <span class="token string">'май'</span><span class="token punctuation">,</span> <span class="token string">'июнь'</span><span class="token punctuation">,</span> <span class="token string">'июль'</span><span class="token punctuation">,</span>
+          <span class="token string">'август'</span><span class="token punctuation">,</span> <span class="token string">'сентябрь'</span><span class="token punctuation">,</span> <span class="token string">'октябрь'</span><span class="token punctuation">,</span> <span class="token string">'ноябрь'</span><span class="token punctuation">,</span> <span class="token string">'декабрь'</span><span class="token punctuation">]</span>
+spring <span class="token operator">=</span> months<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">]</span>  <span class="token comment"># spring == ['март', 'апрель', 'май']</span>
+<span class="token keyword">for</span> month <span class="token keyword">in</span> spring<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>month<span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Использование срезов</strong></p>
+<p>Срезы можно использовать и для присваивания новых значений элементам списка. Например, если мы решим перевести на английский названия летних месяцев, это можно сделать с помощью среза:</p>
+<pre class="language-python"><code class="language-python">months<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">:</span><span class="token number">8</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'June'</span><span class="token punctuation">,</span> <span class="token string">'July'</span><span class="token punctuation">,</span> <span class="token string">'August'</span><span class="token punctuation">]</span>
+</code></pre>
+</section>
+<p>Теперь список <var>months</var> будет выглядеть так: <code>['январь', 'февраль', 'март', 'апрель', 'май', 'June', 'July', 'August', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь']</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Удаление элементов</h2>
+<p>С помощью функции <var>del</var> можно удалять элементы списка.</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">]</span>
+<span class="token keyword">del</span> a<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[1, 2, 4, 5, 6]</samp></pre>
+<p>Элемент под указанным индексом удаляется, а список перестраивается.</p>
+<p>Функция <var>del</var> работает и со срезами: например, так можно удалить все элементы на четных позициях исходного списка:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">]</span>
+<span class="token keyword">del</span> a<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[2, 4, 6]</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="8">Списки и массивы</h2>
+<p>Во многих языках программирования (да и в самом Python, в недрах стандартной библиотеки) имеется другой тип данных с похожими свойствами — массив. Поэтому списки иногда называют массивами, хоть это и не совсем правильно.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Элементы массива имеют одинаковый тип и располагаются в памяти одним куском, а элементы списка могут быть разбросаны по памяти как угодно и могут иметь разный тип. Все это замедляет работу списков по сравнению с массивами, но придает им гораздо большую гибкость. Из этого различия вытекает и «питонский путь» формирования списка: не создавать «пустой массив» и заполнять его значениями, а append’ить значения к изначально пустому списку.</p>
+</section>
+</section></article></section>

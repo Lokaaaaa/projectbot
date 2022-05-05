@@ -1,0 +1,545 @@
+<section class="lesson-material__content"><article class="material"><h1>Практика по работе с графикой и tkinter</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Программирование в графическом интерфейсе</a></li>
+<li><a class="material__link" href="#2">Учимся рисовать</a></li>
+<li><a class="material__link" href="#3">Взаимодействие с пользователем</a></li>
+<li><a class="material__link" href="#4">Движение объектов</a></li>
+<li><a class="material__link" href="#5">Приступаем к игре</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы научимся писать небольшие программы, которые работают не с консолью, а с окном приложения (графическим пользовательским интерфейсом, GUI). Для этого нам понадобится дополнительная функциональность — библиотека tkinter. То, чем мы будем заниматься — только самое начало программирования GUI, поэтому не стоит ожидать того, что мы создадим Photoshop. Но все впереди, и когда-нибудь мы сделаем и это.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Программирование в графическом интерфейсе</h2>
+<p>Согласитесь, что скучно все время видеть перед собой черный экран, который мы называем консолью. На нем нельзя рисовать, пользоваться «мышкой» или джойстиком, организовывать привычный нам оконный интерфейс. Сегодня и на нескольких следующих занятиях мы познакомимся с функциональностью языка Python, которая позволит нам все же немного поработать в графическом режиме.</p>
+<p>Как вы уже догадываетесь, не вся функциональность языка Python включена в, что называется, стандартную поставку. Какие-то вещи надо добавлять к этому коробочному решению. Эти «добавки» называются библиотеками. Скоро вы узнаете о них подробнее, а пока мы подключим лишь одну из них, которая называется tkinter, и которая поможет нам поработать с графикой.</p>
+<p>Попробуйте написать и выполнить следующий код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>У вас должно открыться пустое окошко, как на рисунке:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/tkinter/tkinter-1.png" width="200"/></div>
+<p>Если при запуске Python ответит <code>ImportError: No module named 'tkinter'</code>, то это означает, что библиотека tkinter на вашем компьютере отсутствует и нужно ее установить.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Установка tkinter</strong></p>
+<p>Установить стандартный пакет библиотек в Python очень просто, для этого есть специальный менеджер пакетов — pip. Чтобы воспользоваться им, запустите терминал (в Windows для этого нужно нажать Пуск, набрать cmd и нажать Enter). В терминале наберите:</p>
+<pre><code>pip install tkinter
+</code></pre>
+<p>И следуйте указаниям. Обычно надо со всем согласиться.</p>
+</section>
+<p>Но вернемся к нашему коду и поймем, что же делают написанные в нем строки.</p>
+<p><code>import tkinter</code> — просто подключение пакета, с такими строчками мы уже встречались.</p>
+<p>Вторая строчка — <code>master = tkinter.Tk()</code> — создает основное окно и дает ему имя master. Дальше мы будем наполнять его содержимым.</p>
+<p>Третья строчка — <code>master.mainloop()</code> — самая необычная. Дело в том, что приложение с графическим интерфейсом работает не так, как консольные приложения, которые мы писали раньше. В консольных приложениях компьютер исполнял наши инструкции одну за другой. В программе с графическим интерфейсом такой подход работать не будет, потому что компьютер должен реагировать на действия пользователя. Поэтому вместо того, чтобы выполнять команды, он ждет сигналов от пользователя, которые нужно как-то обрабатывать.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Основной цикл</strong></p>
+<p>Команда <code>master.mainloop()</code> запускает для нашего окна <strong>основной цикл</strong>. Он получает информацию о важных событиях (нажатии клавиш, движениях мышки и пр.), обрабатывает эти события и перерисовывает окно.</p>
+</section>
+<p>Так работают все приложения с графическим интерфейсом. Если вы пользуетесь ОС Windows, то наверняка встречали сообщение, что какая-то программа не отвечает. Обычно это означает, что внутри основного цикла что-то пошло не так (например, программа вошла в бесконечный цикл или зависла). Система продолжает посылать программе сообщения о событиях, но та перестала их принимать, потому что занята чем-то другим.</p>
+<p>Обратите внимание, что выполнение программы как бы приостанавливается, когда она доходит до команды <code>master.mainloop()</code>, и продолжается только после закрытия окна. Попробуйте предсказать, что произойдет со следующей программой (а потом проверьте свое предположение):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+x <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Учимся рисовать</h2>
+<p>Прежде чем писать программу, по-настоящему взаимодействующую с пользователем, мы научимся рисовать.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Создание холста</strong></p>
+<p>Для начала нужно создать холст (canvas), на котором потом будут располагаться картинки. Это действие делает строка:</p>
+<pre class="language-python"><code class="language-python">canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">300</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">300</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Попробуйте поменять параметры <var>bg</var> (сокращение для background), <var>height</var> и <var>width</var>. Цвет может быть либо фиксированным названием цвета (white, black, red, green, blue, cyan, yellow, magenta) либо строкой вида «#RRGGBB». RR, GG и BB — значения красной, синей и зеленой компоненты в диапазоне от 0 до 255, записанные в шестнадцатеричной системе счисления.</p>
+<p>Поэкспериментируйте с этим.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Добавление холста в окно</strong></p>
+<p>Команда <code>сanvas.pack()</code> добавляет в окно <var>master</var> созданный нами холст — <var>canvas</var>. То же самое можно сделать командой <code>canvas.grid()</code>, но работают они немного по-разному:</p>
+<ul>
+<li><code>grid()</code> располагает объекты в ячейках виртуальной сетки, которую мы накладываем на наше окно</li>
+<li><code>pack()</code> же пытается их разместить (упаковать) самостоятельно</li>
+</ul>
+</section>
+<p>Посмотрите, что меняется, если заменить <code>canvas.pack()</code> на <code>canvas.grid()</code>.</p>
+<p><strong>Тренировочная задача #0:</strong> напишите функцию, которая принимает на вход три числа (красную, зеленую и синюю компоненту) и выдает цвет в описанном выше формате.</p>
+<p>Ну давайте уже наконец что-то нарисуем:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'white'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>create_line<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">600</span><span class="token punctuation">,</span> <span class="token number">600</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Рисование линии</strong></p>
+<p>Мы нарисовали линию на холсте, передав команде <var>create_line</var> сначала две пары — координаты точек, а затем параметр <var>fill</var> — цвет линии:</p>
+<pre class="language-python"><code class="language-python">canvas<span class="token punctuation">.</span>create_line<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">600</span><span class="token punctuation">,</span> <span class="token number">600</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Команде <var>create_line</var> можно передать больше точек — тогда получится ломаная:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'white'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>create_line<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">600</span><span class="token punctuation">,</span> <span class="token number">600</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                   <span class="token punctuation">(</span><span class="token number">200</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь научимся рисовать круг или эллипс:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'white'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">200</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">400</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'green'</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если нужно нарисовать много эллипсов, можно использовать цикл:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'white'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">600</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">20</span><span class="token punctuation">,</span> x <span class="token operator">+</span> <span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В качестве практики найдите в интернете, какие еще команды рисования есть у холста (tkinter.Canvas) и поэкспериментируйте с ними.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Взаимодействие с пользователем</h2>
+<p>Теперь пришло время научить нашу программу взаимодействовать с пользователем. Для этого нужно связать каждое его действие с функцией, которая будет реагировать на действия. Это делается с помощью команды <var>bind</var>.</p>
+<p>Эта команда получает в качестве входных данных название произошедшего события и функцию, которую нужно выполнить, когда событие происходит:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+
+<span class="token keyword">def</span> <span class="token function">draw</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> draw<span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В приведенном примере мы обрабатываем событие KeyPress — нажатие любой клавиши. Tkinter знает много разных событий, вы можете самостоятельно прочитать про них в документации. Пока же прочие события нам не понадобятся.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Команда <code>master.bind("", draw)</code> означает, что каждый раз, когда пользователь нажимает клавишу, вызывается функция <var>draw</var>. В качестве аргумента этой функции передается переменная <var>event</var>, в которой содержится описание события.</p>
+</section>
+<p><em>(Вредный совет: теперь вы тоже можете сделать так, чтобы ваша программа зависла и не отвечала. Для этого нужно добавить в обработку события бесконечный цикл.)</em></p>
+<p>Обратите внимание, что функция получает на вход <strong>один</strong> аргумент — <strong>описание события</strong>, которое ее вызывает. В этой переменной хранится вся возможная информация о событии.</p>
+<p>В частности, можно узнать, какая клавиша была нажата, и в зависимости от этого закрашивать круг нужным цветом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+
+<span class="token keyword">def</span> <span class="token function">draw</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span>char <span class="token operator">==</span> <span class="token string">'r'</span><span class="token punctuation">:</span>
+        canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span>char <span class="token operator">==</span> <span class="token string">'g'</span><span class="token punctuation">:</span>
+        canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'green'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span>char <span class="token operator">==</span> <span class="token string">'b'</span><span class="token punctuation">:</span>
+        canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">)</span>
+
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> draw<span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Нажатие клавиши</strong></p>
+<p>На самом деле, информация о том, какая клавиша нажата, хранится сразу в нескольких полях («составляющих» переменной <var>event</var>):</p>
+<ul>
+<li><var>char</var> — символ, который появляется при нажатии клавиши. Однако это поле определено не всегда: например, когда вы нажимаете Shift, никакого символа не появляется</li>
+<li><var>keysym</var> — символическое описание нажатой клавиши (например, Return, Shift_L (левый шифт), Alt_R и т.п.)</li>
+<li><var>keysym_num</var> — число, соответствующее этому описанию</li>
+<li><var>keycode</var> — код нажатой клавиши. Клавиши могут иметь одинаковый код, но разный keysym, мы встретимся с таким случаем чуть дальше</li>
+</ul>
+</section>
+<p>Как узнать keysym нужной вам клавиши? Можно посмотреть в интернете, но интереснее написать программу, которая их выводит.</p>
+<p>Для этого нам понадобится новый инструмент — <strong>поле с текстом</strong>. Этот инструмент называется <var>Label</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+label <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Label<span class="token punctuation">(</span>master<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">"Hello world!"</span><span class="token punctuation">)</span>
+label<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Label</strong></p>
+<p>Для того чтобы поменять текст на уже существующем <var>Label</var>, надо воспользоваться функцией <var>config</var>, передав ей параметр <var>text</var>:</p>
+<pre class="language-python"><code class="language-python">label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Новый текст"</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Давайте напишем программу, которая выводит значение keysym для нажатой клавиши:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+
+<span class="token keyword">def</span> <span class="token function">show_key</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span>event<span class="token punctuation">.</span>keysym<span class="token punctuation">)</span>
+
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+label <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Label<span class="token punctuation">(</span>master<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">"Hello world!"</span><span class="token punctuation">)</span>
+label<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> show_key<span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Виджеты</strong></p>
+<p>Label — еще один инструмент отображения данных в tkinter. В общем такие инструменты принято называть <strong>виджетами</strong> (widgets). Их можно комбинировать в одном окне.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+
+<span class="token keyword">def</span> <span class="token function">key_pressed</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span>event<span class="token punctuation">.</span>keysym<span class="token punctuation">)</span>
+    canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'green'</span><span class="token punctuation">)</span>
+
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+label <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Label<span class="token punctuation">(</span>master<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">"Hello world!"</span><span class="token punctuation">)</span>
+label<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Движение объектов</h2>
+<p>Теперь напишем простую игру. Для начала давайте научимся <strong>двигать</strong> объекты.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Важная особенность холста (Canvas) в tkinter заключается в том, что нарисованный объект всегда остается монолитным — с ним можно выполнять разные операции, не затрагивая при этом другие объекты.</p>
+<p>Все функции вида<code> canvas.create_[что угодно]</code> возвращают целое число — <strong>идентификатор</strong> объекта на холсте. Зная это число, можно, например, двигать объект.</p>
+</section>
+<p>В следующем примере при нажатии на любую клавишу кружочек сдвинет вправо и вниз на 10 позиций — пикселей.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+
+<span class="token keyword">def</span> <span class="token function">key_pressed</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    canvas<span class="token punctuation">.</span>move<span class="token punctuation">(</span>oval<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+oval <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">310</span><span class="token punctuation">,</span> <span class="token number">310</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Движение объекта</strong></p>
+<p>Чтобы передвинуть объект, нужно передать функции <code>canvas.move</code> идентификатор объекта и два числа: изменение координаты x и изменение координаты y.</p>
+<p>Обратите внимание на особенность координатной сетки экрана монитора: начало координат располагается в верхнем левом углу экрана. Ось Х направлена слева направо, ось Y — сверху вниз.</p>
+</section>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/tkinter/tkinter-1.svg" width="680"/></div>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Объекты можно не только двигать, но и произвольно менять их положения и свойства. Для этого нам помогут следующие функции:</p>
+<ul>
+<li><code>canvas.coords(object)</code> — узнать координаты объекта (для овала это будет четверка координат, для линии — все координаты, с которыми она создавалась)</li>
+<li><code>canvas.coords(object, new_coordinates)</code> — задать объекту новые координаты</li>
+<li><code>canvas.itemconfig(object, ...)</code> — задать любые свойства объекта. Например, canvas.itemconfig(object, fill='red') — изменить цвет объекта на красный</li>
+</ul>
+</section>
+<p>Например:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+
+
+<span class="token keyword">def</span> <span class="token function">key_pressed</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span>keysym <span class="token operator">==</span> <span class="token string">'space'</span><span class="token punctuation">:</span>
+        canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>oval<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">310</span><span class="token punctuation">,</span> <span class="token number">310</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span>keysym <span class="token operator">==</span> <span class="token string">'Up'</span><span class="token punctuation">:</span>
+        canvas<span class="token punctuation">.</span>move<span class="token punctuation">(</span>oval<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">10</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>oval<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&lt;</span> <span class="token number">50</span><span class="token punctuation">:</span>
+        canvas<span class="token punctuation">.</span>itemconfig<span class="token punctuation">(</span>oval<span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> height<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">600</span><span class="token punctuation">)</span>
+oval <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">310</span><span class="token punctuation">,</span> <span class="token number">310</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token string">'green'</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Приступаем к игре</h2>
+<p>Теперь приступим к игре. Игрок в ней ходит по сетке размером N_X на N_Y с шагом step. Ему нужно добраться до выхода, причем начальное положение игрока и выхода определяется случайно.</p>
+<p>Шаблон программы у нас уже есть:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> tkinter
+<span class="token keyword">import</span> random
+
+
+<span class="token keyword">def</span> <span class="token function">move_wrap</span><span class="token punctuation">(</span>obj<span class="token punctuation">,</span> move<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    canvas<span class="token punctuation">.</span>move<span class="token punctuation">(</span>obj<span class="token punctuation">,</span> move<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> move<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token comment"># Здесь нужно сделать так, чтобы ушедший</span>
+    <span class="token comment"># "за экран" игрок выходил с другой стороны</span>
+
+
+<span class="token keyword">def</span> <span class="token function">check_move</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>player<span class="token punctuation">)</span> <span class="token operator">==</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>exit<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Победа!"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">key_pressed</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span>keysym <span class="token operator">==</span> <span class="token string">'Up'</span><span class="token punctuation">:</span>
+        move_wrap<span class="token punctuation">(</span>player<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span>step<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># Здесь нужно дописать то, что нужно,</span>
+    <span class="token comment"># чтобы все остальные клавиши работали</span>
+    check_move<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+step <span class="token operator">=</span> <span class="token number">60</span>
+N_X <span class="token operator">=</span> <span class="token number">10</span>
+N_Y <span class="token operator">=</span> <span class="token number">10</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span>
+                        width<span class="token operator">=</span>step <span class="token operator">*</span> N_X<span class="token punctuation">,</span> height<span class="token operator">=</span>step <span class="token operator">*</span> N_Y<span class="token punctuation">)</span>
+
+player_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+              random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+exit_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+            random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+
+player <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                            <span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                            fill<span class="token operator">=</span><span class="token string">'green'</span><span class="token punctuation">)</span>
+exit <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span><span class="token punctuation">(</span>exit_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> exit_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                          <span class="token punctuation">(</span>exit_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">,</span> exit_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                          fill<span class="token operator">=</span><span class="token string">'yellow'</span><span class="token punctuation">)</span>
+
+label <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Label<span class="token punctuation">(</span>master<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">"Найди выход"</span><span class="token punctuation">)</span>
+label<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Пока есть одна проблема: когда игрок находит выход, ничего не происходит. Он может гулять и дальше. Чтобы исправить это, можно связать с событием какую-нибудь другую функцию. Пусть эта функция ничего не делает. Определим ее и добавим в функцию <var>check_move</var> одну строчку:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">do_nothing</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+<span class="token keyword">def</span> <span class="token function">check_move</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>player<span class="token punctuation">)</span> <span class="token operator">==</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>exit<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Победа!"</span><span class="token punctuation">)</span>
+        master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> do_nothing<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание, что функция <var>do_nothing</var> принимает на вход один аргумент. Функции, которые используются в команде <var>bind</var>, тоже всегда получают на вход один аргумент — описание события. Если бы мы определили функцию <code>do_nothing()</code> без параметров, то в процессе выполнения программы получили бы ошибку.</p>
+<p>Теперь, попадая к выходу, игрок <strong>теряет управление</strong>, и нам остается только закрыть окно. Наверное, стоит добавить кнопку, которая позволит ему начать сначала.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Создание кнопки</strong></p>
+<p>Кнопка создается командой <code>tkinter.Button(...)</code></p>
+<p>В качестве параметров ей нужно передать <strong>окно</strong>, в котором будет создаваться кнопка; <strong>текст</strong>, который будет написан на кнопке и <strong>функцию</strong>, которая вызывается при ее нажатии.</p>
+</section>
+<p>Например так:</p>
+<pre class="language-python"><code class="language-python">restart <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Button<span class="token punctuation">(</span>master<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">"Начать заново"</span><span class="token punctuation">,</span>
+                         command<span class="token operator">=</span>prepare_and_start<span class="token punctuation">)</span>
+restart<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь стоит перенести в отдельную функцию код, подготавливающий игровое поле:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">prepare_and_start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> player<span class="token punctuation">,</span> exit
+    player_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                  random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    exit_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    player <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span>
+        <span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        <span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        fill<span class="token operator">=</span><span class="token string">'green'</span><span class="token punctuation">)</span>
+    exit <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span>
+        <span class="token punctuation">(</span>exit_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> exit_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        <span class="token punctuation">(</span>exit_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">,</span> exit_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        fill<span class="token operator">=</span><span class="token string">'yellow'</span><span class="token punctuation">)</span>
+    label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Найди выход!"</span><span class="token punctuation">)</span>
+    master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание на строчку <code>global...</code>. Скоро мы узнаем, что это — глобальные переменные. Мы столкнемся с ними и поговорим о том, что использовать их надо <em>c умом</em>.</p>
+<p>Однако в нашем случае без глобальных переменных трудно обойтись: информацию об игроке, выходе, холсте и т.д. пришлось бы передавать во все функции в качестве параметров. Это неудобно, а иногда и вовсе невозможно.</p>
+<p>Например, команда <var>bind</var> работает с функциями, получающими ровно один аргумент — событие.</p>
+<p>Поскольку наша программа невелика, мы решим эту проблему за счет глобальных переменных.</p>
+<p>В реальных (больших) программах для этого используют классы, с которыми вы познакомитесь немного позже.</p>
+<p>Основной код нашей программы теперь выглядит так:</p>
+<pre class="language-python"><code class="language-python">step <span class="token operator">=</span> <span class="token number">60</span>  <span class="token comment"># Размер клетки</span>
+N_X <span class="token operator">=</span> <span class="token number">10</span>
+N_Y <span class="token operator">=</span> <span class="token number">10</span>   <span class="token comment"># Размер сетки</span>
+master <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Tk<span class="token punctuation">(</span><span class="token punctuation">)</span>
+label <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Label<span class="token punctuation">(</span>master<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">"Найди выход"</span><span class="token punctuation">)</span>
+label<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+canvas <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Canvas<span class="token punctuation">(</span>master<span class="token punctuation">,</span> bg<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> 
+                        height<span class="token operator">=</span>N_X <span class="token operator">*</span> step<span class="token punctuation">,</span> width<span class="token operator">=</span>N_Y <span class="token operator">*</span> step<span class="token punctuation">)</span>
+canvas<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+restart <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>Button<span class="token punctuation">(</span>master<span class="token punctuation">,</span> text<span class="token operator">=</span><span class="token string">"Начать заново"</span><span class="token punctuation">,</span>
+                         command<span class="token operator">=</span>prepare_and_start<span class="token punctuation">)</span>
+restart<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token punctuation">)</span>
+prepare_and_start<span class="token punctuation">(</span><span class="token punctuation">)</span>
+master<span class="token punctuation">.</span>mainloop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>При попытке запустить новую программу вы сразу столкнетесь с новой проблемой: после нажатия <strong>Начать заново</strong> игрок и «выход» не исчезают. Нужно добавить в функцию <var>prepare_and_start</var> удаление всех старых объектов. К счастью, это можно сделать одной командой: <code>canvas.delete("all")</code>. Добавьте ее в вашу программу.</p>
+<p>В нашу игру уже можно играть, но игроку чересчур легко живется: он даже проиграть не может! Давайте добавим препятствия: например, огонь, в который нельзя наступать.</p>
+<p>Для этого придется переписать функцию <var>prepare_and_start</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">prepare_and_start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> player<span class="token punctuation">,</span> exit<span class="token punctuation">,</span> fires
+    canvas<span class="token punctuation">.</span>delete<span class="token punctuation">(</span><span class="token string">"all"</span><span class="token punctuation">)</span>    
+    player_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                  random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    exit_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y<span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    player <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span>
+        <span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        <span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        fill<span class="token operator">=</span><span class="token string">'green'</span><span class="token punctuation">)</span>
+    exit <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span>
+        <span class="token punctuation">(</span>exit_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> exit_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        <span class="token punctuation">(</span>exit_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">,</span> exit_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+        fill<span class="token operator">=</span><span class="token string">'yellow'</span><span class="token punctuation">)</span>
+    N_FIRES <span class="token operator">=</span> <span class="token number">6</span>  <span class="token comment"># Число клеток, заполненных огнем</span>
+    fires <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N_FIRES<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        fire_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                    random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+        fire <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_oval<span class="token punctuation">(</span>
+            <span class="token punctuation">(</span>fire_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> fire_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+            <span class="token punctuation">(</span>fire_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">,</span> fire_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+            fill<span class="token operator">=</span><span class="token string">'red'</span><span class="token punctuation">)</span>
+        fires<span class="token punctuation">.</span>append<span class="token punctuation">(</span>fire<span class="token punctuation">)</span>
+    label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Найди выход!"</span><span class="token punctuation">)</span>
+    master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+</code></pre>
+<p>И функцию, проверяющую результат хода:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">check_move</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>player<span class="token punctuation">)</span> <span class="token operator">==</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>exit<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Победа!"</span><span class="token punctuation">)</span>
+        master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> do_nothing<span class="token punctuation">)</span>
+    <span class="token keyword">for</span> f <span class="token keyword">in</span> fires<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>player<span class="token punctuation">)</span> <span class="token operator">==</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>f<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Ты проиграл!"</span><span class="token punctuation">)</span>
+            master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> do_nothing<span class="token punctuation">)</span>
+</code></pre>
+<p>Игра уже почти как настоящая. Осталось два штриха:</p>
+<ol>
+<li>Улучшить графику и</li>
+<li>Добавить еще врагов</li>
+</ol>
+<section class="material__note">
+<p class="material__note-heading"><strong>Добавление графики</strong></p>
+<p>На холст (Canvas) можно добавить любую картинку. В зависимости от типа изображения код будет немного варьироваться, мы будем рассматривать работу с изображениями в формате gif. Сначала картинку нужно загрузить с помощью функции <code>tkinter.PhotoImage</code>, а затем создать на холсте:</p>
+<pre class="language-python"><code class="language-python">player_pic <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>PhotoImage<span class="token punctuation">(</span><span class="token builtin">file</span><span class="token operator">=</span><span class="token string">"doctor.gif"</span><span class="token punctuation">)</span>
+player <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span><span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                             image<span class="token operator">=</span>player_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Параметр <code>anchor='nw'</code> означает, что в указанную первым параметром координату помещается левый верхний (буквально — северо-западный, по-английски — north-west) угол картинки. Если этот параметр не указать, то картинка будет центрирована по заданной координате. Можно добавить картинки для всех объектов в основную часть кода и в функцию <code>prepare_and_start()</code>.</p>
+</section>
+<p>В основную часть кода:</p>
+<pre class="language-python"><code class="language-python">player_pic <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>PhotoImage<span class="token punctuation">(</span><span class="token builtin">file</span><span class="token operator">=</span><span class="token string">"images/doctor.gif"</span><span class="token punctuation">)</span>
+exit_pic <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>PhotoImage<span class="token punctuation">(</span><span class="token builtin">file</span><span class="token operator">=</span><span class="token string">"images/tardis.gif"</span><span class="token punctuation">)</span>
+fire_pic <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>PhotoImage<span class="token punctuation">(</span><span class="token builtin">file</span><span class="token operator">=</span><span class="token string">"images/fire.gif"</span><span class="token punctuation">)</span>
+enemy_pic <span class="token operator">=</span> tkinter<span class="token punctuation">.</span>PhotoImage<span class="token punctuation">(</span><span class="token builtin">file</span><span class="token operator">=</span><span class="token string">"images/dalek.gif"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>И в функцию <var>prepare_and_start</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">prepare_and_start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> player<span class="token punctuation">,</span> exit<span class="token punctuation">,</span> fires
+    canvas<span class="token punctuation">.</span>delete<span class="token punctuation">(</span><span class="token string">"all"</span><span class="token punctuation">)</span>
+    player_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                  random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    player <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span>
+        <span class="token punctuation">(</span>player_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> player_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> image<span class="token operator">=</span>player_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+    exit_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    exit <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span>
+        <span class="token punctuation">(</span>exit_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> exit_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> image<span class="token operator">=</span>exit_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+    N_FIRES <span class="token operator">=</span> <span class="token number">6</span>  <span class="token comment"># Число клеток, заполненных огнем</span>
+    fires <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N_FIRES<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        fire_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                    random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+        <span class="token comment"># fire = canvas.create_oval((fire_pos[0],fire_pos[1]), </span>
+        <span class="token comment"># (fire_pos[0] + step, fire_pos[1] + step), fill='red')</span>
+        fire <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span>
+            <span class="token punctuation">(</span>fire_pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> fire_pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> image<span class="token operator">=</span>fire_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+        fires<span class="token punctuation">.</span>append<span class="token punctuation">(</span>fire<span class="token punctuation">)</span>
+    label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Найди выход!"</span><span class="token punctuation">)</span>
+    master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+</code></pre>
+<p>Картинки можно выбрать свои — они должны быть в формате gif и иметь размер step*step пикселей. Желательно так же делать их на прозрачном фоне.</p>
+<p>Ну и последний штрих. Добавим настоящих врагов, которые тоже могут двигаться. Создадим их в функции <code>prepare_and_start()</code>, немного модифицировав последнюю:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">prepare_and_start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> player<span class="token punctuation">,</span> exit<span class="token punctuation">,</span> fires<span class="token punctuation">,</span> enemies
+    canvas<span class="token punctuation">.</span>delete<span class="token punctuation">(</span><span class="token string">"all"</span><span class="token punctuation">)</span>
+    player_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span>
+                  random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    player <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span>player_pos<span class="token punctuation">,</span> image<span class="token operator">=</span>player_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+    exit_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span> 
+                random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+    exit <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span>exit_pos<span class="token punctuation">,</span> image<span class="token operator">=</span>exit_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+    N_FIRES <span class="token operator">=</span> <span class="token number">6</span> <span class="token comment">#Число клеток, заполненных огнем</span>
+    fires <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N_FIRES<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        fire_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span> 
+                    random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+        fire <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span>fire_pos<span class="token punctuation">,</span> image<span class="token operator">=</span>fire_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+        fires<span class="token punctuation">.</span>append<span class="token punctuation">(</span>fire<span class="token punctuation">)</span>
+    N_ENEMIES <span class="token operator">=</span> <span class="token number">4</span> <span class="token comment">#Число врагов</span>
+    enemies <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N_ENEMIES<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        enemy_pos <span class="token operator">=</span> <span class="token punctuation">(</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_X <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">,</span> 
+                     random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> N_Y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> step<span class="token punctuation">)</span>
+        enemy <span class="token operator">=</span> canvas<span class="token punctuation">.</span>create_image<span class="token punctuation">(</span>enemy_pos<span class="token punctuation">,</span> image<span class="token operator">=</span>enemy_pic<span class="token punctuation">,</span> anchor<span class="token operator">=</span><span class="token string">'nw'</span><span class="token punctuation">)</span>
+        enemies<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>enemy<span class="token punctuation">,</span> random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span><span class="token punctuation">[</span>always_right<span class="token punctuation">,</span> random_move<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Найди выход!"</span><span class="token punctuation">)</span>
+    master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> key_pressed<span class="token punctuation">)</span>
+</code></pre>
+<p>Каждый враг в нашей программе будет представлен парой (объект на Canvas + функция движения). Определим для начала две таких функции:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">always_right</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>step<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">random_move</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">(</span>step<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token operator">-</span>step<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> step<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span>step<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Модифицируем функцию <var>key_pressed</var>: ее нужно дополнить перемещением врагов — вот таким фрагментом кода:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> enemy <span class="token keyword">in</span> enemies<span class="token punctuation">:</span>
+    direction <span class="token operator">=</span> enemy<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># вызвать функцию перемещения у "врага"</span>
+    move_wrap<span class="token punctuation">(</span>enemy<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> direction<span class="token punctuation">)</span> <span class="token comment"># произвести  перемещение</span>
+</code></pre>
+<p>Кроме того, нужно переписать функцию <var>check_move</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">check_move</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>player<span class="token punctuation">)</span> <span class="token operator">==</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>exit<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Победа!"</span><span class="token punctuation">)</span>
+        master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> do_nothing<span class="token punctuation">)</span>
+    <span class="token keyword">for</span> f <span class="token keyword">in</span> fires<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>player<span class="token punctuation">)</span> <span class="token operator">==</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>f<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Ты проиграл!"</span><span class="token punctuation">)</span>
+            master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> do_nothing<span class="token punctuation">)</span>
+    <span class="token keyword">for</span> e <span class="token keyword">in</span> enemies<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>player<span class="token punctuation">)</span> <span class="token operator">==</span> canvas<span class="token punctuation">.</span>coords<span class="token punctuation">(</span>e<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            label<span class="token punctuation">.</span>config<span class="token punctuation">(</span>text<span class="token operator">=</span><span class="token string">"Ты проиграл!"</span><span class="token punctuation">)</span>
+            master<span class="token punctuation">.</span>bind<span class="token punctuation">(</span><span class="token string">"&lt;KeyPress&gt;"</span><span class="token punctuation">,</span> do_nothing<span class="token punctuation">)</span>
+</code></pre>
+</section></article></section>

@@ -1,0 +1,148 @@
+<section class="lesson-material__content"><article class="material"><h1>Введение в ООП. Полиморфизм</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Полиморфизм</a></li>
+<li><a class="material__link" href="#2">Проверка типа объекта</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы рассмотрим возможности предоставления одинаковых средств взаимодействия с объектами разной природы.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Полиморфизм</h2>
+<p>После предыдущего занятия мы уже немного разбираемся в объектно-ориентированном программировании: освоили определение классов и методов, добавление атрибутов в объекты. Понятно, что классы, объекты, методы, атрибуты достаточно удобны и красивы, но в чем их преимущество перед функциями? Ведь некоторые объекты можно было бы передавать в функции и выполнять над ними те же действия, что и с помощью методов. Зачем вводить дополнительный синтаксис и правила? Основное преимущество в том, что объектно-ориентированный подход позволяет писать код, который будет работать с экземплярами различных классов. Иногда код может даже работать с классами, которые еще не созданы.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Полиморфизм</strong></p>
+<p>Свойство кода работать с разными типами данных называют <strong>полиморфизмом</strong>.</p>
+<p>Мы уже неоднократно пользовались этим свойством многих функций и операторов, не задумываясь о нем. Например, оператор <code>+</code> является полиморфным:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span>          <span class="token comment"># 3</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">1.5</span> <span class="token operator">+</span> <span class="token number">0.2</span><span class="token punctuation">)</span>      <span class="token comment"># 1.7</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"abc"</span> <span class="token operator">+</span> <span class="token string">"def"</span><span class="token punctuation">)</span>  <span class="token comment"># abcdef</span>
+</code></pre>
+</section>
+<p>Внутренняя реализация оператора <code>+</code> существенно отличается для целых чисел, чисел с плавающей точкой и строк. То есть на самом деле это три разные операции — интерпретатор Python выбирает одну из них при выполнении в зависимости от операндов. Впрочем, в нашем случае выбор очевиден, потому что операнды — просто константы.</p>
+<p>Усложним задачу:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">f</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> x <span class="token operator">+</span> y
+ 
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span>          <span class="token comment"># 3</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token punctuation">(</span><span class="token number">1.5</span><span class="token punctuation">,</span> <span class="token number">0.2</span><span class="token punctuation">)</span><span class="token punctuation">)</span>      <span class="token comment"># 1.7</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>f<span class="token punctuation">(</span><span class="token string">"abc"</span><span class="token punctuation">,</span> <span class="token string">"def"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># abcdef</span>
+</code></pre>
+<p>Перехитрить интерпретатор не удалось, ведь Python — язык с динамической типизацией. В таких языках любое значение несет в себе информацию о типе — она и помогла интерпретатору выбрать правильную реализацию операции <code>+</code> (а заодно и правильное строковое представление для функции <var>print</var>). Но мы знаем, что тип данных в Python — класс объекта, и именно эта информация о классе объекта используется при выборе операции. На следующем занятии мы вернемся к оператору <code>+</code> и рассмотрим, как реализовать его для наших собственных классов.</p>
+<p>Давайте теперь вспомним про метод <var>__init__</var>. Он выполняется при создании каждого нового экземпляра класса и инициализирует свойства нового экземпляра. Первый аргумент, <var>self</var>, он получает от интерпретатора, остальные передаются классу в круглых скобках при создании экземпляра.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Book</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> name<span class="token punctuation">,</span> author<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>name <span class="token operator">=</span> name
+        self<span class="token punctuation">.</span>author <span class="token operator">=</span> author
+ 
+    <span class="token keyword">def</span> <span class="token function">get_name</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>name
+ 
+    <span class="token keyword">def</span> <span class="token function">get_author</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>author
+ 
+
+book <span class="token operator">=</span> Book<span class="token punctuation">(</span><span class="token string">'Война и мир'</span><span class="token punctuation">,</span> <span class="token string">'Толстой Л. Н.'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>f"<span class="token punctuation">{</span>book<span class="token punctuation">.</span>get_name<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>book<span class="token punctuation">.</span>get_author<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token comment"># Война и мир, Толстой Л. Н.</span>
+</code></pre>
+<p>При исполнении кода <code>book = Book('Война и мир', 'Толстой Л. Н.')</code> будет создан объект, у которого до момента присваивания ссылки на него переменной вызовется метод <var>__init__</var>, создающий атрибуты <var>name</var>, <var>author</var> и задающий им значения. Читать свойства можно из объекта напрямую (например, <var>book.name</var>) или использовать определенные для этого методы. Второй способ лучше, так как позволяет оградить программистов — пользователей класса от возможных изменений в реализации класса.</p>
+<p>Теперь мы готовы определить свои собственные классы, с помощью которых будем разбираться с полиморфизмом.</p>
+<p>Посмотрим на реализацию классов «Круг» и «Квадрат» для подсчета площади и периметра:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> math <span class="token keyword">import</span> pi
+
+ 
+<span class="token keyword">class</span> <span class="token class-name">Circle</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> radius<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>radius <span class="token operator">=</span> radius
+ 
+    <span class="token keyword">def</span> <span class="token function">area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> pi <span class="token operator">*</span> self<span class="token punctuation">.</span>radius <span class="token operator">**</span> <span class="token number">2</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">perimeter</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">2</span> <span class="token operator">*</span> pi <span class="token operator">*</span> self<span class="token punctuation">.</span>radius
+ 
+
+<span class="token keyword">class</span> <span class="token class-name">Square</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> side<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>side <span class="token operator">=</span> side
+ 
+    <span class="token keyword">def</span> <span class="token function">area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>side <span class="token operator">*</span> self<span class="token punctuation">.</span>side
+ 
+    <span class="token keyword">def</span> <span class="token function">perimeter</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">4</span> <span class="token operator">*</span> self<span class="token punctuation">.</span>side
+</code></pre>
+<p>Мы определили классы <var>Circle</var> и <var>Square</var>, экземпляры которых могут считать площадь и периметр окружностей и квадратов. Важно, что у обоих классов одинаковый интерфейс: методы для расчета площади называются <var>area</var>, а для расчета периметра — <var>perimeter</var>. Кроме того, у этих методов одинаковое количество параметров (в данном случае только <var>self</var>), и они оба возвращают в результате работы число, хотя оно и может быть разного типа (целое и вещественное).</p>
+<p>Теперь мы можем определить полиморфную функцию <var>print_shape_info</var>, которая будет печатать данные о фигуре:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_shape_info</span><span class="token punctuation">(</span>shape<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Area = </span><span class="token interpolation"><span class="token punctuation">{</span>shape<span class="token punctuation">.</span>area<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">, perimeter = </span><span class="token interpolation"><span class="token punctuation">{</span>shape<span class="token punctuation">.</span>perimeter<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">."</span></span><span class="token punctuation">)</span>
+
+
+square <span class="token operator">=</span> Square<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>
+print_shape_info<span class="token punctuation">(</span>square<span class="token punctuation">)</span>
+<span class="token comment"># Area = 100, perimeter = 40.</span>
+
+circle <span class="token operator">=</span> Circle<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>
+print_shape_info<span class="token punctuation">(</span>circle<span class="token punctuation">)</span>
+<span class="token comment"># Area = 314.1592653589793, perimeter = 62.83185307179586.</span>
+</code></pre>
+<p>Если аргумент функции <var>print_shape_info</var> — экземпляр класса <var>Square</var>, выполняются методы, определенные в этом классе, если экземпляр <var>Circle</var> — методы <var>Circle</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">dir</span><span class="token punctuation">(</span>square<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># Свойства и спецметоды экземпляра.</span>
+ 
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">dir</span><span class="token punctuation">(</span>Square<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># Свойства и спецметоды класса.</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Утиная типизация</strong></p>
+<p>Данный код использует тот факт, что в Python принята так называемая <strong>утиная типизация</strong>. Название происходит от шутливого выражения «Если нечто выглядит как утка, плавает как утка и крякает как утка, это, вероятно, утка и есть».</p>
+</section>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-31/3.svg" width="680"/></div>
+<p>В программах на Python это означает, что если какой-то объект поддерживает все требуемые от него операции, с ним и будут работать с помощью этих операций, не заботясь о том, какого он на самом деле типа. Так и наша функция <var>print_shape_info</var> будет выводить информацию о любом объекте, у которого есть методы <var>area</var> и <var>perimeter</var> (и у которых в списке параметров также будет указан один параметр <var>self</var>).</p>
+<p>В языках без утиной типизации нам бы пришлось добавлять в программу интерфейс как отдельную сущность на уровне описания на языке программирования и указывать, что наши классы относятся к этому интерфейсу. В программах на Python этого делать не нужно, однако интерфейсы все равно существуют.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Чтобы полиморфизм работал, за ними надо следить как <strong>на уровне синтаксиса</strong> (одинаковые имена методов и количество параметров), так и <strong>на уровне смысла</strong> (методы с одинаковыми именами делают похожие операции, параметры методов имеют тот же смысл).</p>
+</section>
+<p>Давайте определим еще один класс с таким же интерфейсом, как у <var>Circle</var> и <var>Square</var>, — например, <var>Rectangle</var> (прямоугольник). Если мы все сделаем правильно, функция <var>print_shape_info</var> сможет работать с его экземплярами:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Rectangle</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>width <span class="token operator">=</span> width
+        self<span class="token punctuation">.</span>height <span class="token operator">=</span> height
+ 
+    <span class="token keyword">def</span> <span class="token function">area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>width <span class="token operator">*</span> self<span class="token punctuation">.</span>height
+ 
+    <span class="token keyword">def</span> <span class="token function">perimeter</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>width <span class="token operator">+</span> self<span class="token punctuation">.</span>height<span class="token punctuation">)</span>
+ 
+
+rect <span class="token operator">=</span> Rectangle<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">)</span>
+print_shape_info<span class="token punctuation">(</span>rect<span class="token punctuation">)</span>  <span class="token comment"># Area = 150, perimeter = 50.</span>
+</code></pre>
+<p>Еще раз обратите внимание: утиная типизация позволяет заранее написать функцию, которая будет работать со всеми экземплярами любых классов — даже еще не существующих. Важно лишь, чтобы эти классы поддерживали необходимый функции интерфейс.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>И небольшое замечание об инкапсуляции. Дело в том, что с самого начала обычно есть не два класса, как в нашем примере, а один. Пусть это будет <var>square</var>. Если не инкапсулировать внутри него свойство <var>side</var> и не определить заранее интерфейс для расчета площади и периметра, никакого полиморфизма не получится. Важно помнить о том, что инкапсуляция определяет понятие интерфейса класса и создает базу для полиморфизма.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="2">Проверка типа объекта</h2>
+<p>При работе с объектами бывает необходимо в зависимости от их типа выполнить те или иные операции. И с помощью встроенной функции <code>isinstance()</code> мы можем проверить тип объекта.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция isinstance</strong></p>
+<p>Эта функция принимает два параметра: <code>isinstance(object, type)</code></p>
+<p>Первый параметр представляет объект, а второй — тип, на принадлежность к которому выполняется проверка. Если объект представляет указанный тип, функция возвращает True.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> person <span class="token keyword">in</span> people<span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>person<span class="token punctuation">,</span> Student<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>person<span class="token punctuation">.</span>university<span class="token punctuation">)</span>
+    <span class="token keyword">elif</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>person<span class="token punctuation">,</span> Employee<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>person<span class="token punctuation">.</span>company<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>person<span class="token punctuation">.</span>name<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section></article></section>

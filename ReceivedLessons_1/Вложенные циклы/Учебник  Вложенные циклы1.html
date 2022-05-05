@@ -1,0 +1,94 @@
+<section class="lesson-material__content"><article class="material"><h1>Вложенные циклы</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Вложенные циклы. Принцип работы</a></li>
+<li><a class="material__link" href="#2">Графическое представление вложенных циклов</a></li>
+<li><a class="material__link" href="#3">Оператор break и continue во вложенных циклах</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы рассмотрим вложенные циклы, позволяющие запустить цикл внутри циклического оператора. Приведем несколько примеров вложенности разных циклов, а также применение операторов <var>break</var> и <var>continue</var> со вложенными циклами.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Вложенные циклы. Принцип работы</h2>
+<p>Часто бывают ситуации, когда один и тот же набор действий необходимо выполнить несколько раз для каждого повторяющегося действия. Например, мы уже несколько раз сталкивались с задачами, когда программа получает от пользователя данные до сигнала остановки, — для этого используется цикл. А теперь представьте, что после ввода данных или числа с ними надо сделать какие-либо действия, которые тоже требуют цикла (например, вычислить факториал), тогда нам нужен еще один цикл, внутри первого.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Вложенные циклы</strong></p>
+<p>Циклы называются вложенными (т. е. один цикл находится внутри другого), если внутри одного цикла во время каждой итерации необходимо выполнить другой цикл. Так для каждого витка внешнего цикла выполняются все витки внутреннего цикла. Основное требование для таких циклов: чтобы <strong>все</strong> действия вложенного цикла располагались внутри внешнего.</p>
+</section>
+<p>При использовании вложенных циклов стоит помнить, что изменения, внесенные внутренним циклом в какие-либо данные, могут повлиять на внешний.</p>
+<p>Давайте рассмотрим следующую задачу: необходимо вывести в строку таблицу умножения для заданного числа. Задача решается так:</p>
+<pre class="language-python"><code class="language-python">k <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token string">'*'</span><span class="token punctuation">,</span> k<span class="token punctuation">,</span> <span class="token string">'='</span><span class="token punctuation">,</span> k <span class="token operator">*</span> i<span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">'\t'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>А если нам нужно вывести таблицу умножения для всех чисел от 1 до <var>k</var>?</p>
+<p>Очевидно, что в этом случае предыдущую программу нужно повторить <var>k</var> раз, где вместо <var>k</var> будут использоваться числа от 1 до <var>k</var> включительно.</p>
+<p>Эту задачу можно записать двумя циклами, где для каждого значения внешнего цикла будут выполняться все значения внутреннего цикла.</p>
+<p>Программа будет выглядеть так:</p>
+<pre class="language-python"><code class="language-python">k <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> k <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token string">'*'</span><span class="token punctuation">,</span> j<span class="token punctuation">,</span> <span class="token string">'='</span><span class="token punctuation">,</span> j <span class="token operator">*</span> i<span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">'\t'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Проанализируем работу данной программы. Выполнение программы начинается с внешнего цикла. Итератор <var>j</var> внешнего цикла <var>for</var> меняет свое значение от начального (<var>1</var>) до конечного (<var>k</var>). Обратите внимание: чтобы включить число <var>k</var> в рассматриваемый диапазон, в заголовке цикла указавается промежуток от <var>1</var> до <code>k + 1</code>. Затем циклически выполняется следующее:</p>
+<ol>
+<li>Проверяется условие <code>j &lt; k + 1</code>.</li>
+<li>Если оно соблюдается, выполняется оператор в теле цикла, т. е. выполняется внутренний цикл.
+<ul>
+<li>Итератор <var>i</var> внутреннего цикла <var>for</var> будет изменять свои значения от начального (1) до конечного (10), не включая 10</li>
+</ul>
+Затем циклически выполняется следующее:
+<ul>
+<li>Проверяется условие <code>i &lt; 10</code></li>
+<li>Если оно удовлетворяется, выполняется оператор в теле цикла, т. е. оператор <code>print(i, '*', j, '=', j * i, sep='', end='\t')</code>, выводящий на экран строку таблицы умножения в соответствии с текущими значениями переменных <var>i</var> и <var>j</var></li>
+<li>Затем значение итератора <var>i</var> внутреннего цикла увеличивается на единицу, и оператор внутреннего цикла <var>for</var> проверяет условие <code>i &lt; 10</code>. Если условие соблюдается, выполняется тело внутреннего цикла при неизменном значении итератора внешнего цикла до тех пор, пока выполняется условие <code>i &lt; 10</code></li>
+<li>Если условие <code>i &lt; 10</code> не удовлетворяется, т. е. как только <var>i</var> станет равен или больше 10, оператор тела цикла не выполняется, внутренний цикл завершается и управление в программе передается за пределы оператора <var>for</var> внутреннего цикла, т. е.  выполняется перевод строки, вызванный использованием функции <code>print()</code> (строка 5), а затем возвращается к оператору <var>for</var> внешнего цикла</li>
+</ul>
+</li>
+<li>Значение итератора внешнего цикла <var>j</var> увеличивается на единицу, и проверяется условие <code>j &lt; k + 1</code>. Если условие не соблюдается, т. е. как только <var>j</var> станет больше <var>k</var>, оператор тела цикла не выполняется, внешний цикл завершается и управление в программе передается за пределы оператора <var>for</var> внешнего цикла, т. е. в данном случае программа завершает работу.</li>
+</ol>
+<p>Таким образом, на примере печати таблицы умножения показано, что при вложении циклов внутренний цикл выполняется полностью от начального до конечного значения параметра при неизменном значении параметра внешнего цикла. Затем значение параметра внешнего цикла изменяется на единицу, и опять от начала и до конца выполняется вложенный цикл. И так до тех пор, пока значение параметра внешнего цикла не станет больше конечного значения, определенного в операторе <var>for</var> внешнего цикла.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Графическое представление вложенных циклов</h2>
+<p>Работу циклов можно сравнить с вращением связанных шестеренок разного размера:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-8/4.gif" width="600"/></div>
+<p>Внешний цикл — это как бы большая шестеренка, за один свой оборот (виток цикла) внешний цикл заставляет вращаться вложенный цикл (меньшую шестеренку) несколько раз.</p>
+<p>Обратите внимание: такая иллюстрация точна в случае, если число повторов вложенного цикла не зависит от того, какой именно (1-й, n-й или иной) виток делает внешний цикл, а так бывает не всегда.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Оператор break и continue во вложенных циклах</h2>
+<p>Рассмотрим другую задачу: представьте, что необходимо распечатать все строки таблицы умножения для чисел от 1 до 10, кроме строки для числа <var>k</var>.</p>
+<p>Тогда нам нужно будет пропустить выполнение внутреннего цикла, когда придет <var>k</var>-я строка.</p>
+<p>Это можно сделать через оператор <var>continue</var>, который просто прервет выполнение данного витка цикла и перейдет к следующей итерации цикла:</p>
+<pre class="language-python"><code class="language-python">k <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> j <span class="token operator">==</span> k<span class="token punctuation">:</span>
+        <span class="token keyword">continue</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token string">'*'</span><span class="token punctuation">,</span> j<span class="token punctuation">,</span> <span class="token string">'='</span><span class="token punctuation">,</span> j <span class="token operator">*</span> i<span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">'\t'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Обратите внимание: если оператор <var>break</var> или <var>continue</var> расположен внутри вложенного цикла, он действует именно на вложенный цикл, а не на внешний. Нельзя выскочить из вложенного цикла сразу на самый верхний уровень.</p>
+</section>
+<p>А теперь попробуйте вывести всю таблицу умножения, кроме столбца <var>k</var>.</p>
+<p>Вот еще одна программа, которая использует вложенные циклы и оператор <var>break</var>. Она учит пользователя вводить числа палиндромы — программа выполняется до тех пор, пока не будет введено число палиндром:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Тренажер по вводу палиндрома:'</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Введите число палиндром:'</span><span class="token punctuation">)</span>
+    number <span class="token operator">=</span> n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    reverse <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token keyword">while</span> n <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        reverse <span class="token operator">=</span> reverse <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> n <span class="token operator">%</span> <span class="token number">10</span>
+        n <span class="token operator">//=</span> <span class="token number">10</span>
+    <span class="token keyword">if</span> number <span class="token operator">==</span> reverse<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы ввели палиндром! Программа остановлена.'</span><span class="token punctuation">)</span>
+        <span class="token keyword">break</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Введенное число не палиндром, попробуйте еще раз.'</span><span class="token punctuation">)</span>
+</code></pre>
+</section></article></section>

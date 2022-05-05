@@ -1,0 +1,172 @@
+<section class="lesson-material__content"><article class="material"><h1>REST-API. Flask-RESTful</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Flask-RESTful</a></li>
+<li><a class="material__link" href="#2">Миграции</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы посмотрим, как создавать RESTful-сервисы с помощью библиотеки flask-restful.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Flask-RESTful</h2>
+<p>Все то, что мы сделали ранее при создании RESTful-сервиса, можно обернуть в более лаконичную, а главное — объектно-ориентированную оболочку, забыв о множестве разбросанных функций-обработчиков. Для этого установим дополнительный модуль flask-restful с помощью pip.</p>
+<pre><code>pip install flask-restful
+</code></pre>
+<p>Из него нам понадобятся следующие объекты и функции:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> flask_restful <span class="token keyword">import</span> reqparse<span class="token punctuation">,</span> abort<span class="token punctuation">,</span> Api<span class="token punctuation">,</span> Resource
+</code></pre>
+<p>Создадим вторую версию нашего REST-сервиса. После создания flask-приложения создадим объект RESTful-API:</p>
+<pre class="language-python"><code class="language-python">app <span class="token operator">=</span> Flask<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+api <span class="token operator">=</span> Api<span class="token punctuation">(</span>app<span class="token punctuation">)</span>
+</code></pre>
+<p>Для каждого ресурса (единица информации в REST называется <strong>ресурсом</strong>: новости, пользователи и т. д.) создается два класса: для одного объекта и для списка объектов. В нашем случае это классы <var>NewsResource</var> и <var>NewsListResource</var> соответственно. Создадим их в отдельном модуле, который назовем news_resources.py. Оба этих класса необходимо унаследовать от класса <var>Resource</var> из модуля flask-restful.</p>
+<p>В классе одного объекта (<var>NewsResource</var>) определяются операции, которые мы можем сделать с <strong>одним</strong> объектом: получить информацию об объекте, изменить информацию, удалить объект. flask-restful подразумевает, что эти методы будут иметь имена, аналогичные соответствующим HTTP-запросам: <var>get</var>, <var>put</var>, <var>post</var>, <var>delete</var>. И все они, конечно, должны принимать в качестве аргумента идентификатор объекта.</p>
+<p>Когда мы проектировали REST-сервис вручную, в каждой функции-обработчике мы проверяли, существует ли новость с таким идентификатором, и если нет, то отправляли ошибку. А также мы определили функцию <var>not_found</var> с декоратором <code>@app.errorhandler(404)</code>, чтобы изменить формат ответа сервера в случае ошибки. Давайте вынесем эту проверку в отдельную функцию в файле с ресурсами для записей:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">abort_if_news_not_found</span><span class="token punctuation">(</span>news_id<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    session <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    news <span class="token operator">=</span> session<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>news_id<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> news<span class="token punctuation">:</span>
+        abort<span class="token punctuation">(</span><span class="token number">404</span><span class="token punctuation">,</span> message<span class="token operator">=</span><span class="token string-interpolation"><span class="token string">f"News </span><span class="token interpolation"><span class="token punctuation">{</span>news_id<span class="token punctuation">}</span></span><span class="token string"> not found"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Функция <var>abort</var> генерирует HTTP-ошибку с нужным кодом и возвращает ответ в формате JSON, поэтому функция <var>not_found</var> нам больше не нужна. В предыдущем нашем варианте мы никак не использовали коды ответа сервера, это неверно. Наше сообщение об ошибке мог прочитать только человек, а для программы-клиента оно ничего не значит, ответ пришел со статусом ОК (200). Давно знакомый вам код 404 означает, что запрашиваемый ресурс не найден. Подробнее про статусы состояния протокола HTTP можно почитать <a class="material__link" href="https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+<p>Класс <var>NewsResource</var> с методами получения информации и удаления будет иметь вид:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">NewsResource</span><span class="token punctuation">(</span>Resource<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">get</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> news_id<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        abort_if_news_not_found<span class="token punctuation">(</span>news_id<span class="token punctuation">)</span>
+        session <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news <span class="token operator">=</span> session<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>news_id<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'news'</span><span class="token punctuation">:</span> news<span class="token punctuation">.</span>to_dict<span class="token punctuation">(</span>
+            only<span class="token operator">=</span><span class="token punctuation">(</span><span class="token string">'title'</span><span class="token punctuation">,</span> <span class="token string">'content'</span><span class="token punctuation">,</span> <span class="token string">'user_id'</span><span class="token punctuation">,</span> <span class="token string">'is_private'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">delete</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> news_id<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        abort_if_news_not_found<span class="token punctuation">(</span>news_id<span class="token punctuation">)</span>
+        session <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news <span class="token operator">=</span> session<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>news_id<span class="token punctuation">)</span>
+        session<span class="token punctuation">.</span>delete<span class="token punctuation">(</span>news<span class="token punctuation">)</span>
+        session<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'success'</span><span class="token punctuation">:</span> <span class="token string">'OK'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В классе списка объектов (<var>NewsListResource</var>) определяются операции, которые мы можем сделать с <strong>набором</strong> объектов: показать список объектов и добавить объект в список. В этом классе нам потребуется реализовать два метода: <var>get</var> и <var>post</var> без аргументов. Доступ к данным, переданным в теле POST-запроса, осуществляется с помощью парсера аргументов из модуля reqparse, который предварительно нужно создать и добавить в него аргументы:</p>
+<pre class="language-python"><code class="language-python">parser <span class="token operator">=</span> reqparse<span class="token punctuation">.</span>RequestParser<span class="token punctuation">(</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'title'</span><span class="token punctuation">,</span> required<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'content'</span><span class="token punctuation">,</span> required<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'is_private'</span><span class="token punctuation">,</span> required<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">bool</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'is_published'</span><span class="token punctuation">,</span> required<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">bool</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'user_id'</span><span class="token punctuation">,</span> required<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">int</span><span class="token punctuation">)</span>
+</code></pre>
+<p>По-прежнему считаем, что все поля новости являются обязательными. Также укажем тип идентификатора пользователя — целое число. Теперь всю проверку аргументов запроса за нас будет делать модуль reqparse.</p>
+<p>Таким образом, класс <var>NewsListResource</var> будет иметь вид:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">NewsListResource</span><span class="token punctuation">(</span>Resource<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">get</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        session <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news <span class="token operator">=</span> session<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'news'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>item<span class="token punctuation">.</span>to_dict<span class="token punctuation">(</span>
+            only<span class="token operator">=</span><span class="token punctuation">(</span><span class="token string">'title'</span><span class="token punctuation">,</span> <span class="token string">'content'</span><span class="token punctuation">,</span> <span class="token string">'user.name'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> item <span class="token keyword">in</span> news<span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">post</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        args <span class="token operator">=</span> parser<span class="token punctuation">.</span>parse_args<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        session <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        news <span class="token operator">=</span> News<span class="token punctuation">(</span>
+            title<span class="token operator">=</span>args<span class="token punctuation">[</span><span class="token string">'title'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            content<span class="token operator">=</span>args<span class="token punctuation">[</span><span class="token string">'content'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            user_id<span class="token operator">=</span>args<span class="token punctuation">[</span><span class="token string">'user_id'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            is_published<span class="token operator">=</span>args<span class="token punctuation">[</span><span class="token string">'is_published'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            is_private<span class="token operator">=</span>args<span class="token punctuation">[</span><span class="token string">'is_private'</span><span class="token punctuation">]</span>
+        <span class="token punctuation">)</span>
+        session<span class="token punctuation">.</span>add<span class="token punctuation">(</span>news<span class="token punctuation">)</span>
+        session<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'success'</span><span class="token punctuation">:</span> <span class="token string">'OK'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<p>После того как мы создали классы ресурсов, нам надо внести их в настройки нашего RESTful-API, указав имя класса и URL. Параметр URL также указывается в угловых скобках. Для этого в main.py перед запуском нашего приложения необходимо добавить вот такой код:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># для списка объектов</span>
+api<span class="token punctuation">.</span>add_resource<span class="token punctuation">(</span>news_resources<span class="token punctuation">.</span>NewsListResource<span class="token punctuation">,</span> <span class="token string">'/api/v2/news'</span><span class="token punctuation">)</span> 
+
+<span class="token comment"># для одного объекта</span>
+api<span class="token punctuation">.</span>add_resource<span class="token punctuation">(</span>news_resources<span class="token punctuation">.</span>NewsResource<span class="token punctuation">,</span> <span class="token string">'/api/v2/news/&lt;int:news_id&gt;'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Давайте проверим такую реализацию RESTful-сервиса с помощью запросов в нашем тестовом файле test.py. Убедитесь, что все работает, как нужно.</p>
+<p>Документация по модулю flask-RESTful есть на <a class="material__link" href="http://flask-restful.readthedocs.io/en/latest/index.html" rel="noopener noreferrer" target="_blank">официальном сайте</a>.</p>
+<p>Если ваше приложение построено по правилам REST, вы получите логичную организацию работы с ресурсами, даже если их в приложении большое количество. Клиенты используют простые и понятные URL, а новым клиентам не составит труда разобраться с интерфейсом вашего приложения. Также в мире веб-разработки стандартом становится предоставлять <a class="material__link" href="https://restfulapi.net/rest-api-design-tutorial-with-example/" rel="noopener noreferrer" target="_blank">RESTful API</a> для сторонних приложений.</p>
+<p>Есть ли подводные камни при использовании REST? Да, и этим камнем является HTML. Дело в том, что спецификация HTML позволяет создавать формы, отправляющие только GET- или POST-запросы. Поэтому для нормальной работы с другими методами (PUT, DELETE) приходится имитировать их искусственно. Часто в этих случаях используют JavaScript-библиотеки, например, JQuery.</p>
+<p>Как и предыдущем уроке, здесь мы не рассматривали вопрос авторизации. В видеоматериалах к уроку эта тема раскрыта.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Миграции</h2>
+<p>Мы уже говорили о том, что sqlalchemy при старте не вносит изменения в таблицы, если они уже созданы. Но абсолютно всегда бывает ситуация, когда после запуска первой версии нам захочется что-то поменять такого, что затронет и наши модели. Наверняка нам захочется хранить в базе дополнительную информацию. Что делать в таком случае? Не удалять же базу данных с информацией о куче пользователей, они такого не простят. Конечно, можно написать SQL-скрипты для приведения базы данных в актуальное состояние, но в общем случае это занятие не из приятных, потому что столбцы могут изменяться, удаляться, могут меняться связи между моделями и т. д. Тут на помощь приходят инструменты для <strong>миграции</strong>.</p>
+<p>Уже упоминалось, что это такая штука, вроде системы контроля версий, только для базы данных. Инструменты миграции созданы для того, чтобы поддерживать вашу базу данных в актуальном состоянии и автоматически генерировать скрипты для перехода состояния базы из состояния <code>n</code> к состоянию <code>n
+            + 1</code> и обратно (примерно как переходы по истории коммитов).</p>
+<p>Какие-то ORM содержат модули миграции прямо из коробки (например, в Django), для sqlalchemy нам придется устанавливать и настраивать такую библиотеку отдельно. Она называется <a class="material__link" href="https://alembic.sqlalchemy.org/en/latest/" rel="noopener noreferrer" target="_blank">Alembic</a>.</p>
+<p>Есть еще flask-migrate — обертка для alembic, упрощающая работу именно для flask-приложений, но мы рассмотрим более общий пример.</p>
+<p>Установим библиотеку:</p>
+<pre><code>pip install alembic
+</code></pre>
+<p>После в командной строке нужно перейти в директорию с нашим проектом и выполнить команду:</p>
+<pre><code>alembic init alembic
+</code></pre>
+<p>Эта команда создаст директорию с именем alembic, в которой модуль будет хранить все необходимые файлы. А также alembic.ini в директории вашего проекта.</p>
+<p>Откройте alembic.ini и измените строку с параметром <var>sqlalchemy.url</var> на путь к вашей базе данных:</p>
+<pre><code>sqlalchemy.url = sqlite:///db/blogs.sqlite?check_same_thread=False
+</code></pre>
+<p>После этого перейдем в папку alembic. Нас интересует файл env.py. Откроем его и найдем строчку с переменной <var>target_metadata</var>. Эта переменная должна «узнать» о всех файлах нашей модели. Напишем там следующий код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+sys<span class="token punctuation">.</span>path<span class="token punctuation">.</span>insert<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">'Путь к папке вашего проекта'</span><span class="token punctuation">)</span>
+<span class="token keyword">from</span> data<span class="token punctuation">.</span>db_session <span class="token keyword">import</span> SqlAlchemyBase
+<span class="token keyword">import</span> data<span class="token punctuation">.</span>__all_models
+target_metadata <span class="token operator">=</span> SqlAlchemyBase<span class="token punctuation">.</span>metadata
+</code></pre>
+<p><code>sys.path.insert</code> — вставляет путь к каталогу в PATH. Это нужно для того, чтобы было проще писать импорты данных остальных файлов.</p>
+<p>Затем импортируем нашу базу данных, напоминаем ей о всех моделях, после чего получаем данные о всех моделях.</p>
+<p>Давайте попробуем. Например, мы хотим добавить в модель с новостью поле, которое показывает, опубликована запись или нет, чтобы потом показывать в списке только опубликованные записи. Идем в модель <var>News</var> и добавляем в нее новое поле:</p>
+<pre class="language-python"><code class="language-python">is_published <span class="token operator">=</span> sqlalchemy<span class="token punctuation">.</span>Column<span class="token punctuation">(</span>sqlalchemy<span class="token punctuation">.</span>Boolean<span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь запускаем консоль в папке нашего проекта и выполняем команду:</p>
+<pre><code>alembic revision --autogenerate -m "добавили признак публикации"
+</code></pre>
+<p>Alembic посмотрит на наши модели и на базу и создаст в папке alembic/versions новую миграцию вот с таким кодом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> alembic <span class="token keyword">import</span> op
+<span class="token keyword">import</span> sqlalchemy <span class="token keyword">as</span> sa
+
+
+<span class="token comment"># revision identifiers, used by Alembic.</span>
+revision <span class="token operator">=</span> <span class="token string">'3acec80b2659'</span>
+down_revision <span class="token operator">=</span> <span class="token boolean">None</span>
+branch_labels <span class="token operator">=</span> <span class="token boolean">None</span>
+depends_on <span class="token operator">=</span> <span class="token boolean">None</span>
+
+
+<span class="token keyword">def</span> <span class="token function">upgrade</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># ### commands auto generated by Alembic - please adjust! ###</span>
+    op<span class="token punctuation">.</span>add_column<span class="token punctuation">(</span><span class="token string">'news'</span><span class="token punctuation">,</span> sa<span class="token punctuation">.</span>Column<span class="token punctuation">(</span><span class="token string">'is_published'</span><span class="token punctuation">,</span> sa<span class="token punctuation">.</span>Boolean<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                                    nullable<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># ### end Alembic commands ###</span>
+
+
+<span class="token keyword">def</span> <span class="token function">downgrade</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># ### commands auto generated by Alembic - please adjust! ###</span>
+    op<span class="token punctuation">.</span>drop_column<span class="token punctuation">(</span><span class="token string">'news'</span><span class="token punctuation">,</span> <span class="token string">'is_published'</span><span class="token punctuation">)</span>
+    <span class="token comment"># ### end Alembic commands ###</span>
+</code></pre>
+<p>Тут всего две функции. <var>upgrade</var> выполняет код для изменения состояния базы, <var>downgrade</var> — код для возврата к предыдущему состоянию. Давайте обновим нашу базу, для чего выполним в консоли команду:</p>
+<pre><code>alembic upgrade head
+</code></pre>
+<p><var>head</var> означает, что мы хотим применить все миграции друг за другом для приведения базы в самое актуальное состояние. Вместо <var>head</var> можно указать номер ревизии или написать, например, <code>+2</code>, чтобы обновиться только на 2 следующие версии.</p>
+<p>Посмотрим, что случилось с нашей базой данных. В таблице news появилось поле <var>is_published</var>, как и ожидалось, но кроме этого появилась новая таблица <var>alembic_version</var>. В этой таблице хранится номер ревизии, которой в настоящий момент соответствует база данных.</p>
+<p>Из-за ограничений СУБД sqlite команда <code>alembic downgrade head</code>не удалит ранее добавленную в таблицу колонку.</p>
+<p>К сожалению, alembic не всемогущ. Вот что он умеет определять.</p>
+<p>Операции, которые Alembic умеет выявлять:</p>
+<ul>
+<li>Добавление и удаление таблиц</li>
+<li>Добавление и удаление колонок</li>
+<li>Изменения во внешних ключах</li>
+<li>Изменения в типах колонок</li>
+<li>Изменения в индексах и использованных уникальных ограничениях</li>
+</ul>
+<p>А вот какие изменения не умеет:</p>
+<ul>
+<li>Изменение имени таблицы</li>
+<li>Изменение имени колонки</li>
+</ul>
+<p>Поэтому бывают ситуации, когда в файлы миграции надо вмешиваться и дописывать в них необходимые изменения. Не бойтесь этого.</p>
+</section></article></section>

@@ -1,0 +1,351 @@
+<section class="lesson-material__content"><article class="material"><h1>Итераторы и коллекции</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Итерируемые объекты: итераторы и коллекции</a></li>
+<li><a class="material__link" href="#2">Встроенные итераторы. Комбинирование итераторов</a></li>
+<li><a class="material__link" href="#3">Совместные действия над коллекциями. Функция zip</a></li>
+<li><a class="material__link" href="#4">Модуль itertools</a></li>
+<li><a class="material__link" href="#5">Свертка итератора. Функция reduce</a></li>
+<li><a class="material__link" href="#6">Группировка элементов. Функция groupby</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Дополнительные материалы посвящены более подробному изучению темы итераторов и их отличий от коллекций. Мы поговорим, как при помощи итераторов выполнять ленивые вычисления, позволяющие работать даже с бесконечными коллекциями объектов.</p>
+<p>Хотя мы не собираемся рассматривать все возможности итераторов Python, мы начнем знакомство с модулем itertools. И разберем функцию свертки и группировки итераторов.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Итерируемые объекты: итераторы и коллекции</h2>
+<p>Если подходить более формально, существует два типа итерируемых объектов. Первые называются итераторами.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Итератор</strong></p>
+<p>Итератор — специальный объект, который позволяет поочередно перебирать элементы. Его можно представить как стрелочку, которая указывает на какой-то элемент коллекции и постепенно двигается по ней.</p>
+</section>
+<p>Если итератор передать в функцию <var>next</var>, функция вернет в качестве результата следующий элемент. При этом сам итератор тоже «сдвинется» на следующий элемент. При следующем вызове функция <var>next</var> вернет очередной элемент, и «стрелочка» снова сдвинется.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/iter_next%20-%20new.svg" width="680"/></div>
+<section class="material__note">
+<p class="material__note-heading"><strong>Коллекции</strong></p>
+<p>Второй тип итерируемых объектов — коллекции. Они не итераторы сами по себе, но позволяют создать итератор.</p>
+<p>Чтобы это сделать, достаточно вызвать функцию <var>iter</var> и передать ей список в качестве аргумента. Бывает и так, что объект — сам себе итератор (например, поток ввода <var>stdin</var>).</p>
+</section>
+<p>Так, список не является итератором, зато для одного и того же списка можно создать сколько угодно итераторов-стрелочек, каждая из которых будет перебирать элементы от первого до последнего.</p>
+<p><em>Напомним, что, так как большинство функций, которые работают с итераторами, умеют работать и с коллекциями, слова «итерируемый объект» и «итератор» мы будем использовать как синонимы.</em></p>
+<p>Цикл <var>for</var> применяется к объектам второго типа. Внутри интерпретатора Python цикл <var>for</var> делает следующее:</p>
+<ol>
+<li>По объекту создает итератор.</li>
+<li>Получает из итератора объекты по одному и каждый раз передает полученный объект в выполняемый блок кода.</li>
+</ol>
+<p>Благодаря этому в цикл <var>for</var> можно передать и список, и кортеж, и строку, и интервал <var>range</var>, и еще многие другие объекты, которые имеют свои итераторы. Впрочем, эти детали не так важны. Их полезно понимать, но пользоваться ими случается редко.</p>
+<p>Итераторы позволяют очень разным объектам «притворяться одинаковыми». Казалось бы, между строками и интервалами нет ничего общего, однако их можно итерировать, а значит, любой из этих объектов можно использовать в цикле <var>for</var>, функциях <code>filter/map</code> и мн. др.</p>
+<p>Как уже говорилось, итератор может использовать любой алгоритм выдачи значения. Элементарный итератор просто перебирает значения в списке с первого до последнего. Еще один итератор — <var>range</var> — перебирает числа с шагом 1.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Заметьте, что <var>range</var> не хранит весь набор чисел, которые будет перебирать. Он создает новое число только тогда, когда оно потребуется (а старые значения не хранит). Размер <var>range</var> и подобных итераторов не зависит от количества чисел, которые предполагается перебрать, ведь им нужно помнить только начало промежутка, его конец и текущий элемент. Это позволяет сделать итератор, который будет перебирать бесконечное число значений, не занимая много дополнительной памяти.</p>
+</section>
+<p>Например, итератор может перебирать все натуральные числа. Или все простые числа. Или перебирать элементы, количество которых заранее неизвестно. Если вы пробовали посчитать количество элементов, которые вернул <var>filter</var>, могли заметить, что вызов <code>len(filter(condition, collection))</code> не работает. Теперь понятно почему: <var>filter</var> возвращает не список, а итерируемый объект.</p>
+<p>Функция <var>len</var> не работает с большей частью итерируемых объектов, ведь длина набора может быть очень большой или даже бесконечной. Для некоторых итераторов длину можно посчитать мгновенно, не перебирая элементы. Например, итератор <var>range</var> имеет заранее известное число объектов. Но для других итераторов невозможно посчитать длину, не проитерировав список полностью (например, невозможно узнать число четных элементов в списке, не проверив каждое число). Для итераторов, про которые заранее неизвестно, бесконечные они или нет, все еще хуже: функция <var>len</var> могла бы работать не просто долго, а вечно. От <var>len</var> такого не ожидаешь.</p>
+<p>Если все-таки требуется получить все элементы, для этого есть уже встречавшаяся вам функция <var>list</var>. Она проходит по всем элементам итератора и собирает их в один список, который возвращает пользователю. Но <var>list</var> создаст промежуточный список. Есть более эффективный способ посчитать число элементов, возвращенных итератором, не создавая промежуточный список.</p>
+<p>Как вы думаете, что вычисляет этот код?</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token keyword">for</span> value <span class="token keyword">in</span> <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">50</span> <span class="token operator">*</span> <span class="token number">1000</span> <span class="token operator">*</span> <span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 25000000</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Мы использовали списочное выражение как аргумент функции <var>sum</var>, но не заключали его в квадратные скобки. Мы не используем значение, которое вернул итератор, а просто добавляем единицу к числу элементов.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="2">Встроенные итераторы. Комбинирование итераторов</h2>
+<p>У итераторов есть замечательная особенность: их можно комбинировать. Это позволяет вместо огромных циклов с перемешанными этапами обработки писать небольшие блоки, которые стыкуются друг с другом. В заданиях прошлого урока вам уже приходилось комбинировать итераторы, возвращаемые функциями <var>filter</var> и <var>map</var>. В этот раз вы узнаете еще много способов комбинировать итераторы.</p>
+<p>Начнем с итератора <var>enumerate</var>. Он решает такую задачу: представьте, что вы перебираете элементы списка при помощи итератора, но при этом хотите знать не только элемент, но и его номер. Можно завести вспомогательную переменную и изменять ее в цикле, перебирающем элементы. Однако для лямбда-функций, передаваемых в функции высшего порядка, этот способ уже не работает.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Enumerate</strong></p>
+<p><var>Enumerate</var> вместо элементов исходного итератора возвращает кортежи, состоящие из номера элемента по порядку и самого элемента.</p>
+<p>В следующем примере формируется список из подобных кортежей с использованием списочного выражения:</p>
+<pre class="language-python"><code class="language-python">arr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'This'</span><span class="token punctuation">,</span> <span class="token string">'is'</span><span class="token punctuation">,</span> <span class="token string">'third'</span><span class="token punctuation">,</span> <span class="token string">'word'</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">[</span>pair <span class="token keyword">for</span> pair <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [(0, 'This'), (1, 'is'), (2, 'third'), (3, 'word')]</span>
+</code></pre>
+</section>
+<p>Обратите внимание на следующий пример: аргумент со звездочкой может быть не только списком, но и итератором (как сделано в примере у функции <var>print</var>). Если перед итератором поставить звездочку, его элементы станут аргументами функции:</p>
+<pre class="language-python"><code class="language-python">arr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'This'</span><span class="token punctuation">,</span> <span class="token string">'is'</span><span class="token punctuation">,</span> <span class="token string">'third'</span><span class="token punctuation">,</span> <span class="token string">'word'</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token builtin">enumerate</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; (0, 'This') (1, 'is') (2, 'third') (3, 'word')</span>
+</code></pre>
+<p>Давайте теперь найдем номера строк, имеющих лишь две буквы. Если бы мы запустили обычный <var>filter</var>, нашли бы только сами слова без номеров. <var>Enumerate</var> же передаст нам еще и номера:</p>
+<pre class="language-python"><code class="language-python">filtered_values <span class="token operator">=</span> <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> index_value<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>index_value<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">,</span> 
+                         <span class="token builtin">enumerate</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>filtered_values<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; (1, 'is')</span>
+</code></pre>
+<p>Теперь достаточно преобразовать пары номер-элемент в номера. Это делается тривиально:</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> index_value<span class="token punctuation">:</span> index_value<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> 
+    <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> index_value<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>index_value<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если у <var>enumerate</var> указать второй аргумент, отсчет начнется не с нуля, а с этого числа. Примеры можно посмотреть в <a class="material__link" href="https://docs.python.org/3/library/functions.html#enumerate" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Всегда стоит следить за тем, какие данные приходят в функцию преобразования и какие выходят. От порядка, в котором комбинируются функции, зависит результат.</p>
+</section>
+<p>Рассмотрим два варианта. Вам передается набор строк, которые вы должны пронумеровать и выбросить пустые строки. В одном случае пустые строки следует учитывать в нумерации, а в другом — пропускать.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Вариант 1: сначала пронумеровали все строки, а потом отбросили пустые</span>
+lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'Занумеруем'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">'строки'</span><span class="token punctuation">]</span>
+results <span class="token operator">=</span> <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> indexed_line<span class="token punctuation">:</span> indexed_line<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>lines<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>results<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; (1, 'Занумеруем') (4, 'строки')</span>
+
+<span class="token comment"># Вариант 2: сначала отбросили пустые строки,</span>
+<span class="token comment"># а потом пронумеровали оставшиеся</span>
+lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'Занумеруем'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">'строки'</span><span class="token punctuation">]</span>
+results <span class="token operator">=</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span><span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> line<span class="token punctuation">:</span> line<span class="token punctuation">,</span> lines<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>results<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; (1, 'Занумеруем') (2, 'строки')</span>
+</code></pre>
+<p>Разберем еще одну задачу. При разборе мы будем выписывать, какие данные и в какой форме получаются на каждом этапе.</p>
+<p>Рассмотрим пример:</p>
+<p><em>Какие по счету високосные годы, начиная с 1582 года до 2017, имели сумму цифр, равную 9? Високосный год — год, который делится на 4, но при этом не делится на 100 либо делится на 400.</em></p>
+<p>Прежде чем писать программу, давайте разберемся, как можно было бы решить задачу, имея только лист бумаги и ручку.</p>
+<ul>
+<li>На первом этапе мы выпишем все годы от 1582 до 2017</li>
+<li>Затем выберем из них високосные</li>
+<li>Пронумеруем их</li>
+<li>Выберем те (уже пронумерованные), сумма цифр которых равна 9</li>
+<li>Оставим от нумерованных годов только нумерацию. Готово!</li>
+</ul>
+<p>Теперь дословно запишем это в коде. Мы напишем отдельную функцию для вычисления суммы цифр, а все остальное запишем в форме комбинации итераторов.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">sum_digits</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token builtin">sum</span> <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token keyword">while</span> number <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token builtin">sum</span> <span class="token operator">+=</span> number <span class="token operator">%</span> <span class="token number">10</span>
+        number <span class="token operator">//=</span> <span class="token number">10</span>
+    <span class="token keyword">return</span> <span class="token builtin">sum</span>
+
+years_range <span class="token operator">=</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1582</span><span class="token punctuation">,</span> <span class="token number">2018</span><span class="token punctuation">)</span>
+
+is_leap_year <span class="token operator">=</span> <span class="token keyword">lambda</span> year<span class="token punctuation">:</span> <span class="token punctuation">(</span>year <span class="token operator">%</span> <span class="token number">4</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">and</span> year <span class="token operator">%</span> <span class="token number">100</span> <span class="token operator">!=</span> <span class="token number">0</span> <span class="token keyword">or</span>
+                             year <span class="token operator">%</span> <span class="token number">400</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+leap_years <span class="token operator">=</span> <span class="token builtin">filter</span><span class="token punctuation">(</span>is_leap_year<span class="token punctuation">,</span> years_range<span class="token punctuation">)</span>
+
+indexed_years <span class="token operator">=</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>leap_years<span class="token punctuation">)</span>
+selected_indexed_years <span class="token operator">=</span> <span class="token builtin">filter</span><span class="token punctuation">(</span>
+    <span class="token keyword">lambda</span> index_and_year<span class="token punctuation">:</span> sum_digits<span class="token punctuation">(</span>index_and_year<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">9</span><span class="token punctuation">,</span> indexed_years<span class="token punctuation">)</span>
+year_indices <span class="token operator">=</span> <span class="token punctuation">[</span>index_and_year<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token keyword">for</span> index_and_year <span class="token keyword">in</span> selected_indexed_years<span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>year_indices<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [9, 105]</span>
+</code></pre>
+<p>Выполните этот код, после каждого шага выводя получившееся значение. Если вам приходится выводить итератор, перед этим превратите его в список, чтобы иметь возможность изучить «содержимое» получившегося итератора.</p>
+<p>После того как поймете и проследите каждый этап, можно немного упростить эти выражения. Хотя всю программу можно записать одной строчкой, мы так делать не будем: код будет почти невозможно прочитать.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>До какой степени объединять код, чтобы вам было удобно его читать, зависит от субъективных факторов. С одной стороны, очень длинная команда может с трудом восприниматься. С другой — когда в программе результат каждого этапа вычислений вынесен в отдельную переменную, тяжело следить уже за этими переменными.</p>
+</section>
+<p>Таким образом, исходную задачу можно очень компактно решить только средствами итераторов:</p>
+<pre class="language-python"><code class="language-python">leap_years <span class="token operator">=</span> <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> year<span class="token punctuation">:</span> <span class="token punctuation">(</span>year <span class="token operator">%</span> <span class="token number">4</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">and</span> year <span class="token operator">%</span> <span class="token number">100</span> <span class="token operator">!=</span> <span class="token number">0</span> <span class="token keyword">or</span> 
+                                  year <span class="token operator">%</span> <span class="token number">400</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1582</span><span class="token punctuation">,</span> <span class="token number">2018</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+selected_indexed_years <span class="token operator">=</span> <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> index_and_year<span class="token punctuation">:</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>
+    <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">str</span><span class="token punctuation">(</span>index_and_year<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">9</span><span class="token punctuation">,</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>leap_years<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">[</span>index_and_year<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token keyword">for</span> index_and_year <span class="token keyword">in</span> selected_indexed_years<span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Совместные действия над коллекциями. Функция zip</h2>
+<p>В рассмотренных примерах мы обходились данными из одного источника. Но бывают вычисления, в которых приходится оперировать несколькими коллекциями значений.</p>
+<p>Например, научимся вычислять скалярное произведение двух векторов.</p>
+<p>Каждый вектор мы можем написать в виде набора (списка) координат. Для вектора на плоскости координат две, для вектора в пространстве — три. В математических вычислениях часто приходится работать с векторами в многомерном (N-мерном) пространстве, в котором вектор описывается набором из N чисел. Скалярное произведение двух векторов вычисляется как сумма произведений соответствующих координат. Например, в двухмерном пространстве вектора с координатами (a<sub>1</sub>, a<sub>2</sub>) и (b<sub>1</sub>, b<sub>2</sub>) дают скалярное произведение a<sub>1</sub>b<sub>1</sub> + a<sub>2</sub>b<sub>2</sub>.</p>
+<p>Один способ решить задачу — перебрать все N измерений и для каждого измерения посчитать произведение элемента из первого списка на элемент из второго списка. Затем просуммировать получившиеся координаты:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># рассмотрим параллелепипед со сторонами 2 x 2 x 1</span>
+<span class="token comment"># и вычислим скалярное произведение между</span>
+<span class="token comment"># вектором длинной диагонали и короткой "двумерной" диагонали</span>
+<span class="token comment"># в квадратном основании</span>
+
+a <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">]</span>
+b <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span>
+N <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span> <span class="token comment"># или len(b), они должны быть равны</span>
+<span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> i<span class="token punctuation">:</span> a<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> b<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; 8</span>
+</code></pre>
+<p>Есть и другой способ, который вообще не использует индексы элементов. Давайте выпишем два списка рядом. Пусть элементы списков <var>a</var> и <var>b</var> сгруппированы в два вертикальных набора. Если мы теперь начнем «зачитывать» элементы по горизонтали, получим как раз N пар чисел — координаты пары векторов вдоль соответствующей оси. Для того чтобы так «перевернуть» порядок чтения, используется функция <var>zip</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция zip</strong></p>
+<p>Функция <code>zip(a, b)</code> создает объект-итератор, из которого при каждом шаге извлекается кортеж, состоящий из двух элементов: первый берется из списка <var>a</var>, второй — из <var>b</var>. Итератор останавливается, когда исчерпывается самая короткая последовательность.</p>
+<pre><code>a    b    zip(a, b)
+--------------------
+ 2    2     (2, 2)
+ 2    2     (2, 2)
+ 1    0     (1, 0)
+</code></pre>
+</section>
+<p>Чтобы научиться работать с функцией <var>zip</var>, посчитаем с ее помощью скалярное произведение:</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> coords<span class="token punctuation">:</span> coords<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> coords<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">zip</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 8</span>
+</code></pre>
+<p>Функция <var>zip</var> вернула нам итератор, который возвращает кортежи из пар соответствующих координат. Чтобы убедиться в этом, распечатайте результат применения функции <var>zip</var> к двум спискам (не забудьте сделать из итератора список).</p>
+<p>Функция <var>zip</var> может принимать несколько параметров. В этом случае итератор вернет сначала кортеж из первых элементов всех переданных коллекций, затем — из вторых элементов всех коллекций и т. д. Часто коллекции, которые вы хотите скомбинировать таким образом, сами находятся в отдельном списке (например, матрица — список коллекций, представляющих значения строки). Чтобы передать все строки матрицы в функцию <var>zip</var> как отдельные строки, можно воспользоваться уже известным вам оператором «звездочка». Проведите эксперимент и передайте в функцию <var>zip</var> матрицу, написав звездочку и опустив ее. Изучите, в чем заключаются отличия возвращаемых итератором <var>zip</var> элементов для этих случаев?</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Модуль itertools</h2>
+<p>Мы рассмотрели пока лишь мизерную часть возможностей Python, связанных с итераторами и их комбинированием. В стандартной библиотеке Python есть модуль itertools, содержащий 18 функций, которые мы еще не изучали. Сейчас рассматривать все доступные функции незачем (это может занять не одну неделю), поэтому покажем лишь некоторые возможности. Рекомендуем время от времени перечитывать список функций на странице <a class="material__link" href="https://docs.python.org/3/library/itertools.html" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+<p>Помимо встроенных функций, на этой странице описано множество рецептов их применения. Со временем вы увидите, что многие задачи можно удобно переписать, используя итераторы.</p>
+<p>Для того чтобы работать с функциями из модуля itertools, вы должны в начале программы написать строку</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> itertools
+</code></pre>
+<p>Это позволит вызывать любую функцию из этого модуля, используя ее полное имя: <code>itertools.&lt;имя функции&gt;</code>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>itertools.chain</strong></p>
+<p>Первым делом освоим сцепление нескольких итераторов. Мы берем несколько итераторов и делаем новый, который сначала перебирает все элементы из первого итератора, затем из второго, из третьего и т. д., пока не закончатся значения в последнем итераторе. Для этого служит функция <code>itertools.chain(iter_1, iter_2, ...)</code>.</p>
+</section>
+<p>Применим этот итератор, чтобы получить список всех дат года. Склеим этот итератор из итераторов по числам месяца, которые легко сделать методом <var>range</var>.</p>
+<pre class="language-python"><code class="language-python">month_lengths <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">]</span>
+day_numbers <span class="token operator">=</span> itertools<span class="token punctuation">.</span>chain<span class="token punctuation">(</span><span class="token operator">*</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> length<span class="token punctuation">:</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                                   month_lengths<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>itertools.cycle, itertools.repeat</strong></p>
+<p>В некоторых ситуациях требуется «зациклить» один итератор. Сделаем итератор часовой стрелки, который после 23 возвращается к нулю и начинает отсчет заново. Для этой цели предназначен <var>itertools.cycle</var>. Если же вам нужно просто повторять какое-то значение несколько раз, можно использовать итератор <var>itertools.repeat</var>.</p>
+</section>
+<pre class="language-python"><code class="language-python">hours <span class="token operator">=</span> itertools<span class="token punctuation">.</span>cycle<span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+ 
+<span class="token comment"># Используем repeat, чтобы на протяжении 31 дня января повторять,</span>
+<span class="token comment"># что это первый месяц года и т.д.</span>
+month_lengths <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">]</span>
+month_numbers <span class="token operator">=</span> itertools<span class="token punctuation">.</span>chain<span class="token punctuation">(</span>
+    <span class="token operator">*</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> month_and_length<span class="token punctuation">:</span> itertools<span class="token punctuation">.</span>repeat<span class="token punctuation">(</span>month_and_length<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                                                   month_and_length<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+         <span class="token builtin">enumerate</span><span class="token punctuation">(</span>month_lengths<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Когда вы начинаете работать с бесконечными списками, возникает проблема: их работа никогда не завершается. Обычно это не то, чего мы добиваемся. Бесконечные списки часто используются как промежуточный этап работы. Для превращения бесконечного итератора в конечный существует функция <var>islice</var>, делающая «срез» итератора. Она принимает итератор и три параметра, определяющих начало, конец и шаг среза. Если в качестве конца среза указан None, срез имеет начало, но не ограничен с конца. Срезы, конечно, можно делать не только для бесконечных итераторов, но и для конечных. Посмотрите в документации синтаксис функции <var>islice</var> и пример написания функции <var>take</var> из списка <a class="material__link" href="https://docs.python.org/3/library/itertools.html#itertools-recipes" rel="noopener noreferrer" target="_blank">рецептов</a>, которая позволяет взять из итератора первые n элементов.</p>
+<p>Есть большой класс итераторов, которые возвращают «комбинаторные» значения. Например, так работает итератор <var>itertools.product</var>. Результатом его работы является так называемое декартово произведение итераторов: для каждого значения первого итератора перебираются все значения второго. Наш итератор каждый час будет пробегать 60 минут, а затем зацикливать сутки:</p>
+<pre class="language-python"><code class="language-python">itertools<span class="token punctuation">.</span>cycle<span class="token punctuation">(</span>itertools<span class="token punctuation">.</span>product<span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">60</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Попробуйте зациклить отдельно минуты и отдельно часы, прежде чем перемножать их. Что получается в итоге?</p>
+<p>Декартово произведение — самый простой комбинаторный итератор. Разберем еще один: <var>itertools.combinations</var>. Он берет итератор и некоторое число <var>r</var>, а затем выдает набор всех возможных комбинаций из <var>r</var> элементов (пришедших из переданного итератора). Например, <code>itertools.combinations(range(10), 2)</code> переберет все возможные пары различных цифр. При этом кортежи с переставленными элементами не появляются в результатах. Например, мы получим элемент (2, 7), но не получим элемент (7, 2), так как это та же самая комбинация элементов итератора.</p>
+<p>На следующем занятии мы обсудим еще один тип итераторов, позволяющий сгруппировать элементы по некоторому признаку. И немного поговорим о функциях, которые могут и не могут работать в потоковом режиме.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Свертка итератора. Функция reduce</h2>
+<p>Функция <var>reduce</var> расположена не в модуле itertools, а в модуле functools. Значит, чтобы ею воспользоваться, необходимо в вашей программе написать <code>import functools</code>. То, что она не находится в itertools, — неслучайно, так как она не возвращает итератор. Напротив, она принимает итератор и, некоторым образом скомбинировав элементы, которые выдает этот итератор, возвращает одно единственное значение.</p>
+<p>Итераторы сделаны «стыкующимися» так, что преобразования итераторов образуют длинные цепочки. А функция <var>reduce</var> обычно завершает цепочку итераторов и возвращает итоговый результат (если только вызов <var>reduce</var> не возвращает итерируемый ответ, что возможно, но отнюдь не обязательно).</p>
+<p>Разберемся наконец, что такое свертка итератора.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Свертка итератора</strong></p>
+<p>Свертка — функция высшего порядка, которая принимает начальное значение, итератор и некоторую бинарную операцию, а возвращает результат многократного применения этой операции к элементам итератора. Операция применяется, а результат вычисления передается как аргумент в эту же самую операцию.</p>
+</section>
+<p>Функция <var>reduce</var> обновляет некоторую величину шаг за шагом, начиная с некоторого начального значения. Эта величина обновляется при получении каждого следующего элемента из итератора, когда элементы закончились, эта величина возвращается как результат работы функции.</p>
+<p>Пусть наш итератор <var>iterator</var> возвращает элементы a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>, ..., a<sub>n</sub>. Передадим <var>reduce</var> в качестве операции функцию двух аргументов <code>func(result, element)</code>. В качестве начального значения возьмем <var>init</var>. Последим за тем, как будет обновляться промежуточный результат:</p>
+<pre class="language-python"><code class="language-python">functools<span class="token punctuation">.</span><span class="token builtin">reduce</span><span class="token punctuation">(</span>func<span class="token punctuation">,</span> iterator<span class="token punctuation">,</span> init<span class="token punctuation">)</span>
+</code></pre>
+<p>До получения элементов из итератора промежуточный результат <var>result</var> равен <var>init</var>. После того как <var>reduce</var> получил первый элемент, промежуточный результат становится равен:</p>
+<pre class="language-python"><code class="language-python">func<span class="token punctuation">(</span>result<span class="token punctuation">,</span> a1<span class="token punctuation">)</span> <span class="token operator">=</span> func<span class="token punctuation">(</span>init<span class="token punctuation">,</span> a1<span class="token punctuation">)</span>
+</code></pre>
+<p>На следующем шаге:</p>
+<pre class="language-python"><code class="language-python">result <span class="token operator">=</span> func<span class="token punctuation">(</span>result<span class="token punctuation">,</span> a2<span class="token punctuation">)</span> <span class="token operator">=</span> func<span class="token punctuation">(</span>func<span class="token punctuation">(</span>init<span class="token punctuation">,</span> a1<span class="token punctuation">)</span><span class="token punctuation">,</span> a2<span class="token punctuation">)</span>
+</code></pre>
+<p>В итоге после того как <var>reduce</var> получил последний элемент:</p>
+<pre class="language-python"><code class="language-python">result <span class="token operator">=</span> func<span class="token punctuation">(</span>result<span class="token punctuation">,</span> an<span class="token punctuation">)</span> <span class="token operator">=</span> func<span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">(</span>func<span class="token punctuation">(</span>func<span class="token punctuation">(</span>init<span class="token punctuation">,</span> a1<span class="token punctuation">)</span><span class="token punctuation">,</span> a2<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">,</span> an<span class="token punctuation">)</span>
+</code></pre>
+<p>Проще всего показать работу этой функции на примере. Давайте передадим в качестве операции функцию, прибавляющую очередной элемент к результату. В качестве исходного значения передадим ноль.</p>
+<pre class="language-python"><code class="language-python">functools<span class="token punctuation">.</span><span class="token builtin">reduce</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> result<span class="token punctuation">,</span> element<span class="token punctuation">:</span> result <span class="token operator">+</span> element<span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 45</span>
+</code></pre>
+<p>Если вы попробуете проделать все вычисления, увидите, что мы просто посчитали сумму элементов итератора: начали с нуля и на каждом шаге прибавляли значение очередного элемента к результату. Оказывается, сумма — частный случай применения операции свертки.</p>
+<p>Совершенно аналогично можно посчитать произведение элементов, передав в <var>reduce</var> функцию <code>lambda result, element: result * element</code> (а в качестве начального элемента возьмем 1).</p>
+<p>Начальный элемент указывать необязательно. Если его не указать, начальным значением будет первое значение итератора, а применение операции начнется со второго элемента. Для функций суммы и произведения это будет работать как положено. Получается, что выражение <code>func(...(func(func(init, a1), a2), ...), an)</code> превращается в <code>func(func(...func(a1, a2), ...), an)</code>.</p>
+<p>Сумма — не единственная свертка, которую вы уже знаете. Многие другие операции можно превратить в свертку. Например, метод <var>join</var>:</p>
+<pre class="language-python"><code class="language-python">values <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">"картину"</span><span class="token punctuation">,</span> <span class="token string">"корзину"</span><span class="token punctuation">,</span> <span class="token string">"картонку"</span><span class="token punctuation">]</span>
+functools<span class="token punctuation">.</span><span class="token builtin">reduce</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> result<span class="token punctuation">,</span> element<span class="token punctuation">:</span> result <span class="token operator">+</span> <span class="token string">", "</span> <span class="token operator">+</span> element<span class="token punctuation">,</span> values<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 'картину, корзину, картонку'</span>
+</code></pre>
+<p>Функцию <var>map</var> можно переписать, используя <var>reduce</var>:</p>
+<pre class="language-python"><code class="language-python">values <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">"картину"</span><span class="token punctuation">,</span> <span class="token string">"корзину"</span><span class="token punctuation">,</span> <span class="token string">"картонку"</span><span class="token punctuation">]</span>
+functools<span class="token punctuation">.</span><span class="token builtin">reduce</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> result<span class="token punctuation">,</span> element<span class="token punctuation">:</span> result <span class="token operator">+</span> 
+                                         <span class="token punctuation">[</span>element<span class="token punctuation">.</span>upper<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> values<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; ['КАРТИНУ', 'КОРЗИНУ', 'КАРТОНКУ']</span>
+</code></pre>
+<p>Аналогично можно написать функции <var>any</var> и <var>all</var>, если не касаться бесконечных итераторов.</p>
+<p>Возьмем список, в котором часть элементов может помечена как отсутствующая (в списке элементы заменены на None), и попробуем с помощью <var>reduce</var> узнать, есть ли отсутствующие элементы в списке:</p>
+<pre class="language-python"><code class="language-python">values <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">"картину"</span><span class="token punctuation">,</span> <span class="token string">"корзину"</span><span class="token punctuation">,</span> <span class="token string">"картонку"</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">]</span>
+
+<span class="token comment"># all(values) -- значит, что все элементы истинны, т.е. не None и не False</span>
+<span class="token comment"># Мы используем конструкцию not not element.</span>
+<span class="token comment"># Она равна False, когда element ложный (False или None),</span>
+<span class="token comment"># в других случаях она равна True</span>
+functools<span class="token punctuation">.</span><span class="token builtin">reduce</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> result<span class="token punctuation">,</span> element<span class="token punctuation">:</span> result <span class="token keyword">and</span> <span class="token punctuation">(</span><span class="token keyword">not</span> <span class="token keyword">not</span> element<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                 values<span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; False</span>
+
+<span class="token comment"># any(values) -- значит, что хотя бы один элемент истинный</span>
+functools<span class="token punctuation">.</span><span class="token builtin">reduce</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> result<span class="token punctuation">,</span> element<span class="token punctuation">:</span> result <span class="token keyword">or</span> <span class="token punctuation">(</span><span class="token keyword">not</span> <span class="token keyword">not</span> element<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+                 values<span class="token punctuation">,</span> <span class="token boolean">False</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; True</span>
+</code></pre>
+<p>Для всех приведенных примеров, конечно, лучше использовать специализированные функции, а не пытаться выразить их через <var>reduce</var>. Операция свертки хороша в первую очередь своей универсальностью, вы можете выразить с ее помощью огромное число различных вычислений.</p>
+<p>Функцию <var>reduce</var> может быть действительно полезно использовать, когда функцию от списка значений можно записать как комбинацию более простых вызовов существующей функции пары значений. Например, если у вас есть функция, позволяющая найти пересечение двух множеств (в Python есть такая функция, см. <a class="material__link" href="https://docs.python.org/3/library/stdtypes.html#set" rel="noopener noreferrer" target="_blank">документацию</a> типа <a class="material__link" href="https://docs.python.org/3/tutorial/datastructures.html#sets" rel="noopener noreferrer" target="_blank">set</a>), с помощью <var>reduce</var> вы сможете пересечь сколько угодно множеств.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Группировка элементов. Функция groupby</h2>
+<p>Еще одна функция, о которой мы будем говорить, <var>itertools.groupby</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция groupby</strong></p>
+<p>Функция <var>groupby</var> принимает итератор и группирует последовательные значения итератора, одинаковые по значению какого-либо признака. Возвращает она также итератор, который перебирает не отдельные элементы, а получившиеся группы элементов.</p>
+</section>
+<p>Это позволит нам решать задачи, которые работают не с единичным элементом, а с поднаборами коллекции. Например, мы можем взять список записей в телефонной книге и посчитать, каких имен в ней больше всего. Для этого нам будет достаточно сгруппировать все записи по имени и найти самую большую группу. Мы вскоре покажем, как решать эту задачу, но перед этим нам придется поговорить о том, что такое группа и почему группируются именно последовательные значения итератора.</p>
+<p>Как мы уже много раз говорили, итераторы работают, последовательно перебирая элементы. Все функции, работающие с итераторами, с которыми вы имели дело, как только получают элемент, обрабатывают его и, если требуется, сразу передают полученное значение дальше. Например, когда вы работаете с функцией <var>map</var>, она берет из итератора одно значение и тут же «кладет» его в возвращаемый итератор. За счет этого функция, которая работает с результатом функции <var>map</var>, может не ждать, пока та обработает все элементы, она получает значения из <var>map</var> по мере их вычисления. Это такой вариант потоковой обработкой данных: входящие данные (поток) обрабатываются набором последовательных преобразований, причем алгоритму обработки не требуется знать, что в потоке будет дальше. В идеальном случае необходимо знать лишь текущий элемент, в других же случаях достаточно знать текущий и предыдущие элементы.</p>
+<p>Давайте теперь рассмотрим другой крайний случай — функцию <var>sorted</var>. Эта функция может получать значения из итератора, но возвращает все равно список. Почему? Дело в том, что возвращать итератор из функции <var>sorted</var> было бы совершенно бессмысленно: мы не можем выдать ни одного значения, пока не будут прочитаны все значения итератора. Представьте, что вы хотите отсортировать список, который уже отсортирован в обратном порядке. Значит, первый элемент, который должен попасть в результат, во входящем наборе значений находится в самом конце. Таким образом, потоковая обработка элементов без длительной задержки невозможна. Кроме того, для сортировки набора значений из потока требуется их все запомнить, что в общем случае занимает памяти как минимум столько, сколько данных было в потоке. Как вы понимаете, операция сортировки «дорого» обходится программе, но это неизбежно.</p>
+<p>Группировка значений в потоке занимает промежуточную нишу. Если вы хотите из некоторого произвольного множества получить все значения, которые относятся к группе (для простоты будем считать, что группа содержит одинаковые значения), вам придется прочитать все элементы до единого. Но зачастую во входящем потоке данных элементы расположены неслучайно, а заранее отсортированы. В таком случае элементы группы идут подряд, и, чтобы их получить, достаточно взять элементы от начала группы до ее конца. Раз так, мы можем сделать итератор, который перебирает группы и выдает их по одной. Мы можем выдать группу элементов как только прочитали ее до конца, т. е. в тот момент, когда началась другая группа.</p>
+<p>На этом месте можно было бы остановиться, но проблема заключается в том, что группа может быть сколь угодно большой и, таким образом, итератор может застопориться. В то же время мы не можем выдать группу, пока не прочитали ее целиком.</p>
+<p>Чтобы разрешить эту проблему, мы прибегнем к следующему трюку: будем перебирать элементы потока.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>В момент, когда в потоке начинается новая группа, мы передаем группу в результирующий итератор. Но, так как мы не можем передать группу, которая еще только началась, вместо ее элементов мы передадим итератор. Этот итератор будет перебирать элементы, пока не кончится одна группа, после чего вы получите новый итератор на следующую группу. Так работает <var>groupby</var>: он создает итератор, состоящий из итераторов.</p>
+</section>
+<p>Если быть точнее, <var>groupby</var> выдает поток кортежей, каждый кортеж состоит из значения, которое характеризует группу (соответствует всем элементам) в группе и итератора, проходящего по самим элементам группы.</p>
+<p>Пример:</p>
+<pre class="language-python"><code class="language-python">values <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">12</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">]</span>
+ 
+<span class="token comment"># Список кортежей (значение элементов группы, итератор группы)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">(</span>itertools<span class="token punctuation">.</span>groupby<span class="token punctuation">(</span>values<span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [(1, &lt;itertools._grouper object at 0x...&gt;),</span>
+<span class="token comment"># (10, &lt;itertools._grouper object at 0x...&gt;),</span>
+<span class="token comment"># (12, &lt;itertools._grouper object at 0x...&gt;),</span>
+<span class="token comment"># (10, &lt;itertools._grouper object at 0x...&gt;)]</span>
+ 
+<span class="token comment"># Выведем элементы каждого из внутренних итераторов</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span>group<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">for</span> group <span class="token keyword">in</span> itertools<span class="token punctuation">.</span>groupby<span class="token punctuation">(</span>values<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [[1, 1, 1], [10, 10], [12], [10, 10, 10]]</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/groupby%20-%20new.svg" width="680"/></div>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Поскольку мы передали несортированный список, у нас получились две отдельные группы десяток. Группой является множество <strong>одинаковых</strong> и притом <strong>смежных</strong> элементов. Если бы мы хотели получить группы, в которые включены все соответствующие элементы, нам бы пришлось сначала отсортировать список:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span>group<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">for</span> group <span class="token keyword">in</span> itertools<span class="token punctuation">.</span>groupby<span class="token punctuation">(</span><span class="token builtin">sorted</span><span class="token punctuation">(</span>values<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [[1, 1, 1], [10, 10, 10, 10, 10], [12]]</span>
+</code></pre>
+</section>
+<p>Конечно, нам редко требуется группировать абсолютно одинаковые элементы, обычно мы группируем элементы по какому-либо признаку. Функцию, которая вычисляет по элементу значение группирующего признака, мы передаем в качестве необязательного аргумента в функцию <var>groupby</var>.</p>
+<p>Давайте вернемся к примеру, с которого начинали. Пусть у нас есть список записей в телефонной книге и мы хотим найти самое частое имя. Значит, первым делом мы должны сгруппировать записи по имени, а затем посчитать размер групп. Записи будем представлять кортежами (имя, фамилия, телефон).</p>
+<pre class="language-python"><code class="language-python">address_book <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token string">'Андрей'</span><span class="token punctuation">,</span> <span class="token string">'Веселов'</span><span class="token punctuation">,</span> <span class="token string">'235780'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token punctuation">(</span><span class="token string">'Александр'</span><span class="token punctuation">,</span> <span class="token string">'Копылов'</span><span class="token punctuation">,</span> <span class="token string">'122112'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token punctuation">(</span><span class="token string">'Андрей'</span><span class="token punctuation">,</span> <span class="token string">'Тихий'</span><span class="token punctuation">,</span> <span class="token string">'998877'</span><span class="token punctuation">)</span>
+               <span class="token punctuation">]</span>
+ 
+<span class="token comment"># Итак, отсортируем список по интересующему нас признаку</span>
+<span class="token comment"># и сгруппируем по нему.</span>
+<span class="token comment"># Признак - имя - является нулевым элементом записи. </span>
+<span class="token comment"># Так как он понадобится нам дважды, запишем его в переменную</span>
+key_func <span class="token operator">=</span> <span class="token keyword">lambda</span> record<span class="token punctuation">:</span> record<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+groups <span class="token operator">=</span> itertools<span class="token punctuation">.</span>groupby<span class="token punctuation">(</span><span class="token builtin">sorted</span><span class="token punctuation">(</span>address_book<span class="token punctuation">,</span> key<span class="token operator">=</span>key_func<span class="token punctuation">)</span><span class="token punctuation">,</span> key_func<span class="token punctuation">)</span>
+ 
+<span class="token comment"># Найдем среди групп максимальную по длине группы.</span>
+<span class="token comment"># group[0] - это имя, а group[1] - это итератор</span>
+<span class="token comment"># по всем записям с таким именем</span>
+<span class="token comment"># sum(1 for element in iterator), как мы говорили в прошлом уроке -</span>
+<span class="token comment"># число элементов итератора</span>
+name<span class="token punctuation">,</span> group_iterator <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>groups<span class="token punctuation">,</span>
+                           key<span class="token operator">=</span><span class="token keyword">lambda</span> group<span class="token punctuation">:</span> <span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token keyword">for</span> record <span class="token keyword">in</span> group<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span> <span class="token comment"># =&gt; 'Андрей'</span>
+ 
+<span class="token comment"># Но будьте осторожны! Мы присвоили значение group_iterator только для того, </span>
+<span class="token comment"># чтобы более наглядно показать значения в итоговом кортеже.</span>
+<span class="token comment"># После того, как max перебрал все элементы, group_iterator остался пустым:</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">(</span>group_iterator<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; []</span>
+</code></pre>
+</section></article></section>

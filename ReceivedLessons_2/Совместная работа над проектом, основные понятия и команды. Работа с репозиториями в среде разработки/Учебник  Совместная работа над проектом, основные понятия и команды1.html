@@ -1,0 +1,208 @@
+<section class="lesson-material__content"><article class="material"><h1>Совместная работа над проектом, основные понятия и команды. Работа с репозиториями в среде разработки</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Ветки в Git</a></li>
+<li><a class="material__link" href="#2">Объединение (слияние) изменений</a></li>
+<li><a class="material__link" href="#3">Решение конфликтов</a></li>
+<li><a class="material__link" href="#4">Схема командной работы с репозиторием</a></li>
+<li><a class="material__link" href="#5">GitFlow</a></li>
+<li><a class="material__link" href="#6">GitHubFlow</a></li>
+<li><a class="material__link" href="#7">Заключение</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке рассматривается работа с ветками в Git, решение конфликтов изменений, а также основы командной разработки в Git.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Ветки в Git</h2>
+<p>Мы уже немного затронули тему о <strong>ветках</strong> в Git. Настало время внимательней разобрать это понятие.</p>
+<p>Если бы система контроля версий ограничивалась только ведением истории коммитов, то она бы никак не помогла нескольким разработчикам работать с одним репозиторием. Или одному разработчику — над несколькими задачами в одном.</p>
+<p>Для всего этого (и не только) в Git и существуют ветки. Ветки позволяют:</p>
+<ul>
+<li>Давать имена версиям</li>
+<li>Иметь одновременно несколько <strong>рабочих</strong> версий (рабочей версией называется та, над которой в определенный момент времени трудится разработчик)</li>
+<li>Объединять результаты деятельности нескольких разработчиков</li>
+</ul>
+<p>Допустим, у нас есть программа (можно продолжить работу с репозиторием из прошлого урока, а можно создать новый репозиторий), последняя закоммиченная версия которой выглядит так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">my_superfunction</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'What an awesome print!'</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'My first git program'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'And I change it every day'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Again'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'UFO came and added this line'</span><span class="token punctuation">)</span>
+    my_superfunction<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Мы хотим создать версии нашей программы, в которой функция <var>my_superfunction</var> ведет себя по-другому, например, одна выводит надпись Hello, python!!!, другая — Yandexlyceum, но старую версию мы тоже хотим сохранить.</p>
+<p>Сначала заведем новую ветку программы и сразу на нее переключимся. Это можно сделать через пункт меню VCS → Git → Branches → New Branch (или Ctrl + Shift + `). В появившемся окне введем имя нашей новой ветки, например, <var>newBranch</var>, оставим галочку, которая сразу осуществляет переключение на новою ветку при создании нетронутой.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-1-create-branch.png" width="500"/></div>
+<p>Посмотрим на вкладку Log меню системы контроля версий. Обратите внимание, что на последнем коммите появилась еще одна зеленая бирочка, которая говорит о том, что мы находимся на развилке и в этом месте код двух веток master и newBranch совпадает.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-2.png" width="680"/></div>
+<p>Поменяем код нашей функции и закоммитим изменения.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-3.png" width="600"/></div>
+<p>При совершении коммита видно, что изменения фиксируются в ветку newBranch.</p>
+<p>Давайте вернемся в master. В Logs в меню системы контроля версии выберем последний коммит ветки master, кликнем на нем правой кнопкой мышки и выберем Branch 'master' → Checkout.</p>
+<p>Создадим еще одну ветку, назовем ее demobranch.</p>
+<p>Внесем изменения в функцию <var>my_superfunction</var>, чтобы она выводила текст Yandexlyceum, и закомитим изменения.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-4.png" width="680"/></div>
+<p>По логам видно, что у нас есть три ветки: master, newBranch и demobranch. demobranch — текущая активная ветка, то, что мы находимся в ней, подтверждается указателем HEAD. Также есть ветка newBranch, у которой с demobranch общий источник кода — последний на текущий момент коммит ветки master.</p>
+<p>Для того чтобы переключиться в нужную ветку, надо кликнуть на последнем коммите этой ветки и выбрать пункт меню Branch 'имя_ветки' → Checkout (это можно сделать и через меню: VCS → Git → Branches).</p>
+<p>Теперь удалим неиспользуемую ветку demobranch командой VCS → Git → Branches → demobranch → Delete.</p>
+<p>Теперь мы умеем создавать и удалять ветки, а также переключаться между ветками.</p>
+<p>Версии программы, зафиксированные в разных ветках, можно сравнивать между собой с помощью команды VCS → Git → Compare with Branch. Давайте сравним program.py из ветки newBranch, в которой мы сейчас находимся, и master.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-5.png" width="680"/></div>
+<p>Обратите внимание: создавая ветку, мы <strong>получаем полную</strong> копию ветки, в которой находились в этот момент.</p>
+<p>Для закрепления успехов перейдем на ветку master, создадим новую ветку addAuthorBranch, и добавим в начало нашей программы комментарий с именем автора:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Yandexlyceum</span>
+<span class="token keyword">def</span> <span class="token function">my_superfunction</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'What an awesome print!'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>Закоммитим изменения.</p>
+<p>Затем снова вернемся в master, создадим ветку printOne, в которой добавим в конец функции <var>main</var> код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Снова закоммитим изменения. После проделанной работы Log системы контроля версий должен выглядеть примерно вот так:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-6.png" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="2">Объединение (слияние) изменений</h2>
+<p>Итак, Git позволяет независимо разрабатывать несколько версий программы в разных <strong>ветках</strong> одного большого дерева.</p>
+<p>Теперь разберемся, как из двух веток собрать единую версию. Попробуем получить программу как с указанием авторства из ветки addAuthorBranch, так и с печатью единицы из ветки printOne.</p>
+<p>Для объединения нескольких веток (merge) в одну, нам необходимо перейти в ветку, в которую мы хотим влить изменения. Пусть это будет ветка printOne. Выберите в Log последний коммит ветки addAuthorBranch, кликните на ней правой кнопкой мышки и выберите команду Branch 'addAuthorBranch' → Merge into Current.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-7.png" width="680"/></div>
+<p>В Logs мы увидим, что у нас соединились две ветки в одну, а сам код — результат объединения этих веток. Влейте ветку newBranch в printOne.</p>
+<p>Если мы зайдем на GitHub, мы увидим, что изменения которые мы делали, там не отразились. Это нормально, ведь все изменения мы делали локально. Давайте запушим нашу ветку printOne:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-8.png" width="680"/></div>
+<p>После этого ветка printOne и коммиты из нее попадут в удаленный репозиторий. А у нашей ветки printOne на вкладке Logs появится фиолетовая бирочка и информация о том, что тот же код находится в удаленном репозитории в ветке origin/printOne.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Решение конфликтов</h2>
+<p>Не всегда объединение веток проходит гладко. Бывает, что программисты (или один программист в разных ветках) вносили изменения в одну и ту же строку кода, поэтому при объединении изменений возникнет конфликт, и объединение веток не будет считаться успешным до тех пор, пока этот конфликт не будет решен. Давайте смоделируем такую ситуацию.</p>
+<p>Переключимся на ветку master и создадим там новый файл conflict_test.py вот с таким кодом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Hello Git!"</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Hello PyCharm!"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Добавим его к отслеживанию и закоммитим.</p>
+<p>Создадим новую ветку lowercase (VCS → Git → Branches → New Branch, оставим галочку для переключения на новую ветку), и, стоя на ней, изменим наш файл следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"hello git!"</span><span class="token punctuation">)</span> <span class="token comment"># маленькие буквы</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"hello pycharm!"</span><span class="token punctuation">)</span> <span class="token comment"># маленькие буквы</span>
+</code></pre>
+<p>Cделаем коммит. После этого переключимся на ветку master, убедимся, что файл вернулся к изначальной версии, и создадим еще одну ветку uppercase. Стоя на ней, изменим файл следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"HELLO GIT!"</span><span class="token punctuation">)</span> <span class="token comment"># большие буквы</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"HELLO PYCHARM!"</span><span class="token punctuation">)</span> <span class="token comment"># большие буквы</span>
+</code></pre>
+<p>Cнова зафиксируем версию. Вернемся на ветку master и вольем в нее изменения из ветки lowercase. Слияние должно пройти успешно, а на ветке master появятся маленькие буквы. После этого выполним слияние с веткой uppercase. Теперь возник конфликт.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-9.png" width="680"/></div>
+<p>Нам показывается перечень файлов, в которых изменения затрагивают одни и те же строки. У нас есть несколько вариантов действий:</p>
+<ol>
+<li>Accept Yours — оставить версию строк, которые находятся в текущей ветке (в которую вливаются изменения)</li>
+<li>Accept Theirs — заменить все конфликтные строки на новую версию из вливаемой ветки</li>
+<li>Merge — решить конфликт в ручном режиме. Это наиболее безопасный вариант</li>
+</ol>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/git-2-10.png" width="680"/></div>
+<p>При выборе Merge откроется окно:</p>
+<ul>
+<li>Левая часть — текущая версия файла на ветке, в которую вливаются изменения</li>
+<li>Правая часть — версия файла на ветке, откуда вливаются изменения</li>
+<li>Центральная часть — версия, предлагаемая Git при попытке автоматического слияния, может быть основана на предыдущих версиях файла</li>
+</ul>
+<p>Тут есть быстрые кнопки для принятия левой (Accept Left), правой (Accept Right) и центральной части (Apply). Также можно отменить слияние (Abort). Какую часть выбрать — решает разработчик. Еще он может редактировать центральную часть, создав новую версию файла. Решите конфликт любым способом.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Схема командной работы с репозиторием</h2>
+<p>Мы с вами уже научились работать с локальными и удаленными репозиториями, создавать, удалять и объединять ветки, фиксировать изменения в локальном и удаленном репозитории. Но во всех наших упражнениях ситуация была упрощенной: с репозиторием работал только один разработчик.</p>
+<p>Когда разработчик один, то не особенно важно, как называть ветки, когда создавать новые ветки, в какое время и куда их вливать. Но все кардинально меняется, если с репозиторием работают несколько разработчиков:</p>
+<ul>
+<li>Многократно возрастает вероятность конфликтов в ветках</li>
+<li>Угадать, какие изменения сделаны в ветке, невозможно, если нет понятных имен веток и комментариев к коммитам</li>
+<li>Появляется необходимость как-то договориться о том, где мы храним полностью работающую программу, а где — ведем разработку и экспериментируем</li>
+</ul>
+<p>И, наконец, нужно как-то работать с удаленным репозиторием, не мешая друг другу.</p>
+<p>Для решения перечисленных проблем нужно, чтобы все разработчики проекта следовали единому своду правил работы с репозиторием.</p>
+<p>Перечислим требования, которые предъявляются к такому своду:</p>
+<ol>
+<li>Единый стандарт именования веток</li>
+<li>Единый стандарт ветвления в репозитории</li>
+<li>Единые правила изменения стабильной ветки (master)</li>
+<li>Единые правила объединения репозиториев</li>
+<li>Единые правила работы над проектными задачами</li>
+</ol>
+<p>Такие своды правил называют flow.</p>
+<p>В современной разработке чаще всего используются две популярные схемы (в пределах одного проекта рекомендуется выбрать и использовать только одну):</p>
+<ol>
+<li>Классический подход Git Flow</li>
+<li>GitHub Flow, адаптированный под коллективную работу на GitHub</li>
+</ol>
+<p>Перед началом изучения методологий работы с репозиторием давайте зафиксируем терминологию — она идентична для всех основных flow:</p>
+<ul>
+<li>Стабильная ветка (Stable) — ветка, в которой программа в любой момент считается рабочей и хорошо протестированной. В идеале программу из этой ветки всегда можно передать заказчику — или, как часто говорят, <em>в продакшн</em> (production — рабочее состояние продукта). В большинстве методологий в качестве стабильной используется ветка master</li>
+<li>Ветка разработки (Dev) — ветка, относительно которой заводятся все новые изменения (именно от этой ветки отделяются новые ветки для разработки фич). Как правило, это ветка со всеми законченными в настоящий момент изменениями, без нестабильных изменений и изменений «в работе». Код в этой ветке чаще всего работоспособен, но не протестирован достаточно хорошо для передачи <em>в продакшн</em>. Из этой ветки часто собираются будущие релизы</li>
+<li>Релиз — процесс вливания ветки релиз-кандидата в мастер-ветку и выкладки ее в продакшн</li>
+<li>Релиз-кандидат/релизная ветка — ветка, где зафиксированы на момент релиза (выпуска новой версии продукта) все изменения, которые следующим шагом <em>поедут в продакшн</em>, то есть будут включены в новую версию. После сбора этой ветки вносить в нее изменения, кроме исправления ошибок (или <em>багов</em>), обычно запрещено</li>
+<li>Фича-бранч — ветка, в которой разработчик ведет разработку одной конкретной задачи или функциональности</li>
+<li>Хотфикс — ветка, отходящая от стабильной ветки или релиз-кандидата, нужная для исправления критического бага и обратного вливания в ту же ветку и все дочерние ветки</li>
+</ul>
+</section>
+<section class="material__chapter">
+<h2 id="5">GitFlow</h2>
+<p>Самая старая и, вероятно, одна из наиболее распространенных методологий работы с репозиторием. Про нее часто спрашивают на различных собеседованиях при приеме на работу и применяют в относительно консервативных командах.</p>
+<p>GitFlow использует описанные выше сущности следующим образом:</p>
+<ul>
+<li>Stable — ветка master</li>
+<li>Dev — ветка develop</li>
+<li>Фича-бранчи — ветки вида feature/&lt;имя фичи/номер тикета в трекинг-системе&gt; (это такие системы, в которых разработчикам ставят задачи и определяют сроки их выполнения, а разработчики отчитываются о результатах своей работы)</li>
+<li>Хотфиксы — ветки вида hotfix/&lt;имя исправляемого бага/номер тикета в трекинг-системе&gt;</li>
+<li>Релизные ветки — ветки вида release/&lt;номер релиза/дата начала релиза&gt;. Часто в качестве номера релиза используется symver-нотация: x.y.z, где x — версия программного продукта, версии с разной x-версией часто обратно несовместимы; y — номер релиза, если меняется только y — обратная совместимость не нарушается, чаще — исправляется старая функциональность или добавляется опциональная новая; z — номер патча, обнуляется при каждом обновлении y, часто используется для обозначения порядкового номера хотфикса. Подробнее о семантическом версионировании читайте <a class="material__link" href="http://semver.org/lang/ru/" rel="noopener noreferrer" target="_blank">тут</a></li>
+<li>Релиз/Тег — тег в ветке master, совпадающий по имени с именем релизной ветки (подробнее про теги читайте в инструкции git help tag)</li>
+</ul>
+<p>В качестве примера трекинг-систем можно привести следующие:</p>
+<ol>
+<li><a class="material__link" href="https://ru.atlassian.com/software/jira" rel="noopener noreferrer" target="_blank">JIRA</a></li>
+<li><a class="material__link" href="http://www.redmine.org/" rel="noopener noreferrer" target="_blank">Redmine</a></li>
+<li><a class="material__link" href="http://tracker.yandex.ru/" rel="noopener noreferrer" target="_blank">Яндекс.Трекер</a></li>
+</ol>
+<p>Общая схема работы с репозиторием в рамках GitFlow выглядит так:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/gitflow.svg" width="680"/></div>
+<p>Обратите внимание на то, как происходит выпуск <strong>релизов</strong>. Например, релиз с номером 1.1.1 получился только после внесения критичных правок, которые добавились и в <strong>коммит</strong> в ветке develop.</p>
+<p>А версия 1.2.0 собралась уже из релизной ветки.</p>
+<p>Предлагаем вам немного поработать по методологии GitFlow.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">GitHubFlow</h2>
+<p>GitHubFlow — современная методология, которая распространена в компаниях, использующих систему GitHub. Она отлично совместима с процессом непрерывной поставки ПО и публичной работой над свободным программным обеспечением.</p>
+<p>GitHubFlow оперирует следующими сущностями:</p>
+<ul>
+<li>Stable — ветка master</li>
+<li>Dev — сущность отдельно не выделяется. В качестве ветки, от которой осуществляется ветвление, используется ветка master</li>
+<li>Фича-бранчи — ветки вида feature/&lt;имя фичи/номер тикета в трекинг-системе&gt;</li>
+<li>Хотфиксы — ветки вида hotfix/&lt;имя исправляемого бага/номер тикета в трекинг-системе&gt;</li>
+<li>Релизные ветки — в виде отдельный сущности, как правило, не используются. GitHubFlow приветствует идеологию 1 фича = 1 релиз</li>
+<li>Релиз/Тег — тег в ветке master, совпадающий по имени с релизной веткой (подробнее про теги читайте в инструкции git help tag)</li>
+<li>Pull-request — сущность, специфичная для системы GitHub, заменяющая собой push в ветку master. После окончания работы над фича-веткой разработчик не делает merge в мастер-ветку, а создает <strong>предложение</strong> о внесении изменений в GitHub — так называемый pull-request. Далее основные разработчики проекта проверяют код пулл-реквеста (смотрят на корректность вносимых изменений или делают codereview) и либо принимают пулл-реквест (предварительно решив конфликты обычным слиянием), либо отклоняют пулл-реквест. Во втором случае изменения не попадают в ветку master</li>
+</ul>
+<p>Подробнее почитать про GitHubFlow можно <a class="material__link" href="https://guides.github.com/introduction/flow/" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>Общая схема работы с репозиторием в рамках GitHubFlow выглядит так:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/git-2/githubflow.svg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="7">Заключение</h2>
+<p>На этом мы закончим наш небольшой экскурс в системы контроля версий.</p>
+<p>Вы научились работать в команде с удаленными репозиториями. Теперь у вас есть достаточно знаний для самостоятельного участия в разработке различных проектов.</p>
+<p>На этом возможности PyCharm по работе с Git не заканчиваются. Сами разработчики JetBrains подготовили подробную <a class="material__link" href="https://www.jetbrains.com/help/pycharm/using-git-integration.html" rel="noopener noreferrer" target="_blank">инструкцию</a> по работе с Git из PyCharm (на английском языке). Там вы найдёте много полезной информации и узнаете о дополнительных возможностях PyCharm, которые мы не успели рассмотреть за время урока.</p>
+<p>Рекомендуем вам попробовать поработать с Git с помощью командной строки. Работая с репозиторием с помощью командной строки, программист строго контролирует все выполняемые операции, видит все происходящее в репозитории и может гибко настраивать функциональность Git под свои нужды: у каждой команды существует большое количество флагов, вы можете увидеть их с помощью git help &lt;имя команды&gt;. Кроме того, скорость работы командной строки значительно выше, чем у графических утилит. Графические утилиты, как правило, не реализуют в полной мере все функции системы Git. Тем не менее, с ними удобно и приятно работать, они позволяют выполнять все часто используемые команды. Большое преимущество работы с Git через IDE: не нужно переключаться между окнами и приложениями, чтобы сделать коммит или получить изменения с сервера.</p>
+<p>Кроме того, мы не затронули целый ряд полезных тем, касающихся работы с репозиториями. Поэтому предлагаем вам изучить их самостоятельно.</p>
+<ol>
+<li><a class="material__link" href="https://help.github.com/articles/working-with-forks/" rel="noopener noreferrer" target="_blank">Форки</a> в GitHub — очень мощный инструмент для работы с публичными репозиториями, популярный в opensource community</li>
+<li><a class="material__link" href="https://habrahabr.ru/post/161009/" rel="noopener noreferrer" target="_blank">Rebase</a> — еще один очень популярный способ объединения изменений, удобный при работе над достаточно большими фичами</li>
+<li><a class="material__link" href="http://marklodato.github.io/visual-git-guide/index-ru.html" rel="noopener noreferrer" target="_blank">Cherry-pick и reset</a> — инструменты для работы с историей коммитов: извлечением какого-либо коммита, или откатом последних коммитов</li>
+<li>Так же мы рекомендуем пошаговый <a class="material__link" href="https://githowto.com/ru" rel="noopener noreferrer" target="_blank">самоучитель</a> по Git для закрепления пройденного материала</li>
+</ol>
+</section></article></section>

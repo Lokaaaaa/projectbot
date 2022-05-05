@@ -1,0 +1,211 @@
+<section class="lesson-material__content"><article class="material"><h1>Введение в БД, работа с SQL-таблицами и отображение данных в PyQT. Часть 2</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">SQL. Продолжение</a></li>
+<li><a class="material__link" href="#2">Модификация из Python</a></li>
+<li><a class="material__link" href="#3">Заключение</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке мы продолжим знакомство с базами данных и работой с ними при помощи SQL и Python. Сделаем основной упор на управление данными: запись, изменение и удаление записей.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">SQL. Продолжение</h2>
+<p>Давайте снова вернемся в SQLiteStudio, откроем модельную <a class="material__link" href="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/films_db.sqlite" rel="noopener noreferrer" target="_blank">базу данных</a> с информацией о фильмах и выполним несколько запросов.</p>
+<p><strong>Добавление записей</strong></p>
+<p>На прошлом уроке мы познакомились только с одной частью работы с SQL — получение информации с помощью специального запроса <var>SELECT</var>. Но перед тем, как получать информацию из базы, необходимо ее туда поместить.</p>
+<p>Для этого существует оператор <var>INSERT</var>. Его синтаксис в общем случае выглядит так:</p>
+<pre class="language-python"><code class="language-python">INSERT INTO имя_таблицы<span class="token punctuation">(</span>названия_полей<span class="token operator">*</span><span class="token punctuation">)</span> VALUES<span class="token punctuation">(</span>значения<span class="token punctuation">)</span> 
+</code></pre>
+<p>Названия полей могут не указываться, тогда значения по умолчанию подставятся в поля по порядку. Давайте рассмотрим несколько примеров:</p>
+<pre class="language-python"><code class="language-python">INSERT INTO genres<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">,</span>title<span class="token punctuation">)</span> VALUES<span class="token punctuation">(</span><span class="token number">42</span><span class="token punctuation">,</span><span class="token string">'Фантасмагория'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre class="language-python"><code class="language-python">INSERT INTO genres<span class="token punctuation">(</span>title<span class="token punctuation">)</span> VALUES<span class="token punctuation">(</span><span class="token string">'Лекции'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>И теперь, когда мы захотим вывести таблицу жанров, мы увидим, что там появились новые значения.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-1.png" width="225"/></div>
+<p>Но откуда взялось значение id, равное 43? Мы же его нигде не указывали? Дело в том, что в нашей таблице поле id является <strong>автоинкрементным</strong>, то есть при создании нового элемента берется максимальный из уже созданных индексов, увеличивается на единицу и присваивается новому элементу.</p>
+<p>Часто в таблицу необходимо вставить не одно значение, а несколько. Для это не нужно вызывать оператор <var>INSERT</var> несколько раз, а достаточно через запятую перечислить все значения, которые необходимо добавить. Например, так:</p>
+<pre class="language-python"><code class="language-python">INSERT INTO genres VALUES <span class="token punctuation">(</span><span class="token number">45</span><span class="token punctuation">,</span> <span class="token string">'Научные'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">46</span><span class="token punctuation">,</span> <span class="token string">'Сказки'</span><span class="token punctuation">)</span> 
+</code></pre>
+<p><strong>Изменение записей</strong></p>
+<p>Часто случается, что информация, хранящаяся в базе данных, нуждается в изменении. Для таких запросов используется оператор <var>UPDATE</var>. Его синтаксис в общем случае выглядит следующим образом:</p>
+<pre class="language-python"><code class="language-python">UPDATE имя_таблицы
+SET название_колонки <span class="token operator">=</span> новое_значение
+WHERE условие
+</code></pre>
+<p>Обратите внимание: если не указать условие обновления, изменятся <strong>абсолютно все</strong> записи в таблице.</p>
+<p>Перейдем к примеру. Предположим, что мы посмотрели режиссерскую версию фильма «Аватар», и теперь хотим указать новую продолжительность фильма. Разумеется, можно сохранить информацию, удалить запись и создать новую. Можно, но это крайне неудобно. Так что обновим значение поля <var>duration</var> для фильма «Аватар» .</p>
+<pre class="language-python"><code class="language-python">UPDATE films
+SET duration <span class="token operator">=</span> <span class="token string">'162'</span>
+WHERE title <span class="token operator">=</span> <span class="token string">'Аватар'</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-2.png" width="322"/></div>
+<p><strong>Удаление записей</strong></p>
+<p>Но бывают и ситуации, когда какая-либо информация уже совершенно точно не нужна. Тогда ее необходимо удалить из БД, чтобы она не занимала лишнее пространство в памяти. Для этого используется оператор <var>DELETE</var>.</p>
+<p>Например, чтобы удалить все фильмы, выпущенные до 1985 года, необходимо написать следующий запрос:</p>
+<pre class="language-python"><code class="language-python">DELETE <span class="token keyword">from</span> films
+where year <span class="token operator">&lt;</span> <span class="token number">1985</span>
+</code></pre>
+<p>Обратите внимание: если не указать условие, будут удалены <strong>абсолютно все</strong> записи в таблице. Во многие менеджеры даже встроен запрос подтверждения действия при выполнении запроса <var>DELETE</var> без части <var>WHERE</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Модификация из Python</h2>
+<p><strong>Редактирование данных</strong></p>
+<p>В прошлом уроке мы научились получать информацию из БД и отображать ее в таблице. Но достаточно часто пользователям нужно не только просматривать, но и модифицировать и удалять информацию. Напишем программу, которая позволит получить фильм по его идентификатору, изменить его поля и сохранить.</p>
+<p>Создадим интерфейс с помощью QtDesigner. Разместим на форме:</p>
+<ul>
+<li>Виджет для ввода id записи, например, QSpinBox</li>
+<li>Две кнопки. Одну — для получения информации из базы данных, другую — для сохранения изменений</li>
+<li>QTableWidget для отображения информации</li>
+</ul>
+<p>Упакуем это все с использованием какого-нибудь Layout. В результате у нас должно получиться что-то вроде такого:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-3-1.png" width="646"/></div>
+<p>Начнем писать наше приложение с создания класса и заглушек для методов.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sqlite3
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> uic
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QMainWindow<span class="token punctuation">,</span> QTableWidgetItem
+
+
+<span class="token keyword">class</span> <span class="token class-name">MyWidget</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        uic<span class="token punctuation">.</span>loadUi<span class="token punctuation">(</span><span class="token string">"UI1.ui"</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>con <span class="token operator">=</span> sqlite3<span class="token punctuation">.</span>connect<span class="token punctuation">(</span><span class="token string">"films_db.sqlite"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>update_result<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>itemChanged<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>item_changed<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton_2<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>save_results<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>modified <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+        self<span class="token punctuation">.</span>titles <span class="token operator">=</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">def</span> <span class="token function">update_result</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+    <span class="token keyword">def</span> <span class="token function">item_changed</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> item<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+    <span class="token keyword">def</span> <span class="token function">save_results</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> MyWidget<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для того чтобы обработать изменение содержимого ячейки, воспользуемся сигналом <code>self.tableWidget.itemChanged</code>.</p>
+<p>Начнем с метода получения данных <code>update_result()</code>. Тут все просто. Единственное, на что стоит обратить внимание — получение данных о заголовках столбцов из параметра курсора.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">update_result</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    cur <span class="token operator">=</span> self<span class="token punctuation">.</span>con<span class="token punctuation">.</span>cursor<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># Получили результат запроса, который ввели в текстовое поле</span>
+    result <span class="token operator">=</span> cur<span class="token punctuation">.</span>execute<span class="token punctuation">(</span><span class="token string">"SELECT * FROM films WHERE id=?"</span><span class="token punctuation">,</span>
+                         <span class="token punctuation">(</span>item_id <span class="token punctuation">:</span><span class="token operator">=</span> self<span class="token punctuation">.</span>spinBox<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>fetchall<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># Заполнили размеры таблицы</span>
+    self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setRowCount<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># Если запись не нашлась, то не будем ничего делать</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> result<span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>statusBar<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>showMessage<span class="token punctuation">(</span><span class="token string">'Ничего не нашлось'</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>statusBar<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>showMessage<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Нашлась запись с id = </span><span class="token interpolation"><span class="token punctuation">{</span>item_id<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setColumnCount<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    self<span class="token punctuation">.</span>titles <span class="token operator">=</span> <span class="token punctuation">[</span>description<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token keyword">for</span> description <span class="token keyword">in</span> cur<span class="token punctuation">.</span>description<span class="token punctuation">]</span>
+    <span class="token comment"># Заполнили таблицу полученными элементами</span>
+    <span class="token keyword">for</span> i<span class="token punctuation">,</span> elem <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> j<span class="token punctuation">,</span> val <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>elem<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setItem<span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> QTableWidgetItem<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>val<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    self<span class="token punctuation">.</span>modified <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+</code></pre>
+<p>Теперь напишем метод, который будет отслеживать изменения ячеек. Будем записывать в словарь пару, состоящую из наименования поля и нового значения.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">item_changed</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> item<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Если значение в ячейке было изменено, </span>
+    <span class="token comment"># то в словарь записывается пара: название поля, новое значение</span>
+    self<span class="token punctuation">.</span>modified<span class="token punctuation">[</span>self<span class="token punctuation">.</span>titles<span class="token punctuation">[</span>item<span class="token punctuation">.</span>column<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> item<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание на параметр <var>item</var>. При изменении ячейки в него будет попадать объект класса <var>QTableWidgetItem</var>, у которого можно получить интересующую нас информацию с помощью методов <code>column()</code> и <code>text()</code>.</p>
+<p>Затем нам необходимо сохранить полученные результаты в БД. Так как заранее мы не знаем, какие поля были модифицированы, то мы не можем использовать конструкцию с вопросительным знаком. Так что просто «склеим» необходимый нам запрос, например, используя обыкновенную конкатенацию строк.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">save_results</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> self<span class="token punctuation">.</span>modified<span class="token punctuation">:</span>
+        cur <span class="token operator">=</span> self<span class="token punctuation">.</span>con<span class="token punctuation">.</span>cursor<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        que <span class="token operator">=</span> <span class="token string">"UPDATE films SET\n"</span>
+        que <span class="token operator">+=</span> <span class="token string">", "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>key<span class="token punctuation">}</span></span><span class="token string">='</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>modified<span class="token punctuation">.</span>get<span class="token punctuation">(</span>key<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">'"</span></span>
+                          <span class="token keyword">for</span> key <span class="token keyword">in</span> self<span class="token punctuation">.</span>modified<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        que <span class="token operator">+=</span> <span class="token string">"WHERE id = ?"</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>que<span class="token punctuation">)</span>
+        cur<span class="token punctuation">.</span>execute<span class="token punctuation">(</span>que<span class="token punctuation">,</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>spinBox<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>con<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>modified<span class="token punctuation">.</span>clear<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Одна из самых важных строк в <var>save_results</var> — вызов метода <code>commit()</code> у объекта-соединения с базой данных. По умолчанию все изменения с базой данных проводятся в памяти и не записываются в сам файл, поэтому если мы совершим манипуляцию с данными и перезапустим приложение, все правки пропадут. Чтобы такого не происходило, изменения надо зафиксировать. За это как раз и отвечает метод <code>commit()</code>.</p>
+<p>Изначальное отображение:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-5.png" width="674"/></div>
+<p>После изменения и сохранения:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-6.png" width="674"/></div>
+<p>На практике изменение записи непосредственно в таблице используется не так часто. Обычно для редактирования существующей или создания новой записи производится в отдельной форме. Так лучше делать по нескольким причинам:</p>
+<ol>
+<li>Более широкие возможности для пользователя благодаря правильному подбору виджетов для каждого отдельного типа данных.</li>
+<li>Меньше возможности пользователю отредактировать не те данные.</li>
+<li>Проще отслеживать и сохранять изменения.</li>
+</ol>
+<p><strong>Удаление данных</strong></p>
+<p>Теперь рассмотрим программу для удаления выделенного элемента.</p>
+<p>Часто перед удалением какой-либо информации различные программы запрашивают у пользователя подтверждение. Сделаем программу с похожей функциональностью. Будем работать только с таблицей films. Создадим интерфейс нашей программы. Разместим на форме следующие виджеты:</p>
+<ul>
+<li>Виджет для ввода параметров фильтрации, например, например, QTextEdit</li>
+<li>Две кнопки. Одну — для получения информации из базы данных, другую — для удаления записей</li>
+<li>QTableWidget для отображения информации</li>
+</ul>
+<p>Снова запакуем в какой-нибудь Layout. Результат будет выглядеть как-то так:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-5-delete.png" width="518"/></div>
+<p>В поле для ввода будем вводить только условие (то, что будет идти после оператора WHERE). А сам запрос будет формироваться так:</p>
+<pre class="language-python"><code class="language-python">queue <span class="token operator">=</span> <span class="token string">"SELECT * FROM films WHERE "</span> <span class="token operator">+</span> self<span class="token punctuation">.</span>textEdit<span class="token punctuation">.</span>toPlainText<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Пользователь может выделить одно или несколько значений, а затем нажать на кнопку «Удалить». После этого открывается окно с подтверждением, в котором указаны все ID, которые были выделены.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-6-delete.png" width="517"/></div>
+<p>В случае положительного ответа при повторном запросе удаленные элементы уже не отобразятся.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-7/qt-7-7.png" width="518"/></div>
+<p>Основной метод, отличающий этот пример от предыдущего — <code>delete_elem()</code> для удаления выделенных элементов. Рассмотрим его поподробнее.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">delete_elem</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Получаем список элементов без повторов и их id</span>
+    rows <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">[</span>i<span class="token punctuation">.</span>row<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>selectedItems<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    ids <span class="token operator">=</span> <span class="token punctuation">[</span>self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>item<span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> rows<span class="token punctuation">]</span>
+    <span class="token comment"># Спрашиваем у пользователя подтверждение на удаление элементов</span>
+    valid <span class="token operator">=</span> QMessageBox<span class="token punctuation">.</span>question<span class="token punctuation">(</span>
+        self<span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">"Действительно удалить элементы с id "</span> <span class="token operator">+</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>ids<span class="token punctuation">)</span><span class="token punctuation">,</span>
+        QMessageBox<span class="token punctuation">.</span>Yes<span class="token punctuation">,</span> QMessageBox<span class="token punctuation">.</span>No<span class="token punctuation">)</span>
+    <span class="token comment"># Если пользователь ответил утвердительно, удаляем элементы. </span>
+    <span class="token comment"># Не забываем зафиксировать изменения</span>
+    <span class="token keyword">if</span> valid <span class="token operator">==</span> QMessageBox<span class="token punctuation">.</span>Yes<span class="token punctuation">:</span>
+        cur <span class="token operator">=</span> self<span class="token punctuation">.</span>con<span class="token punctuation">.</span>cursor<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        cur<span class="token punctuation">.</span>execute<span class="token punctuation">(</span><span class="token string">"DELETE FROM films WHERE id IN ("</span> <span class="token operator">+</span> <span class="token string">", "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>
+            <span class="token string">'?'</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>ids<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">")"</span><span class="token punctuation">,</span> ids<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>con<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В первой строке мы получаем список строк без повторов. Откуда взялись повторы? Выделяя строку, мы выделяем все элементы строки (все ячейки), соответственно, в список добавляется номер строки столько раз, сколько в ней элементов.</p>
+<p>Поскольку номера строк очень часто не совпадают с идентификаторами, во второй строке мы получаем id записей, по которым мы и будем производить удаление, непосредственно из значений ячейки в нулевой колонке.</p>
+<p>Теперь нам необходимо показать пользователю форму с подтверждением своего действия. Можно воспользоваться уже знакомым нам <var>QInputDialog</var> и написать что-то вроде:</p>
+<pre class="language-python"><code class="language-python">answer<span class="token punctuation">,</span> ok_pressed <span class="token operator">=</span> QInputDialog<span class="token punctuation">.</span>getItem<span class="token punctuation">(</span>
+    self<span class="token punctuation">,</span> <span class="token string">"Подтверждение удаления"</span><span class="token punctuation">,</span>
+    <span class="token string">"Вы точно хотите удалить элементы с id "</span> <span class="token operator">+</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>ids<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">(</span><span class="token string">"нет"</span><span class="token punctuation">,</span> <span class="token string">"да"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token boolean">False</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Однако для отображения пользователю диалога о подтверждении какого-либо действия или информационного сообщения о каком-нибудь системном событии (например, об ошибке) в PyQT есть более привычный и подходящий инструмент. Это класс <var>QMessageBox</var>, у которого с <var>QInputDialog</var> общий родитель — <var>QDialog</var>. Поэтому импортируем его из PyQt5.QtWidgets, вызовем метод <code>question()</code>, в который передаются следующие параметры:</p>
+<ul>
+<li>Родитель — <var>self</var></li>
+<li>Заголовок — обычно передается пустое поле, если мы хотим задать пользователю вопрос</li>
+<li>Текст вопроса</li>
+<li>Варианты ответов — <var>QMessageBox.Yes</var>, <var>QMessageBox.No</var></li>
+</ul>
+<p>Возможности <var>QMessageBox</var> достаточно широки, рекомендуем ознакомиться с ними в <a class="material__link" href="https://doc.qt.io/qt-5/qmessagebox.html" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+<p>После того как пользователь нажмет на одну из кнопок, результат будет занесен в переменную <var>valid</var>. А затем будет выполнена проверка и удаление.</p>
+<p>Важно обратить внимание на то, что текст запроса формируется с использованием и конкатенации строк, и оператора <code>"?"</code>. В данной задаче мы также столкнулись с методом <code>commit()</code> у соединения с базой данных. Не забывайте фиксировать изменения после изменения данных или их удаления.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Заключение</h2>
+<p>Мы рассмотрели основные запросы SQL и теперь умеем все, что необходимо для написания полноценных приложений для работы с данными, хранящимися в SQLite базе данных. Конечно, возможности SQL значительно шире, а уже рассмотренные операторы умеют больше. Уверенные знания языка запросов — «must have» для значительной части разработчиков программного обеспечения, поэтому настоятельно рекомендуем вам самостоятельно углубиться в эту тему. К счастью, в интернете существует огромное количество материалов, в том числе и бесплатных.</p>
+</section></article></section>

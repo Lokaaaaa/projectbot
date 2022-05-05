@@ -1,0 +1,155 @@
+<section class="lesson-material__content"><article class="material"><h1>True и false, break и continue</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Логический тип данных</a></li>
+<li><a class="material__link" href="#2">Использование флагов</a></li>
+<li><a class="material__link" href="#3">Операторы break и continue. Бесконечные циклы</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Этот урок посвящен условиям выхода из циклов. Рассматривается булев тип, даются задачи на использование флагов. Затем рассматриваются операторы <var>break</var> и <var>continue</var>, позволяющие в некоторых случаях избавиться от флагов.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Логический тип данных</h2>
+<p>Если <var>a</var> и <var>b</var> — числа (допустим, действительные), то у выражения <code>a + b</code> есть какое-то значение (зависящее от значений <var>a</var> и <var>b</var>) и тип — тоже действительное число. Как вы думаете, можно ли сказать, что у выражения <code>a == b</code> есть значение и тип? Или это просто конструкция, которая всегда должна стоять в условии <var>if</var> или <var>while</var>?</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Логический тип</strong></p>
+<p>На самом деле такое выражение имеет и тип под названием <strong>bool</strong>, и значение: <var>True</var> (истина) или <var>False</var> (ложь). По-русски bool — это булев тип, или булево значение (в честь математика Джорджа Буля), иногда его еще называют логический тип.</p>
+</section>
+<p>Логический тип может иметь только два значения, а над переменными логического типа можно выполнять логические операции <var>not</var>, <var>and</var>, <var>or</var>.</p>
+<p>Также для приведения к логическому типу можно использовать функцию <var>bool</var>, которая для ненулевого значения вернет истину.</p>
+<pre class="language-python"><code class="language-python">k <span class="token operator">=</span> <span class="token boolean">True</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token comment"># выведет True</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token keyword">not</span> k<span class="token punctuation">)</span> <span class="token comment"># выведет False</span>
+k <span class="token operator">=</span> <span class="token number">5</span> <span class="token operator">&gt;</span> <span class="token number">2</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token comment"># выведет True</span>
+k <span class="token operator">=</span> <span class="token builtin">bool</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token comment"># выведет False</span>
+k <span class="token operator">=</span> <span class="token builtin">bool</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token comment"># выведет False</span>
+k <span class="token operator">=</span> <span class="token builtin">bool</span><span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token comment"># выведет True, т.к. число не 0</span>
+k <span class="token operator">=</span> <span class="token builtin">bool</span><span class="token punctuation">(</span><span class="token string">"q"</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token comment"># выведет True, т.к. строка не пустая</span>
+k <span class="token operator">=</span> <span class="token builtin">bool</span><span class="token punctuation">(</span><span class="token string">"False"</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span> <span class="token comment"># выведет True, т.к. строка не пустая</span>
+</code></pre>
+<p>Или вот еще пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Эта строка будет выведена на экран.'</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Эта строка никогда не будет выведена на экран.'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">2</span> <span class="token operator">*</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">4</span><span class="token punctuation">)</span>  <span class="token comment"># выведет True</span>
+a <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+b <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># Теперь переменная equal равна True, если строки a и b равны, </span>
+<span class="token comment"># и False в противном случае</span>
+equal <span class="token operator">=</span> <span class="token punctuation">(</span>a <span class="token operator">==</span> b<span class="token punctuation">)</span>
+<span class="token keyword">if</span> equal <span class="token keyword">and</span> <span class="token builtin">len</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">6</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы ввели два коротких одинаковых слова.'</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Использование флагов</h2>
+<p>Обычно переменные с булевым значением используются в качестве флагов.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Флаг</strong></p>
+<p>Изначально флаг устанавливается в False, потом программа как-то работает, а при наступлении определенного события флаг устанавливается в True. После идет проверка, поднят ли флаг. В зависимости от ее результата выполняется то или иное действие. Иными словами, флаг — это переменная с булевым значением, которая показывает, наступило ли некое событие.</p>
+</section>
+<p>В примере ниже (эта программа — терапевтический тренажер для избавления физиков-экспериментаторов от синхрофазотронозависимости) имеется флаг <var>said_forbidden_word</var>, который означает «сказал ли пользователь запретное слово „синхрофазотрон“». Флаг равен True, если сказал, и False, если нет.</p>
+<p>В самом начале пользователь еще ничего не успел сказать, поэтому флаг установлен в False. Далее на каждой итерации цикла, если пользователь сказал запретное слово, флаг устанавливается в True и остается в таком состоянии (при необходимости флаг можно и «опустить»). Как только флаг оказывается равен True, поведение программы меняется: перед каждым вводом выдается предупреждение, а в конце выдается другое сообщение.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Переменным-флагам особенно важно давать осмысленные имена (обычно — утверждения вроде <var>said_forbidden_word</var>, <var>found_value</var>, <var>mission_accomplished</var>, <var>mission_failed</var>), ведь флагов в программе бывает много.</p>
+</section>
+<pre class="language-python"><code class="language-python">forbidden_word <span class="token operator">=</span> <span class="token string">'синхрофазотрон'</span>
+<span class="token comment"># можно было использовать и sep='', чтобы кавычки не отклеились от слова</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Введите десять слов, но постарайтесь случайно не ввести слово "'</span> <span class="token operator">+</span> 
+      forbidden_word <span class="token operator">+</span> <span class="token string">'"!'</span><span class="token punctuation">)</span>
+said_forbidden_word <span class="token operator">=</span> <span class="token boolean">False</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> said_forbidden_word<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Напоминаем, будьте осторожнее, не введите снова слово "'</span> <span class="token operator">+</span> 
+              forbidden_word <span class="token operator">+</span> <span class="token string">'"!'</span><span class="token punctuation">)</span>
+    word <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> word <span class="token operator">==</span> forbidden_word<span class="token punctuation">:</span>
+        said_forbidden_word <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token comment"># вместо предыдущих двух строк также можно написать:</span>
+    <span class="token comment"># said_forbidden_word = (said_forbidden_word or word == forbidden_word)</span>
+<span class="token keyword">if</span> said_forbidden_word<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы нарушили инструкции.'</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Спасибо, что ни разу не упомянули'</span><span class="token punctuation">,</span> forbidden_word<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Операторы break и continue. Бесконечные циклы</h2>
+<p>Если нужно прекратить работу цикла, как только случится некое событие, то, кроме флага, есть и другой способ — оператор разрыва цикла <strong>break</strong> (он работает и для цикла <var>for</var>). Это не функция и не заголовок блока, а оператор, который состоит из одного слова. Он немедленно прерывает выполнение цикла <var>for</var> или <var>while</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Итерация номер'</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> <span class="token string">'начинается...'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> i <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ха! Внезапный выход из цикла!'</span><span class="token punctuation">)</span>
+        <span class="token keyword">break</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Итерация номер'</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> <span class="token string">'успешно завершена.'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Цикл завершён.'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В частности, нередко встречается такая конструкция: цикл, выход из которого происходит не по записанному в заголовке цикла условию (это условие делается всегда истинным — как правило, просто True), а по оператору <var>break</var>, который уже заключен в какой-то условный оператор:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    word <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> word <span class="token operator">==</span> <span class="token string">'стоп'</span><span class="token punctuation">:</span>
+        <span class="token keyword">break</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Вы ввели:'</span><span class="token punctuation">,</span> word<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Конец.'</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Впрочем злоупотреблять этой конструкцией и вообще оператором <var>break</var> не стоит. Когда программист читает ваш код, он обычно предполагает, что после окончания цикла <var>while</var> условие в заголовке этого цикла ложно. Если же из цикла можно выйти по команде <var>break</var>, то это уже не так. Логика кода становится менее ясной.</p>
+</section>
+<p>Оператор <strong>continue</strong> немедленно завершает текущую итерацию цикла и переходит к следующей.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Итерация номер'</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> <span class="token string">'начинается...'</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> i <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'...но её окончание таинственно пропадает.'</span><span class="token punctuation">)</span>
+        <span class="token keyword">continue</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Итерация номер'</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> <span class="token string">'успешно завершена.'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Цикл завершён.'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Рассмотрим еще один пример:</p>
+<pre class="language-python"><code class="language-python">count <span class="token operator">=</span> <span class="token number">1</span>
+<span class="token keyword">while</span> count <span class="token operator">&lt;</span> <span class="token number">100</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> count <span class="token operator">%</span> <span class="token number">5</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">continue</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span>
+    count <span class="token operator">+=</span> <span class="token number">1</span>
+</code></pre>
+<p>Что будет напечатано в процессе выполнения программы?</p>
+<p>Предполагается, что программа выведет все числа от 1 до 100, не кратные 5. Но на самом деле, если вы запустите программу в режиме трассировки, на экран выведется 1 2 3 4, а потом программа уйдет в бесконечный цикл. Почему это происходит?</p>
+<p>Когда переменная <var>count</var> станет равна 5, записанное в операторе <var>if</var> условие станет истинным и выполнится оператор <var>continue</var>. Т. е. мы немедленно перейдем к следующей итерации цикла, пропуская вывод числа и увеличение счетчика <var>count</var>.</p>
+<p>Переменная <var>count</var> так и не увеличится и по-прежнему останется со значением 5. Значит, условие в <var>if</var> будет все так же равно True, и цикл станет бесконечным.</p>
+<p>Иными словами, часто использовать <var>break</var> и <var>continue</var> не рекомендуют, поскольку они приводят к произвольному перемещению точки выполнения программы по всему коду, что усложняет понимание и следование логике. Тем не менее разумное использование этих операторов может улучшить читабельность циклов в программе, уменьшив при этом количество вложенных блоков и необходимость в сложной логике выполнения цикла.</p>
+<p>Например, рассмотрим следующую программу:</p>
+<pre class="language-python"><code class="language-python">count <span class="token operator">=</span> <span class="token number">0</span>
+exitLoop <span class="token operator">=</span> <span class="token boolean">False</span>
+<span class="token keyword">while</span> <span class="token keyword">not</span> exitLoop<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Введите 'e' для выхода и любую другую клавишу для продолжения:"</span><span class="token punctuation">)</span>
+    sm <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+    <span class="token keyword">if</span> sm <span class="token operator">==</span> <span class="token string">'e'</span><span class="token punctuation">:</span>
+        exitLoop <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        count <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Вы зашли в цикл "</span><span class="token punctuation">,</span> count<span class="token punctuation">,</span> <span class="token string">" раз(а)"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>А теперь ту же самую программу напишем с использованием оператора <var>break</var>:</p>
+<pre class="language-python"><code class="language-python">count <span class="token operator">=</span> <span class="token number">0</span>
+exitLoop <span class="token operator">=</span> <span class="token boolean">False</span>
+<span class="token keyword">while</span> <span class="token keyword">not</span> exitLoop<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Введите 'e' для выхода и любую другую клавишу для продолжения: "</span><span class="token punctuation">)</span>
+    sm <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> sm <span class="token operator">==</span> <span class="token string">'e'</span><span class="token punctuation">:</span>
+        <span class="token keyword">break</span>
+    count <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Вы зашли в цикл "</span><span class="token punctuation">,</span> count<span class="token punctuation">,</span> <span class="token string">" раз(а)"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Чего нам удалось добиться? Во-первых, мы избежали использования как логической переменной, так и оператора <var>else</var>. Уменьшение количества используемых переменных и вложенных блоков улучшают читабельность и понимание кода больше, чем <var>break</var> или <var>continue</var> могут нанести вред.</p>
+</section></article></section>

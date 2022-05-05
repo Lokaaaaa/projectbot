@@ -1,0 +1,155 @@
+<section class="lesson-material__content"><article class="material"><h1>Знакомство с циклом for</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Именованные аргументы функции print</a></li>
+<li><a class="material__link" href="#2">Специальные символы в строках</a></li>
+<li><a class="material__link" href="#3">Цикл for</a></li>
+<li><a class="material__link" href="#4">Соглашения об именовании переменных</a></li>
+<li><a class="material__link" href="#5">Начальное значение и шаг итератора в range</a></li>
+<li><a class="material__link" href="#6">Когда какой цикл использовать</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке рассматриваются именованные аргументы функции <var>print</var>, специальные символы в строке и конструкция for ... in range(...):.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Именованные аргументы функции print</h2>
+<p>Мы уже пользовались тем, что функция <var>print</var> при выводе разделяет аргументы пробелами, а в конце переходит на новую строчку.</p>
+<p>Часто это удобно. Но что если от этого нужно избавиться? В примере ниже пробелы появляются не только после двоеточий (что хорошо), но и перед запятой (что плохо).</p>
+<pre class="language-python"><code class="language-python">measures <span class="token operator">=</span> <span class="token number">7</span>
+cuts <span class="token operator">=</span> <span class="token number">1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Количество отмеров:'</span><span class="token punctuation">,</span> measures<span class="token punctuation">,</span> <span class="token string">', количество отрезов:'</span><span class="token punctuation">,</span> cuts<span class="token punctuation">)</span>
+<span class="token comment"># выведет: "Количество отмеров: 7 , количество отрезов: 1"</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Необязательные именованные аргументы</strong></p>
+<p>Для такой тонкой настройки вывода у функции <var>print</var> существуют необязательные именованные аргументы — такие удобные инструменты бывают и у других функций, мы познакомимся с ними позже.</p>
+</section>
+<p>Обычно при вызове функции мы пишем имя функции, а затем в скобках ее аргументы через запятую. Стандартный способ сообщить функции, что и с какими аргументами делать (например, какой из аргументов функции <var>print</var> вывести первым, какой вторым и т. д.), — это передать аргументы в нужном порядке. Например, функция <var>print</var> выводит аргументы именно в том порядке, в котором их ей передали. Однако есть и другой способ — именованные аргументы. Чтобы при вызове функции передать ей именованный аргумент, нужно после обычных аргументов написать через запятую имя аргумента, знак = и значение аргумента.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>sep и end</strong></p>
+<p>Функция <var>print</var>, наряду с другими аргументами, может (вместе или по отдельности) принимать два следующих аргумента: sep — разделитель аргументов (по умолчанию пробел) и end — то, что выводится после вывода всех аргументов (по умолчанию символ начала новой строки).</p>
+</section>
+<p>В частности, если <var>end</var> сделать пустой строкой, то print не перейдет на новую строчку, и следующий <var>print</var> продолжит вывод прямо на этой же строке.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'При'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'вет!'</span><span class="token punctuation">)</span> 
+<span class="token comment"># эти две строки кода выведут "При" и "вет!" на отдельных строках</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'При'</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'вет!'</span><span class="token punctuation">)</span>  <span class="token comment"># эти две строки кода выведут "Привет!"</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Раз'</span><span class="token punctuation">,</span> <span class="token string">'два'</span><span class="token punctuation">,</span> <span class="token string">'три'</span><span class="token punctuation">)</span>  <span class="token comment"># выведет "Раз два три"</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Раз'</span><span class="token punctuation">,</span> <span class="token string">'два'</span><span class="token punctuation">,</span> <span class="token string">'три'</span><span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">'--'</span><span class="token punctuation">)</span>  <span class="token comment"># выведет "Раз--два--три"</span>
+</code></pre>
+<p>Обратите внимание: знак <var>=</var> здесь не выполняет никакого присваивания, переменных <var>end</var> и <var>sep</var> не появляется.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>Не используйте пробелы вокруг знака <var>=</var>, если он используется для обозначения именованного аргумента.</p>
+<p><strong>Правильно:</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'При'</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span> 
+</code></pre>
+<p><strong><s>Неправильно:</s></strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'При'</span><span class="token punctuation">,</span> end <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+</section>
+<!-- Раздел урока с якорем перед ним и отступом снизу-->
+<section class="material__chapter">
+<h2 id="2">Специальные символы в строках</h2>
+<p>Можно задаться вопросом: как указать значение <var>end</var> по умолчанию — символ начала новой строчки? Ведь это специальный символ, который нельзя сделать частью строки, просто поместив его между кавычек, это вызовет ошибку.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Экранирующая последовательность</strong></p>
+<p>Если внутри кавычек встречается символ \ — обратная косая черта, обратный слеш, бэкслеш, он вместе с идущим после него символом образует экранирующую последовательность (escape sequence) и воспринимается интерпретатором как <strong>единый специальный символ</strong>.</p>
+</section>
+<p>В частности, \n — символ начала новой строки. Кроме того, \t — табуляция, \'  — кавычка, \\ — просто бэкслеш. Использование экранирующих последовательностей вместо специальных символов называется их экранированием.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'восход\t07:15\nзакат\t22:03'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Предыдущая строка этой программы выглядит так:'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'print(\'восход\\t07:15\\nзакат\\t22:03\')'</span><span class="token punctuation">)</span> 
+</code></pre>
+<p>Таким образом, значения именованных аргументов функции <var>print</var> по умолчанию такие: <code>print(..., sep=' ', end='\n')</code>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>При этом если приписать букву <var>r</var> перед открывающей строку кавычкой, бэкслеши будут считаться обычными символами.</p>
+<p>А если открывать и закрывать строку не одной, а тремя кавычками подряд, внутри можно делать обычные переводы строки (внутри одинарных кавычек так делать нельзя).</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">r'\\\\\\\nnnnn &lt;- забор, переходящий в низкую изгородь'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token triple-quoted-string string">'''Нужно сказать много важного.
+Одной строки для этого мало.
+Зато три - в самый раз.'''</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Цикл for</h2>
+<p>Сегодня мы изучим еще один оператор цикла. Цикл <var>for</var> выполняет блок кода заданное количество раз.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Синтаксис</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    блок кода <span class="token punctuation">(</span>тело цикла<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Как и у <var>while</var>, у цикла <var>for</var> есть заголовок, заканчивающийся двоеточием, и тело цикла, которое записывается с отступом в четыре пробела. В цикле вида <code>for ... in range(...):</code> вместо первого многоточия указывается какая-то переменная, которая на начальной итерации принимает значение 0, на следующей — 1, и так далее, до значения указанного в <code>range(...)</code>, само это значение переменная не принимает. Диапазон значений переменной-итератора от 0 включая и до значения, указанного в <code>range(...)</code>, не включая его.</p>
+<p>Вот программа, которая выводит на экран подряд (на отдельных строчках) целые числа от 0 (включительно) до <var>n</var> (не включительно).</p>
+<pre class="language-python"><code class="language-python">n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Range</strong></p>
+<p>Range означает «диапазон», то есть <code>for i in range(n)</code> читается как «для (всех) i в диапазоне от 0 (включительно) до <var>n</var> (не включительно)...». Цикл выполняется <var>n</var> раз.</p>
+</section>
+<p>Давайте вспомним задачу, где мы три раза получали цены на товар и вычисляли общую цену товара.</p>
+<p>Вот так мы ее записали через цикл <var>while</var>:</p>
+<pre class="language-python"><code class="language-python">count <span class="token operator">=</span> <span class="token number">0</span>
+total <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">while</span> count <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">:</span>
+    price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    total <span class="token operator">=</span> total <span class="token operator">+</span> price
+    count <span class="token operator">=</span> count <span class="token operator">+</span> <span class="token number">1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Сумма введённых чисел равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь мы ее можем записать через цикл <var>for</var>, который будет выполняться три раза:</p>
+<pre class="language-python"><code class="language-python">total <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    price <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    total <span class="token operator">=</span> total <span class="token operator">+</span> price
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Сумма введённых чисел равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+</code></pre>
+<p>В данном случае переменная-счетчик изменяется сама в рамках заданных значений.</p>
+<p>Запустите эту программу с отладчиком и пройдите ее пошагово. Можно поставить breakpoint на первую же строчку или начать выполнение программы кнопкой F7. Следите за тем, как меняется значение переменной <var>i</var>. Обратите внимание, что цикл for присваивает переменной <var>i</var> (она называется итератором цикла) значения (0, потом 1...), хотя нигде нет оператора присваивания = или его родственников типа +=.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Соглашения об именовании переменных</h2>
+<p>В программах, решающих абстрактные, математические задачи, допустимо называть переменные короткими и непонятными именами типа <var>n</var> или <var>i</var>. Однако этого лучше избегать. Кроме того, стоит соблюдать общепринятые договоренности: буквой <var>n</var> обычно обозначают количество чего-либо (например, итераций цикла). При этом если есть хоть какая-то определенность (например, речь идет о количестве автомобилей), то стоит и переменную назвать более понятно (например, <var>cars</var>). Буквами <var>i</var> и <var>j</var> (по-русски они традиционно читаются как «и» и «жи») обычно обозначают итераторы цикла <var>for</var>.</p>
+<p>Еще один пример: программа, подсчитывающая сумму всех целых чисел, которые меньше данного.</p>
+<pre class="language-python"><code class="language-python">n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+total <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Рассматриваем число'</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span>
+    total <span class="token operator">+=</span> i
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Промежуточная сумма равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Итоговая сумма всех этих чисел равна'</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Начальное значение и шаг итератора в range</h2>
+<p>Однако это не все возможности цикла <var>for</var>.</p>
+<p>Предположим, вам нужен цикл, выполняющийся 10 итераций. При этом нужно, чтобы итератор пробегал значения не подряд (0, 1, ..., 9), а, скажем, 10, 20, ..., 100. Конечно, с помощью уже известной нам конструкции <var>for</var> можно организовать цикл, в котором некая дополнительная переменная будет последовательно принимать именно такие значения (проверьте себя: как?).</p>
+<p>Однако для этого есть и специальная встроенная в язык конструкция. В скобках после слова <var>range</var> можно записать не одно, а два или три числа. (Правда, очень похоже на функцию? Это не случайность, <var>range</var> — тоже функция, но об этом позже). Эти числа будут интерпретироваться как начальное значение итератора, конечное и его шаг (может быть отрицательным).</p>
+<p>Если для <var>range</var> задано одно число, то итератор идет от 0 до заданного значения (не включая его).</p>
+<p>Если задано два числа, то это начальное значение итератора и конечное.</p>
+<p>Если задано три числа, то это не только начальное и конечное значение итератора, но и шаг итератора.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>  <span class="token comment"># выведет на отдельных строчках числа</span>
+              <span class="token comment"># от 1 (включительно) до 11 (не включительно)</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>  <span class="token comment"># выведет (на отдельных строчках) 1, 3, 5, 7, 9</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>  <span class="token comment"># выведет 10, 9, ..., 1</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="6">Когда какой цикл использовать</h2>
+<ul>
+<li>Цикл <var>while</var> нужен, когда какой-то кусок кода должен выполниться несколько раз, причем заранее неизвестно, сколько именно</li>
+<li>Цикл <var>for</var> нужен, когда какой-то кусок кода должен выполниться несколько раз, при этом известно сколько раз еще до начала цикла</li>
+</ul>
+</section></article></section>

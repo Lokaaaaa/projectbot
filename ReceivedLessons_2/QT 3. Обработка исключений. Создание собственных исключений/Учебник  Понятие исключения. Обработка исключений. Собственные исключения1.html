@@ -1,0 +1,690 @@
+<section class="lesson-material__content"><article class="material"><h1>Понятие исключения. Обработка исключений. Собственные исключения</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Что такое ошибка или исключение</a></li>
+<li><a class="material__link" href="#2">Cтек вызовов в Python</a></li>
+<li><a class="material__link" href="#3">Работа с кодами возврата</a></li>
+<li><a class="material__link" href="#4">Трудности работы с кодами возврата</a></li>
+<li><a class="material__link" href="#5">Обработка исключений</a></li>
+<li><a class="material__link" href="#6">Методики LBYL и EAFP</a></li>
+<li><a class="material__link" href="#7">Полный синтаксис блока try...except</a></li>
+<li><a class="material__link" href="#8">Создание пользовательских типов ошибок</a></li>
+<li><a class="material__link" href="#9">Перехват системных исключений</a></li>
+<li><a class="material__link" href="#10">Конструкция assert</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Урок рассказывает о работе с исключениями в современных языках программирования, в частности, в языке Python. Сравнение методики исключений с методикой кодов возврата. Построение собственных классов исключений и их наследование, методики LBYL и EAFP.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Что такое ошибка или исключение</h2>
+<p>У вашей программы есть «главная» ветка — то, что относится к основному алгоритму. Именно ей вы уделяете основное внимание.</p>
+<p>Во время работы программы иногда возникают непредвиденные обстоятельства («упс, что-то пошло не так») — как правило, внешние. Программа должна их верно обрабатывать. Мы будем называть такие обстоятельства <strong>ошибками</strong> или <strong>исключениями</strong>.</p>
+<p>Чтобы было понятнее, рассмотрим пример алгоритма посещения магазина.</p>
+<p>Родители посылают дочь в магазин и просят купить молока некоторого бренда ценой 40 рублей. Это и есть для девочки основной алгоритм в данной ситуации. Однако могут возникнуть непредвиденные обстоятельства: именно этот магазин сейчас закрыт (нужно ли тратить время и идти в следующий?), такого молока в продаже нет (вернуться обратно или купить другое?), молоко подорожало (все равно брать?), заканчивается срок годности (это важно?) и так далее.</p>
+<p>Все это можно обсудить сразу, но нужно соблюдать меру и не раздувать алгоритм покупок до инструкции на 30 страниц, включающей подробные указания на случай стихийных бедствий.</p>
+<p>Лучше всего решить, что делать в тех случаях, которые легко предугадать. Все остальное свести к универсальному решению «вернуться обратно» или «позвонить родителям и спросить».</p>
+<p>То же самое и в программировании.</p>
+<p>Например, вы написали алгоритм, скачивающий плейлист из ВКонтакте в папку на компьютере. Запустили его. Что же может пойти не так?</p>
+<ul>
+<li>Проблемы с доступом в Интернет</li>
+<li>Сервера ВКонтакте работают нестабильно и не отвечают</li>
+<li>Если алгоритм дает имена файлам по названиям треков, то ему могут попасться недопустимые символы</li>
+<li>Закончилось свободное место на диске</li>
+<li>...</li>
+</ul>
+<p>Есть несколько путей:</p>
+<ol>
+<li>В любом непредвиденном случае программа остановится, а вы увидите сообщение об ошибке (так Python работает по умолчанию)</li>
+<li>Вы добавляете автоматическую обработку некоторых известных вам проблем</li>
+<li>Программа будет каждый раз спрашивать вас о том, как поступить в возникшей нештатной ситуации</li>
+<li>Комбинация этих решений</li>
+</ol>
+<p>Если мы хотим, чтобы программа работала с широким диапазоном входных данных и внешних условий, то надо учитывать исключения.</p>
+<p>Отметим еще раз, что по умолчанию от необработанной ошибки программа на Python немедленно останавливается и выводит сообщение:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">/</span> i<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Traceback (most recent call last):
+  File "/home/02.py", line 2, in &lt;module&gt;
+    print(10 / i)
+ZeroDivisionError: division by zero</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Cтек вызовов в Python</h2>
+<p>Теперь поговорим немного про стек вызовов (traceback). Программа на Python состоит из блоков, входящих один в другой, поэтому у любой точки программы есть вложенность. Давайте посмотрим, какую информацию дает стек вызовов, когда указывает на место ошибки.</p>
+<p>Например, вычисление частного двух чисел, введенных пользователем. Отметим, что огромное количество ошибок происходит из-за того, что пользователь ввел неправильные данные.</p>
+<p>Проведем три эксперимента:</p>
+<ol>
+<li>Введем правильные числа</li>
+<li>Введем второе число, равное 0</li>
+<li>Введем не число, а строку</li>
+</ol>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">div</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> a <span class="token operator">/</span> b
+
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>div<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>0.4</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">run_division</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    a <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">"Введите a: "</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    b <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">"Введите b: "</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>div<span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Запустим программу и посмотрим на результат:</p>
+<pre><samp>Введите a: 45
+Введите b: 11
+4.090909090909091</samp></pre>
+<p>Снова выполним программу и проанализируем результат:</p>
+<pre><samp>Введите a: 45
+Введите b: 0
+Traceback (most recent call last):
+  File "/home/01.py", line 11, in &lt;module&gt;
+    run_division()
+  File "/home/01.py", line 8, in run_division
+    print(div(a, b))
+  File "/home/01.py", line 2, in div
+    return a / b
+ZeroDivisionError: float division by zero</samp></pre>
+<p>И еще раз:</p>
+<pre><samp>Введите a: fd
+Traceback (most recent call last):
+  File "/home/01.py", line 11, in &lt;module&gt;
+    run_division()
+  File "/home/01.py", line 6, in run_division
+    a = float(input("Введите a: "))
+ValueError: could not convert string to float: 'fd'</samp></pre>
+<p>Печать стека вызовов в момент аварийного завершения программы помогает нам найти ошибку. Мы слишком понадеялись на то, что пользователь введет только вещественные числа в европейском формате (с точкой в качестве десятичного разделителя). Кроме того, не все помнят, что на 0 делить нельзя (по крайней мере, в Python).</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Работа с кодами возврата</h2>
+<p>Этот тип работы с исключениями первым появился в истории программирования. Его следы остались в некоторых функциях Python — языка, который унаследовал механику у С.</p>
+<p>Например, метод <var>find</var> строки ищет позицию вхождения подстроки в заданную строчку. Он возвращает либо номер позиции, либо −1, если такой подстроки нет.</p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token string">"Привет, мир!"</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span>find<span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span>find<span class="token punctuation">(</span><span class="token string">"Д"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Программа выведет:</p>
+<pre><samp>6
+-1</samp></pre>
+<p>Из-за того, что в исходной строке не было символа «Д», нам было возвращено значение −1. Это и есть <strong>код возврата</strong>. Так как любая функция в Python возвращает значения, мы можем использовать их для кодирования информации об ошибке.</p>
+<p>Для каждой ошибки можно придумать свой код возврата. Коды не должны совпадать с возможными обычными ответами.</p>
+<p>В больших информационных системах у каждой ситуации, в том числе и у нештатной, есть свой номер. Например, у ошибок в Интернете: 404, 503. А 200 — это код, возвращаемый серверами при успешном выполнении задания.</p>
+<p>С кодами возврата вы, наверняка, достаточно часто сталкивались на предыдущих двух уроках при использовании библиотеки PyQT, так как QT написана на C++. Мы пишем строчку <code>sys.exit(app.exec())</code> при создании приложения в том числе и для того, чтобы в случае ошибки получить код возврата библиотеки PyQT.</p>
+<p>Давайте рассмотрим еще один пример использования кодов возврата.</p>
+<p>У нас есть приложение с возможностью оплаты картой каких-либо товаров или услуг (например, премиум-подписки). Просим пользователя ввести номер карты.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/card.svg" width="600"/></div>
+<p>Примерно вот так может выглядеть <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/pyqt/pay.ui" rel="noopener noreferrer" target="_blank">форма</a> такого приложения:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-3/pyqt-3-pay.png" width="616"/></div>
+<p>Программа для этого может быть тоже очень простой:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> uic
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QWidget<span class="token punctuation">,</span> QApplication
+
+
+<span class="token keyword">class</span> <span class="token class-name">PayForm</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span>PayForm<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        uic<span class="token punctuation">.</span>loadUi<span class="token punctuation">(</span><span class="token string">'pay.ui'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>payButton<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>get_data<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_data</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        card_num <span class="token operator">=</span> self<span class="token punctuation">.</span>cardData<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>card_num<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    form <span class="token operator">=</span> PayForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    form<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Но здесь нас подстерегает несколько неожиданностей. Пользователь не знает формата, в котором нужен номер карты. Просто цифры без пробела? Или группами по четыре с пробелами, как на карте?</p>
+<p>Можно написать ему об этом:</p>
+<pre class="language-python"><code class="language-python">self<span class="token punctuation">.</span>hintLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">'Введите номер карты (16 цифр без пробелов):'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Но и теперь мы не застрахованы от ошибок — пользователь может набрать букву O вместо нуля, перепутать цифры, не прочитать внимательно инструкцию и ввести пробелы или просто начать целенаправленно взламывать нашу программу, набирая заведомо некорректные данные (это называется фаззинг (fuzzing).</p>
+<p>Ситуацию усложняет то, что номера карт — не просто случайный набор из 16 цифр.</p>
+<p>Первая цифра обозначает тип карты. Например, номера карт Visa начинаются с 4, а MasterCard — c 5. Следующие пять обозначают банк, который выпустил карту. Другие девять цифр — уникальный номер конкретной карты. Последнюю, шестнадцатую цифру, называют контрольной.</p>
+<p>Номер должен проходить проверку специальным алгоритмом Лу́на. Его придумал немецкий инженер Ганс Питер Лун.</p>
+<p>Чтобы проверить, нужно взять номер карты и вычислить для него специальное число — контрольную сумму. Вот как это делают:</p>
+<ol>
+<li>Каждую цифру в нечетной позиции, начиная с первого числа слева, умножаем на два. Если результат больше 9, складываем обе цифры этого двузначного числа. Или вычитаем из него 9 и получаем тот же результат. Например, если у нас 18, при сложении 1 + 8 получится 9, при вычитании 18 — 9 — тоже 9</li>
+<li>Затем мы складываем все результаты и цифры на четных позициях — в том числе и последнюю контрольную цифру</li>
+<li>Если сумма кратна 10, то номер карты правильный. Именно последняя контрольная цифра делает общую сумму кратной 10</li>
+</ol>
+<p>Когда банки выпускают новые карты и генерируют номера для них, контрольную шестнадцатую цифру они подбирают так, чтобы алгоритм Лу́на давал кратное десяти число. Поэтому у всех банковских карт в мире номера с такой контрольной суммой.</p>
+<p>Когда пользователь вводит номер своей карты, мы применяем алгоритм Луна. Если получится число, не кратное 10, — значит, пользователь ошибся.</p>
+<p>Допустим, мы получаем номер карты от пользователя, а потом эта карта поступает в обработку (не забудьте поменять слот при нажатии на кнопку на <var>process_data</var>):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_card_number</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    card_num <span class="token operator">=</span> self<span class="token punctuation">.</span>cardData<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> card_num
+
+
+<span class="token keyword">def</span> <span class="token function">process_data</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    number <span class="token operator">=</span> self<span class="token punctuation">.</span>get_card_number<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    self<span class="token punctuation">.</span>errorLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Ваша карта обрабатывается..."</span><span class="token punctuation">)</span>
+</code></pre>
+<p>На этом этапе мы никак не контролируем пользователя. Проверяем номер карты по алгоритму Луна:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_card_number</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    card_num <span class="token operator">=</span> self<span class="token punctuation">.</span>cardData<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> card_num
+
+
+<span class="token keyword">def</span> <span class="token function">double</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    res <span class="token operator">=</span> x <span class="token operator">*</span> <span class="token number">2</span>
+    <span class="token keyword">if</span> res <span class="token operator">&gt;</span> <span class="token number">9</span><span class="token punctuation">:</span>
+        res <span class="token operator">=</span> res <span class="token operator">-</span> <span class="token number">9</span>
+    <span class="token keyword">return</span> res
+
+
+<span class="token keyword">def</span> <span class="token function">luhn_algorithm</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> card<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    odd <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> self<span class="token punctuation">.</span>double<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    even <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token builtin">sum</span><span class="token punctuation">(</span>odd<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>even<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">==</span> <span class="token number">0</span>
+
+
+<span class="token keyword">def</span> <span class="token function">process_data</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    number <span class="token operator">=</span> self<span class="token punctuation">.</span>get_card_number<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> self<span class="token punctuation">.</span>luhn_algorithm<span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>errorLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Ваша карта обрабатывается..."</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Проверим, введем номер карты: 4728795357233848.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-3/pyqt-3-pay-2.png" width="614"/></div>
+<p>Метод <var>luhn_algorithm</var> проверяет данные. Карта засчитается, только если данные корректны. Можно рассматривать этот метод как функцию с кодом возврата. Он говорит там, корректен ли номер карты.</p>
+<p>Однако если пользователь введет не 16 цифр, а что-нибудь другое, или 16 цифр, разделенных пробелами, то он обрушит программу. Попробуйте, например, ввести «asdasdasd».</p>
+<p>Программа упадет с таким сообщением:</p>
+<pre><samp>Process finished with exit code -1073740791 (0xC0000409)</samp></pre>
+<p>Не очень информативно... Это происходит из-за того, что мы используем PyQT, а она по умолчанию «замалчивает» необработанные ошибки. Внесем небольшие изменения в код нашей программы, чтобы это исправить (в дальнейшем вставляйте этот код во все свои приложения на PyQT):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">except_hook</span><span class="token punctuation">(</span>cls<span class="token punctuation">,</span> exception<span class="token punctuation">,</span> traceback<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    sys<span class="token punctuation">.</span>__excepthook__<span class="token punctuation">(</span>cls<span class="token punctuation">,</span> exception<span class="token punctuation">,</span> traceback<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    form <span class="token operator">=</span> PayForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    form<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>excepthook <span class="token operator">=</span> except_hook
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Попробуем ввести неверные данные еще раз и получим в консоли уже более понятное сообщение:</p>
+<pre><samp>Traceback (most recent call last):
+  File "D:/projects/yandexlyceum/Lessons/QT2020/QT3/Sample/1/main.py", line 31, in process_data
+    if self.luhn_algorithm(number):
+  File "D:/projects/yandexlyceum/Lessons/QT2020/QT3/Sample/1/main.py", line 27, in luhn_algorithm
+    return (sum(odd) + sum(even)) % 10 == 0
+  File "D:/projects/yandexlyceum/Lessons/QT2020/QT3/Sample/1/main.py", line 25, in &lt;lambda&gt;
+    odd = map(lambda x: self.double(int(x)), card[::2])
+ValueError: invalid literal for int() with base 10: 'a'</samp></pre>
+<p>Как с такими сообщениями работать поговорим чуть позже, а пока сделаем так, чтобы в ответ на некорректный запрос программа не «падала», а требовала ввести 16 цифр, произвольно разделенных пробелами.</p>
+<p>Для этого метод <var>get_card_number</var> теперь будет возвращать специальный код — например, 404, как в Интернете.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_card_number</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    card_num <span class="token operator">=</span> self<span class="token punctuation">.</span>cardData<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> card_num<span class="token punctuation">.</span>isdigit<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token builtin">len</span><span class="token punctuation">(</span>card_num<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">16</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> card_num
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">404</span>
+
+
+<span class="token keyword">def</span> <span class="token function">double</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    res <span class="token operator">=</span> x <span class="token operator">*</span> <span class="token number">2</span>
+    <span class="token keyword">if</span> res <span class="token operator">&gt;</span> <span class="token number">9</span><span class="token punctuation">:</span>
+        res <span class="token operator">=</span> res <span class="token operator">-</span> <span class="token number">9</span>
+    <span class="token keyword">return</span> res
+
+
+<span class="token keyword">def</span> <span class="token function">luhn_algorithm</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> card<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    odd <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> self<span class="token punctuation">.</span>double<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    even <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token builtin">sum</span><span class="token punctuation">(</span>odd<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>even<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">==</span> <span class="token number">0</span>
+
+
+<span class="token keyword">def</span> <span class="token function">process_data</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    number <span class="token operator">=</span> self<span class="token punctuation">.</span>get_card_number<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> number <span class="token operator">==</span> <span class="token number">404</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>errorLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span>
+            <span class="token string">"Введите только 16 цифр. Допускаются пробелы"</span><span class="token punctuation">)</span>
+    <span class="token keyword">elif</span> self<span class="token punctuation">.</span>luhn_algorithm<span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>errorLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span>
+            <span class="token string">"Ваша карта обрабатывается..."</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>errorLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span>
+            <span class="token string">"Номер недействителен. Попробуйте снова."</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь при вводе неверных данных пользователь может получить еще одно сообщение:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-3/pyqt-3-pay-3.png" width="614"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="4">Трудности работы с кодами возврата</h2>
+<p>Мы видим, что даже простая функция для обработки пользовательских данных обрастает дополнительным кодом, проверкой многих условий и «магическими» кодами возврата. Если функция с кодом возврата находится глубоко в стеке вызовов, то придется сделать так, чтобы ее правильно обрабатывала вся вышестоящая цепочка функций. Каждая из них должна принимать код и возвращать свой.</p>
+<p>Чтобы упростить обработку ошибок, программисты стали работать с исключениями как с объектами.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Обработка исключений</h2>
+<p>В Python и других объектно-ориентированных языках <strong>исключения</strong> — такие же объекты в программе, как и все остальное. Исключение создается в любом месте и поднимается по стеку вызовов, пока его не отловит какой-нибудь код-обработчик.</p>
+<p>Сейчас поймаем исключения:</p>
+<pre><samp>Traceback (most recent call last):
+  File "/home/06.py", line 2, in &lt;module&gt;
+    s.index("9")
+ValueError: substring not found</samp></pre>
+<p>Такое сообщение об ошибке означает, что метод <var>index</var> породил исключение — объект типа <var>ValueError</var>. Все функции стека вызовов получили уведомление о нештатной ситуации. Если ни одна из них не отреагирует, программа аварийно завершится.</p>
+<p>Исключения ловят в специальном блоке <code>try...except</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">try</span><span class="token punctuation">:</span>
+    a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">"Введите целое число: "</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">+</span> <span class="token number">10</span><span class="token punctuation">)</span>
+<span class="token keyword">except</span> ValueError<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Неверное число"</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Введите целое число: 11df
+Неверное число</samp></pre>
+<p>Функция <var>int</var> порождает исключение <var>ValueError</var> (неверное значение), когда в строке есть посторонние символы (например, буквы).</p>
+<p>Как только не удается выполнить строку <code>a = ...</code>, управление переходит к обработчику исключений (блок <var>except</var>).</p>
+<p>Так как исключения — это классы, то они могут быть наследниками друг друга. Обработчик поймает не только указанные исключения, но и всех их наследников.</p>
+<p>Дерево встроенных исключений выглядит так:</p>
+<pre><code>BaseException
+ +-- SystemExit
+ +-- KeyboardInterrupt
+ +-- GeneratorExit
+ +-- Exception
+      +-- StopIteration
+      +-- StopAsyncIteration
+      +-- ArithmeticError
+      |    +-- FloatingPointError
+      |    +-- OverflowError
+      |    +-- ZeroDivisionError
+      +-- AssertionError
+      +-- AttributeError
+      +-- BufferError
+      +-- EOFError
+      +-- ImportError
+           +-- ModuleNotFoundError
+      +-- LookupError
+      |    +-- IndexError
+      |    +-- KeyError
+      +-- MemoryError
+      +-- NameError
+      |    +-- UnboundLocalError
+      +-- OSError
+      |    +-- BlockingIOError
+      |    +-- ChildProcessError
+      |    +-- ConnectionError
+      |    |    +-- BrokenPipeError
+      |    |    +-- ConnectionAbortedError
+      |    |    +-- ConnectionRefusedError
+      |    |    +-- ConnectionResetError
+      |    +-- FileExistsError
+      |    +-- FileNotFoundError
+      |    +-- InterruptedError
+      |    +-- IsADirectoryError
+      |    +-- NotADirectoryError
+      |    +-- PermissionError
+      |    +-- ProcessLookupError
+      |    +-- TimeoutError
+      +-- ReferenceError
+      +-- RuntimeError
+      |    +-- NotImplementedError
+      |    +-- RecursionError
+      +-- SyntaxError
+      |    +-- IndentationError
+      |         +-- TabError
+      +-- SystemError
+      +-- TypeError
+      +-- ValueError
+      |    +-- UnicodeError
+      |         +-- UnicodeDecodeError
+      |         +-- UnicodeEncodeError
+      |         +-- UnicodeTranslateError
+      +-- Warning
+           +-- DeprecationWarning
+           +-- PendingDeprecationWarning
+           +-- RuntimeWarning
+           +-- SyntaxWarning
+           +-- UserWarning
+           +-- FutureWarning
+           +-- ImportWarning
+           +-- UnicodeWarning
+           +-- BytesWarning
+           +-- ResourceWarning
+</code></pre>
+<p>Если нужен доступ к исключению как к объекту, пригодится такая конструкция:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">try</span><span class="token punctuation">:</span>
+    a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">"Введите целое число: "</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">+</span> <span class="token number">10</span><span class="token punctuation">)</span>
+<span class="token keyword">except</span> ValueError <span class="token keyword">as</span> ve<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Неверное число"</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>ve<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">dir</span><span class="token punctuation">(</span>ve<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Введите целое число: fff
+Неверное число
+invalid literal for int() with base 10: 'fff'
+['__cause__', '__class__', '__context__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setstate__', '__sizeof__', '__str__', '__subclasshook__', '__suppress_context__', '__traceback__', 'args', 'with_traceback']</samp></pre>
+<p>В данном примере в переменную <var>ve</var> попадает объект класса <var>ValueError</var>, а функция <var>dir</var> позволяет увидеть содержимое этого объекта.</p>
+<p>Перепишем задачу ввода карты вместе с исключениями. Там, где нужно было использовать код возврата, вставим конструкцию <var>raise</var> (генерация объекта — исключения заданного типа).</p>
+<p>Вот во что превратится метод <var>get_card_number</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_card_number</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    card_num <span class="token operator">=</span> self<span class="token punctuation">.</span>cardData<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token punctuation">(</span>card_num<span class="token punctuation">.</span>isdigit<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token builtin">len</span><span class="token punctuation">(</span>card_num<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">16</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">"Неверный формат номера"</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> card_num
+</code></pre>
+<p>А остальные методы нашего класса станут такими:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">double</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    res <span class="token operator">=</span> x <span class="token operator">*</span> <span class="token number">2</span>
+    <span class="token keyword">if</span> res <span class="token operator">&gt;</span> <span class="token number">9</span><span class="token punctuation">:</span>
+        res <span class="token operator">=</span> res <span class="token operator">-</span> <span class="token number">9</span>
+    <span class="token keyword">return</span> res
+
+
+<span class="token keyword">def</span> <span class="token function">luhn_algorithm</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> card<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    odd <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> self<span class="token punctuation">.</span>double<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    even <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token builtin">sum</span><span class="token punctuation">(</span>odd<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>even<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">"Недействительный номер карты"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">process_data</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        number <span class="token operator">=</span> self<span class="token punctuation">.</span>get_card_number<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>luhn_algorithm<span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Ваша карта обрабатывается..."</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> ValueError <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>errorLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Ошибка! </span><span class="token interpolation"><span class="token punctuation">{</span>e<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Результат работы программы:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-3/pyqt-3-pay-4.png" width="614"/></div>
+<p>Работа с исключениями избавляет от некоторых недостатков кодов возврата: он становится короче и не надо ставить конструкции <var>if</var> во всем стеке вызовов. Работа с ошибками становится гибче благодаря дереву исключений. Мы можем работать с системными исключениями (например, с прерыванием по нажатию на клавишу) так же легко, как с собственными.</p>
+<p>Однако для работы с исключениями надо тренироваться. Код легко наводнить бесконечными проверками условий в ущерб основному алгоритму.</p>
+<p>У работы с исключениями есть преимущества перед кодами возврата. В современных языках программирования используются именно объекты-исключения. Поговорим подробнее про механизмы работы с ними.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Методики LBYL и EAFP</h2>
+<p>Когда мы изучаем исключения, то с их помощью хочется обрабатывать вообще все внештатные ситуации, максимально очищая код от дополнительных условий-проверок.</p>
+<p>Есть два крайних подхода: LBYL (Look Before You Leap — <em>Посмотри перед прыжком</em>) и EAFP (Easier to Ask Forgiveness than Permission — <em>Проще извиниться, чем спрашивать разрешение</em>).</p>
+<p>Например, при работе со словарями, когда доступ по ключу, а ключа нет, генерируется стандартное исключение <var>KeyError</var>:</p>
+<pre class="language-python"><code class="language-python">mydict <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token number">4</span><span class="token punctuation">:</span> <span class="token number">34</span><span class="token punctuation">}</span>
+mydict<span class="token punctuation">[</span><span class="token number">4354</span><span class="token punctuation">]</span>
+</code></pre>
+<pre><samp>Traceback (most recent call last):
+  File "/home/01.py", line 2, in &lt;module&gt;
+    mydict[4354]
+KeyError: 4354</samp></pre>
+<p>С одной стороны, можно перестраховываться, заранее проверяя, что все получится. Это идеология LBYL-подхода. Сначала посмотрели, убедились, что все в порядке, только потом сделали. Как при переходе улицы: поглядели на светофор, потом по сторонам. Если горит зеленый свет и нет препятствий, можно переходить.</p>
+<pre class="language-python"><code class="language-python">mydict <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'Elizabeth'</span><span class="token punctuation">:</span> <span class="token number">12</span><span class="token punctuation">,</span> <span class="token string">'Ivan'</span><span class="token punctuation">:</span> <span class="token number">145</span><span class="token punctuation">}</span>
+<span class="token keyword">if</span> <span class="token string">'Ivan'</span> <span class="token keyword">in</span> mydict<span class="token punctuation">:</span>
+    mydict<span class="token punctuation">[</span><span class="token string">'Ivan'</span><span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span>
+</code></pre>
+<p>С другой стороны, мы можем описывать только главный алгоритм, рассчитывая, что все будет хорошо. Но при таком подходе необходимо прописать действия с исключениями (иногда и разных типов). Это суть подхода EAFP.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">try</span><span class="token punctuation">:</span>
+    mydict<span class="token punctuation">[</span><span class="token string">'Ivan'</span><span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span>
+<span class="token keyword">except</span> KeyError<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+<p>В Python преобладает EAFP-подход, особенно если речь идет о стандартных исключениях и действиях с данными внутри них. Но это не значит, что методику LBYL вообще нельзя использовать. Всегда нужно рассматривать конкретный случай. Иногда есть и третий вариант. Например, в нашем случае можно было воспользоваться словарем, содержащим для всех ключей значение по умолчанию (в примере — 0):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> collections <span class="token keyword">import</span> defaultdict
+    
+    
+s <span class="token operator">=</span> defaultdict<span class="token punctuation">(</span><span class="token keyword">lambda</span><span class="token punctuation">:</span> <span class="token number">0</span><span class="token punctuation">)</span>
+s<span class="token punctuation">[</span><span class="token number">34</span><span class="token punctuation">]</span>
+</code></pre>
+<pre><samp>0</samp></pre>
+<pre class="language-python"><code class="language-python">s<span class="token punctuation">[</span><span class="token number">12</span><span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">11</span>
+s<span class="token punctuation">[</span><span class="token number">12</span><span class="token punctuation">]</span>
+</code></pre>
+<pre><samp>11</samp></pre>
+<p>В коде многопоточной программы лучше использовать EAFP. Если процессов несколько, один из них может неожиданно изменить данные, которые только что проверил и собирается использовать другой. Но сейчас мы не будем на этом останавливаться.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Полный синтаксис блока try...except</h2>
+<p>Мы уже пользовались блоком <code>try...except</code>, но вообще <code>try...except</code> может выглядеть существенно сложнее:</p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        x<span class="token punctuation">,</span> y <span class="token operator">=</span> s<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>x <span class="token operator">/</span> y<span class="token punctuation">)</span>
+    <span class="token keyword">except</span> IndexError<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Мы за границей списка'</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> ZeroDivisionError <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Поделили на 0'</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> Exception <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Непредвиденная ошибка %s'</span> <span class="token operator">%</span> e<span class="token punctuation">)</span>
+    <span class="token keyword">finally</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Идем дальше'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>0.5
+Идем дальше
+0.5714285714285714
+Идем дальше
+Поделили на 0
+Идем дальше
+Непредвиденная ошибка unsupported operand type(s) for /: 'int' and 'NoneType'
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше</samp></pre>
+<p>К одному <var>try</var> может быть прикреплено несколько <var>except</var>. Блок <var>finally</var> выполняется независимо от того, создано ли исключение и какого оно типа. Даже если программа прервется внешним исключением, переходом по <var>break</var> или <var>continue</var>, блок <var>finally</var> будет выполнен.</p>
+<p>Порядок перечисления исключений важен. Перебор закончится на первом же подходящем по условию блоке:</p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        x<span class="token punctuation">,</span> y <span class="token operator">=</span> s<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>x <span class="token operator">/</span> y<span class="token punctuation">)</span>
+    <span class="token keyword">except</span> Exception <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Непредвиденная ошибка %s'</span> <span class="token operator">%</span> e<span class="token punctuation">)</span>
+    <span class="token keyword">except</span> IndexError<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Мы за границей списка'</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> ZeroDivisionError <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Поделили на 0'</span><span class="token punctuation">)</span>
+    <span class="token keyword">finally</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Идём дальше'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>0.5
+Идем дальше
+0.5714285714285714
+Идем дальше
+Непредвиденная ошибка division by zero
+Идем дальше
+Непредвиденная ошибка unsupported operand type(s) for /: 'int' and 'NoneType'
+Идем дальше
+Непредвиденная ошибка list index out of range
+Идем дальше
+Непредвиденная ошибка list index out of range
+Идем дальше
+Непредвиденная ошибка list index out of range
+Идем дальше
+Непредвиденная ошибка list index out of range
+Идем дальше
+Непредвиденная ошибка list index out of range
+Идем дальше
+Непредвиденная ошибка list index out of range
+Идем дальше</samp></pre>
+<p>Все ошибки получились <strong>непредвиденными</strong>, потому что <var>Exception</var> — класс-родитель для большинства встроенных исключений. Все они могут быть приведены к типу <var>Exception</var> и провалились в первый же блок <var>except</var>.</p>
+<p>В блоке <code>try...except</code> можно применять конструкцию <var>else</var>. Этот блок выполняется, если ни один из блоков <var>except</var> не подошел:</p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        x<span class="token punctuation">,</span> y <span class="token operator">=</span> s<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>x <span class="token operator">/</span> y<span class="token punctuation">)</span>
+    <span class="token keyword">except</span> IndexError<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Мы за границей списка'</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> ZeroDivisionError <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Поделили на 0'</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> Exception <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Непредвиденная ошибка %s'</span> <span class="token operator">%</span> e<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Всё хорошо'</span><span class="token punctuation">)</span>
+    <span class="token keyword">finally</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Идём дальше'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>0.5
+Все хорошо
+Идем дальше
+0.5714285714285714
+Все хорошо
+Идем дальше
+Поделили на 0
+Идем дальше
+Непредвиденная ошибка unsupported operand type(s) for /: 'int' and 'NoneType'
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше
+Мы за границей списка
+Идем дальше</samp></pre>
+<p>Перечислим еще несколько особенностей работы с исключениями.</p>
+<ul>
+<li>Сам блок <var>except</var> может быть источником исключений</li>
+<li>Так как обработчик исключения и код, который его вызвал, могут находиться на разных уровнях стека, код может <strong>разорваться</strong>. В такой ситуации сложно уследить за общей логикой работы программы</li>
+<li>Возможно вы захотите сделать что-то такое
+<pre class="language-python"><code class="language-python"><span class="token keyword">try</span><span class="token punctuation">:</span>
+    someting<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">except</span> Exception<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+</li>
+</ul>
+<p>Если вы не логируете (в файл, базу данных) ошибки в этом случае и не регистрируете сам их факт, программу тяжело отлаживать: она может выдавать неверные результаты, но неизменно отчитываться, что все в порядке.</p>
+</section>
+<section class="material__chapter">
+<h2 id="8">Создание пользовательских типов ошибок</h2>
+<p>Исключение — это объект. Мы можем дополнять дерево исключений собственными так же, как делаем это с любыми другими классами и объектами.</p>
+<p>Если мы пишем большой модуль, нам почти всегда требуется собственная иерархия объектов-исключений. Обычно методы и свойства для собственных объектов не переопределяются и не дополняются. То, что нужно — прозрачные названия ошибок и корректная работа блока <code>try...except</code> с нужными классами — обеспечивается простым наследованием.</p>
+<p>Как правило, новые объекты наследуют классу <var>Exception</var>.</p>
+<p>Рассмотрим пример про проверку номеров банковской карты, в который мы добавили несколько собственных исключений:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> uic
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QWidget<span class="token punctuation">,</span> QApplication
+
+
+<span class="token keyword">class</span> <span class="token class-name">CardError</span><span class="token punctuation">(</span>Exception<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">CardFormatError</span><span class="token punctuation">(</span>CardError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">CardLuhnError</span><span class="token punctuation">(</span>CardError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">PayForm</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span>PayForm<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        uic<span class="token punctuation">.</span>loadUi<span class="token punctuation">(</span><span class="token string">'pay.ui'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>hintLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span>
+            <span class="token string">'Введите номер карты (16 цифр без пробелов):'</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>payButton<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>process_data<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">get_card_number</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        card_num <span class="token operator">=</span> self<span class="token punctuation">.</span>cardData<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token punctuation">(</span>card_num<span class="token punctuation">.</span>isdigit<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token builtin">len</span><span class="token punctuation">(</span>card_num<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">16</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> CardFormatError<span class="token punctuation">(</span><span class="token string">"Неверный формат номера"</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> card_num
+
+    <span class="token keyword">def</span> <span class="token function">double</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        res <span class="token operator">=</span> x <span class="token operator">*</span> <span class="token number">2</span>
+        <span class="token keyword">if</span> res <span class="token operator">&gt;</span> <span class="token number">9</span><span class="token punctuation">:</span>
+            res <span class="token operator">=</span> res <span class="token operator">-</span> <span class="token number">9</span>
+        <span class="token keyword">return</span> res
+
+    <span class="token keyword">def</span> <span class="token function">luhn_algorithm</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> card<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        odd <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> self<span class="token punctuation">.</span>double<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        even <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> card<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token builtin">sum</span><span class="token punctuation">(</span>odd<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>even<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> CardLuhnError<span class="token punctuation">(</span><span class="token string">"Недействительный номер карты"</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">process_data</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            number <span class="token operator">=</span> self<span class="token punctuation">.</span>get_card_number<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">if</span> self<span class="token punctuation">.</span>luhn_algorithm<span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Ваша карта обрабатывается..."</span><span class="token punctuation">)</span>
+        <span class="token keyword">except</span> CardError <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>errorLabel<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Ошибка! </span><span class="token interpolation"><span class="token punctuation">{</span>e<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">except_hook</span><span class="token punctuation">(</span>cls<span class="token punctuation">,</span> exception<span class="token punctuation">,</span> traceback<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    sys<span class="token punctuation">.</span>__excepthook__<span class="token punctuation">(</span>cls<span class="token punctuation">,</span> exception<span class="token punctuation">,</span> traceback<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    form <span class="token operator">=</span> PayForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    form<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>excepthook <span class="token operator">=</span> except_hook
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Родительское исключение <var>CardError</var> позволяет нам перехватывать все нештатные ситуации, связанные с номером карты, а не только те, для которых есть специальные обработчики.</p>
+</section>
+<section class="material__chapter">
+<h2 id="9">Перехват системных исключений</h2>
+<p>В иерархии классов-исключений есть исключения <var>SystemExit</var> и <var>KeyboardInterrupt</var>.</p>
+<p>Их можно использовать. Например, нажатие комбинации Ctrl+C обычно прекращает работу консольного приложения и генерирует исключение <strong>прерывание от клавиатуры</strong>.</p>
+<p>Обработаем этот случай:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        a <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">except</span> KeyboardInterrupt<span class="token punctuation">:</span>
+        res <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">'Действительно остановить? '</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> res <span class="token operator">==</span> <span class="token string">'yes'</span><span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+</code></pre>
+<p>В этом примере после «волшебной» комбинации Ctrl+C мы попадем в блок <var>except</var> и зададим пользователю вопрос о прерывании работы программы.</p>
+</section>
+<section class="material__chapter">
+<h2 id="10">Конструкция assert</h2>
+<p>Конструкция <var>assert</var> — это часть Python, связанная с тестированием. Тестирование мы еще не проходили, но это не помешает понять, как же <var>assert</var> работает.</p>
+<p>В любое место программы вы можете вставить блок такого вида:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">assert</span> логическое выражение
+</code></pre>
+<p>Например:</p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">34</span><span class="token punctuation">,</span> <span class="token number">54</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span>
+<span class="token keyword">assert</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">4</span>
+</code></pre>
+<p>Когда мы попытаемся выполнить приведенный код, то получим:</p>
+<pre><samp>-----------------------------------------------------------------
+
+AssertionError                  Traceback (most recent call last)
+
+&lt;ipython-input-1-c1fdb0a01058&gt; in &lt;module&gt;()
+      1 s = [1, 2, 34, 54, 3]
+----&gt; 2 assert len(s) == 4
+    
+
+AssertionError: </samp></pre>
+<p>Блок работает так: если выражение верное, ничего не происходит. Если нет — создается исключение <var>AssertionError</var>.</p>
+<p>Можно снабдить программу разными вспомогательными проверками. Они помогут контролировать правильность исполнения. Если какое-то условие не будет выполнено, то программа аварийно остановится. Это помогает тестировать и отлаживать ПО.</p>
+<p>Интерпретатор Python можно запустить с опцией <code>-O</code> — тогда он будет пропускать блоки <var>assert</var>.</p>
+<pre><code>-O     : optimize generated bytecode slightly; also PYTHONOPTIMIZE=x
+</code></pre>
+<p>Это позволяет включать и выключать отладочные проверки.</p>
+<p>Исключения — прекрасный инструмент, который позволит вам писать более простые и красивые программы, однако, использовать его надо с умом, выбирая, когда лучше использовать их, а когда добавить дополнительное условие.</p>
+<p>Сам механизм исключений достаточно медленный, поэтому, например, не очень хорошей идеей будет кидать исключение внутри цикла, когда мы точно знаем, что их будет достаточное большое количество.</p>
+</section></article></section>

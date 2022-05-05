@@ -1,0 +1,630 @@
+<section class="lesson-material__content"><article class="material"><h1>Библиотеки Python. Numpy</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Вычислительные возможности Python. Numpy</a></li>
+<li><a class="material__link" href="#2">Измерение скорости</a></li>
+<li><a class="material__link" href="#3">Массивы в Numpy</a></li>
+<li><a class="material__link" href="#4">Размерность массива</a></li>
+<li><a class="material__link" href="#5">Индексация в массивах</a></li>
+<li><a class="material__link" href="#6">Массовые операции</a></li>
+<li><a class="material__link" href="#7">Немного о матрицах</a></li>
+<li><a class="material__link" href="#8">Сортировки</a></li>
+<li><a class="material__link" href="#9">Вспомним PIL</a></li>
+<li><a class="material__link" href="#10">Игра «Жизнь»</a></li>
+</ol>
+</nav></section>
+<!-- Аннотация -->
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Этот урок посвящен вычислительным мощностям Python и библиотеке Numpy. Кроме того, мы научимся замерять время выполнения программы. Затронем работу с многомерными массивами и изучим (или вспомним) немного линейной алгебры. А еще, возможно, напишем игру.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Вычислительные возможности Python. Numpy</h2>
+<p>Как мы уже говорили, Python — язык для быстрой разработки. Однако чистый Python не предназначен для написания быстрых программ. Это интерпретируемый язык, поэтому программы на Python выполняются медленнее аналогов на C, C++ или Fortran. С другой стороны, математики, физики, биологи и инженеры часто применяют Python для решения вычислительных задач.</p>
+<p>Нет ли тут противоречия? Как интерпретируемый язык может быть эффективен в вычислительной математике?</p>
+<p>Оказывается, все дело в библиотеках. Python отлично подходит на роль промежуточной среды, оболочки, «клея» между библиотеками, написанными на разных языках.</p>
+<p>В этом уроке мы поговорим о наиболее фундаментальной библиотеке для работы с вычислительной математикой — <strong>Numpy</strong>.</p>
+<p>Многие другие пакеты для работы с данными и вычислениями используют базовые объекты этой библиотеки. В числе таких пакетов <strong>OpenCV</strong> — открытая библиотека для работы с распознаванием образов — и <strong>Pandas</strong> — библиотека, ориентированная на анализ данных.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Измерение скорости</h2>
+<p>Замеры времени (а в более общем случае, профилирование) — не такая простая процедура, как может показаться. Обычно проще всего замерить астрономическое время между началом и концом выполнения задачи, усредняя результаты нескольких опытов. Однако почти все ОС многозадачны, поэтому процессор (и его вычислительные ядра) редко отдаются одной задаче в единоличное пользование. Как следствие, в измерениях лучше использовать именно процессорное время. Механизмы замера времени сами вмешиваются в процесс и немного влияют на результат — как и в любом физическом эксперименте.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Библиотека timeit</strong></p>
+<p>В Python для замера времени работы кода служит библиотека timeit.</p>
+<p>Вы можете познакомиться с возможностями модуля в соответствующем <a class="material__link" href="https://docs.python.org/3/library/timeit.html" rel="noopener noreferrer" target="_blank">разделе документации</a>.</p>
+</section>
+<p>Например, мы можем замерить три разных способа заполнить список из миллиона квадратных корней.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> timeit
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>timeit<span class="token punctuation">.</span>timeit<span class="token punctuation">(</span><span class="token string">"[sqrt(x) for x in range(1000000)]"</span><span class="token punctuation">,</span>
+                    <span class="token string">"from math import sqrt"</span><span class="token punctuation">,</span> number<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>timeit<span class="token punctuation">.</span>timeit<span class="token punctuation">(</span><span class="token string">"for i in range(1000000): a.append(sqrt(i))"</span><span class="token punctuation">,</span>
+                    <span class="token string">"from math import sqrt; a=[]"</span><span class="token punctuation">,</span> number<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>timeit<span class="token punctuation">.</span>timeit<span class="token punctuation">(</span><span class="token string">"list(map(sqrt, range(1000000)))"</span><span class="token punctuation">,</span>
+                    <span class="token string">"from math import sqrt; a=[]"</span><span class="token punctuation">,</span> number<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>0.18135334600083297
+0.21764946899929782
+0.1530561779945856</samp></pre>
+<p>Как видим, в этой версии интерпретатора (3.7) предпочтительно использовать <var>map</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Самый медленный способ — это, конечно же, динамическое расширение существующего списка (append). Причем, чем больше список — тем медленнее он меняет свой размер. Это вызвано необходимостью иногда переносить данные из одного места списка в другое.</p>
+</section>
+<p>Несмотря на относительную быстроту (0,15 секунд на извлечение 1 000 000 квадратных корней), скорость можно увеличить еще примерно в 10 раз. Давайте посмотрим как.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Массивы в Numpy</h2>
+<p>Основной объект в Numpy — многомерный массив.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Массивы</strong></p>
+<p>Массивы — одна из базовых структур данных, которая позволяет моделировать многие объекты, относящиеся как к науке, так и к обычной жизни: список покупок, результаты наблюдения температуры, матрицы и векторы, изображения, видео и т. д.</p>
+</section>
+<p>Напомним, что в чистом Python нет типа данных с именем массив, и нам приходится моделировать его с помощью списков.</p>
+<p>Другое дело — Numpy. За тип массива здесь отвечает объект <var>array</var>.</p>
+<p>Как же создать массив?</p>
+<p>Во-первых, массив можно сделать из обычного списка:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">34</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array([ 1, 4, 10, 34])</samp></pre>
+<p>Или из диапазона:</p>
+<pre class="language-python"><code class="language-python">np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</samp></pre>
+<p>А можно сделать и из итератора с помощью функции <code>fromiter()</code>:</p>
+<pre class="language-python"><code class="language-python">np<span class="token punctuation">.</span>fromiter<span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">"1"</span><span class="token punctuation">,</span> <span class="token string">"2"</span><span class="token punctuation">,</span> <span class="token string">"3"</span><span class="token punctuation">,</span> <span class="token string">"4"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> dtype<span class="token operator">=</span>np<span class="token punctuation">.</span>int8<span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([1, 2, 3, 4], dtype=int8)</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>В Numpy элементы одного массива должны быть <strong>однородны</strong> (одного типа). Это самое важное идеологическое отличие массивов от списков, в которых можно хранить объекты разной природы.</p>
+</section>
+<pre class="language-python"><code class="language-python">np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">234.5</span><span class="token punctuation">,</span> <span class="token string">"hello"</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array(['11', '234.5', 'hello'], dtype='&lt;U32')</samp></pre>
+<p>Numpy создаст массив из юникод-строк длиной 32. За тип элементов в большинстве случаев отвечает параметр <code>dtype(data type)</code>. Обратите внимание на тип данных элементов массива. Посмотрите так же на использование параметра <var>dtype</var>:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+a <span class="token comment"># =&gt; array([1, 3, 8])</span>
+
+a<span class="token punctuation">.</span>dtype
+<span class="token comment"># =&gt; dtype('int64')</span>
+
+<span class="token builtin">type</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; numpy.int64</span>
+
+a <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dtype<span class="token operator">=</span>np<span class="token punctuation">.</span>float64<span class="token punctuation">)</span>
+<span class="token builtin">type</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; numpy.float64</span>
+</code></pre>
+<p>Указание типов и работа с ними нужны, поскольку языки, на которых написана эта библиотека, строго типизованы. Вдобавок это увеличивает скорость обработки данных.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Размерность массива</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Размерность массива</strong></p>
+<p>Размерность массива можно в любой момент изменить операцией <code>reshape()</code>.</p>
+<p>Узнать размерность можно атрибутом <var>shape</var>.</p>
+</section>
+<p>Вообще говоря, размерность — всего лишь «синтаксический сахар». В памяти все может храниться как одномерный массив с пересчетом координат элемента. Таким образом, операция <code>reshape()</code> — просто изменение коэффициентов в алгоритме, а не перераспределение и копирование данных.</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> np<span class="token punctuation">.</span>arange<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span>
+a<span class="token punctuation">.</span>shape
+</code></pre>
+<pre><samp>(100,)</samp></pre>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([[ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9],
+           [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+           [20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+           [30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+           [40, 41, 42, 43, 44, 45, 46, 47, 48, 49],
+           [50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
+           [60, 61, 62, 63, 64, 65, 66, 67, 68, 69],
+           [70, 71, 72, 73, 74, 75, 76, 77, 78, 79],
+           [80, 81, 82, 83, 84, 85, 86, 87, 88, 89],
+           [90, 91, 92, 93, 94, 95, 96, 97, 98, 99]])</samp></pre>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([[ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
+            17, 18, 19],
+           [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+            37, 38, 39],
+           [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
+            57, 58, 59],
+           [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76,
+            77, 78, 79],
+           [80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96,
+            97, 98, 99]])</samp></pre>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([[[ 0,  1,  2,  3],
+            [ 4,  5,  6,  7],
+            [ 8,  9, 10, 11],
+            [12, 13, 14, 15],
+            [16, 17, 18, 19]],
+    
+           [[20, 21, 22, 23],
+            [24, 25, 26, 27],
+            [28, 29, 30, 31],
+            [32, 33, 34, 35],
+            [36, 37, 38, 39]],
+    
+           [[40, 41, 42, 43],
+            [44, 45, 46, 47],
+            [48, 49, 50, 51],
+            [52, 53, 54, 55],
+            [56, 57, 58, 59]],
+    
+           [[60, 61, 62, 63],
+            [64, 65, 66, 67],
+            [68, 69, 70, 71],
+            [72, 73, 74, 75],
+            [76, 77, 78, 79]],
+    
+           [[80, 81, 82, 83],
+            [84, 85, 86, 87],
+            [88, 89, 90, 91],
+            [92, 93, 94, 95],
+            [96, 97, 98, 99]]])</samp></pre>
+<p>Например, фильм можно представить в виде 4-мерного массива кадров. Кадр — картинка, то есть трехмерный массив. Его можно представить и как двумерный массив пикселей, где каждый пиксель — одномерный массив из трех элементов: R, G, B.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Самое главное — при использовании функции <code>reshape()</code> произведение ее параметров должно быть равно количеству элементов в массиве.</p>
+<p>Иначе мы получим ошибку:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>    ValueError                 Traceback (most recent call last)
+
+    &lt;ipython-input-31-a907d0800243&gt; in &lt;module&gt;()
+    ----&gt; 1 a.reshape(2, 3, 4)
+    
+
+    ValueError: cannot reshape array of size 100 into shape (2, 3, 4)</samp></pre>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="5">Индексация в массивах</h2>
+<p>Давайте рассмотрим массив 10×10, созданный ранее.</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> a<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span><span class="token number">10</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array([[ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9],
+       [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+       [20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+       [30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+       [40, 41, 42, 43, 44, 45, 46, 47, 48, 49],
+       [50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
+       [60, 61, 62, 63, 64, 65, 66, 67, 68, 69],
+       [70, 71, 72, 73, 74, 75, 76, 77, 78, 79],
+       [80, 81, 82, 83, 84, 85, 86, 87, 88, 89],
+       [90, 91, 92, 93, 94, 95, 96, 97, 98, 99]])</samp></pre>
+<p>В нем работает привычная индексация.</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token comment"># =&gt; 12</span>
+       
+a<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token comment"># =&gt; 21 </span>
+
+a<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span> <span class="token comment"># =&gt; array([50, 51, 52, 53, 54, 55, 56, 57, 58, 59])</span>
+</code></pre>
+<p>По аналогии со списками мы можем применять срезы:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">:</span><span class="token number">6</span><span class="token punctuation">]</span>
+<span class="token comment"># =&gt; array([[31, 32, 33, 34, 35], [41, 42, 43, 44, 45]])</span>
+
+a<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">:</span><span class="token number">4</span><span class="token punctuation">]</span>
+
+<span class="token comment"># =&gt; array([[ 2,  3],</span>
+<span class="token comment">#           [12, 13],</span>
+<span class="token comment">#           [22, 23],</span>
+<span class="token comment">#           [32, 33],</span>
+<span class="token comment">#           [42, 43],</span>
+<span class="token comment">#           [52, 53],</span>
+<span class="token comment">#           [62, 63],</span>
+<span class="token comment">#           [72, 73],</span>
+<span class="token comment">#           [82, 83],</span>
+<span class="token comment">#           [92, 93]])</span>
+</code></pre>
+<p>Кроме того, доступ можно организовать через списки с индексами:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token comment"># =&gt; array([14, 14, 17, 18])</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Но самой удобной альтернативой обычному способу является тот, в котором в качестве «адреса» элемента используется кортеж координат:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token comment"># =&gt;  79</span>
+</code></pre>
+</section>
+<p>Скобки, конечно же, можно опустить:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">]</span> <span class="token comment"># =&gt; 79</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="6">Массовые операции</h2>
+<p>Инициализация:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># заполняем единицами</span>
+np<span class="token punctuation">.</span>ones<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># заполняем единицами целого типа</span>
+np<span class="token punctuation">.</span>ones<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> dtype<span class="token operator">=</span>np<span class="token punctuation">.</span>int32<span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=int32)</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># заполняем нулями и сразу указываем форму</span>
+np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([[ 0.,  0.,  0.,  0.,  0.,  0.],
+       [ 0.,  0.,  0.,  0.,  0.,  0.],
+       [ 0.,  0.,  0.,  0.,  0.,  0.],
+       [ 0.,  0.,  0.,  0.,  0.,  0.],
+       [ 0.,  0.,  0.,  0.,  0.,  0.]])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># заполняем случайными целыми из диапазона [1..10]</span>
+<span class="token comment"># и сразу указываем форму</span>
+np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([[3, 1, 1, 5, 4],
+       [5, 4, 8, 6, 3],
+       [6, 9, 9, 3, 4],
+       [7, 4, 2, 1, 9],
+       [3, 5, 4, 2, 2]])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># заполняем случайными вещественными числами из диапазона [0..1)</span>
+np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>random<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([ 0.96373978,  0.73252097,  0.32213768,  0.81560531,  0.31843467,
+        0.51289493,  0.99791928,  0.5999641 ,  0.15257882,  0.16074567])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># формируем массив из строки чисел, указывая разделитель</span>
+np<span class="token punctuation">.</span>fromstring<span class="token punctuation">(</span><span class="token string">"1, 3, 4, 5, 120"</span><span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">","</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>array([   1.,    3.,    4.,    5.,  120.])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># каждый элемент массива вычисляется по функции</span>
+np<span class="token punctuation">.</span>fromfunction<span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">,</span> y<span class="token punctuation">:</span> x <span class="token operator">*</span> <span class="token number">5</span> <span class="token operator">+</span> y<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">,</span> dtype<span class="token operator">=</span>np<span class="token punctuation">.</span>int8<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array([[ 0,  1,  2,  3,  4],
+       [ 5,  6,  7,  8,  9],
+       [10, 11, 12, 13, 14]], dtype=int8)</samp></pre>
+<p>Работают основные операции арифметики, сравнения, причем на всем массиве целиком. И это здорово!</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+b <span class="token operator">=</span> np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[1 3 1 1 3 4 2 3 3 3]
+[4 1 1 3 1 4 4 4 1 1]</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">&gt;</span> b<span class="token punctuation">)</span>  <span class="token comment"># =&gt; [False True False False True False False False True True]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">+</span> b<span class="token punctuation">)</span>  <span class="token comment"># =&gt; [5 4 2 4 4 8 6 7 4 4]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">*</span> b<span class="token punctuation">)</span>  <span class="token comment"># =&gt; [ 4  3  1  3  3 16  8 12  3  3]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span>  <span class="token comment"># =&gt; [ 1  9  1  1  9 16  4  9  9  9]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span>a <span class="token operator">&gt;</span> b<span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># =&gt; [3 3 3 3]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># =&gt; 24</span>
+</code></pre>
+<p>Тригонометрические операции тоже работают, только надо использовать их версии из библиотеки <var>numpy</var>, а не из <var>math</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>sin<span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[ 0.84147098  0.14112001  0.84147098  0.84147098  0.14112001 -0.7568025
+  0.90929743  0.14112001  0.14112001  0.14112001]</samp></pre>
+<p>Вспомним начало этого урока, когда мы говорили о скорости работы.</p>
+<p>Решим ту же задачу по вычислению 1 000 000  корней с помощью Numpy и посмотрим, какого ускорения мы добились:</p>
+<pre class="language-python"><code class="language-python">timeit<span class="token punctuation">.</span>timeit<span class="token punctuation">(</span><span class="token string">"np.sqrt(np.arange(1000000))"</span><span class="token punctuation">,</span> <span class="token string">"import numpy as np"</span><span class="token punctuation">,</span> number<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>0.014551434993336443</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="7">Немного о матрицах</h2>
+<p>Numpy позволяет очень эффективно работать с двумерными и вообще n-мерными массивами.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Заполним матрицу "последовательно" по строкам</span>
+a <span class="token operator">=</span> np<span class="token punctuation">.</span>arange<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">21</span><span class="token punctuation">)</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array([[ 1,  2,  3,  4,  5],
+       [ 6,  7,  8,  9, 10],
+       [11, 12, 13, 14, 15],
+       [16, 17, 18, 19, 20]])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Транспонируем матрицу (строки станут столбцами, а столбцы — строками)</span>
+b <span class="token operator">=</span> a<span class="token punctuation">.</span>transpose<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array([[ 1,  6, 11, 16],
+       [ 2,  7, 12, 17],
+       [ 3,  8, 13, 18],
+       [ 4,  9, 14, 19],
+       [ 5, 10, 15, 20]])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Повернем матрицу вправо и влево</span>
+b <span class="token operator">=</span> np<span class="token punctuation">.</span>rot90<span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+c <span class="token operator">=</span> np<span class="token punctuation">.</span>rot90<span class="token punctuation">(</span>a<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[[ 5 10 15 20]
+ [ 4  9 14 19]
+ [ 3  8 13 18]
+ [ 2  7 12 17]
+ [ 1  6 11 16]]
+[[16 11  6  1]
+ [17 12  7  2]
+ [18 13  8  3]
+ [19 14  9  4]
+ [20 15 10  5]]</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="8">Сортировки</h2>
+<p>Библиотека Numpy предлагает свои функции по сортировке. Давайте посмотрим, как они работают:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># заполним матрицу случайными целыми числами</span>
+a <span class="token operator">=</span> np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span> size<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>array([[ 2, 12,  0,  7],
+       [12,  1, 11, 18],
+       [ 6,  1,  4, 10],
+       [ 0,  9,  5,  3],
+       [18, 12, 12,  5]])</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># отсортируем матрицу по умолчанию</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[[ 0  2  7 12]
+ [ 1 11 12 18]
+ [ 1  4  6 10]
+ [ 0  3  5  9]
+ [ 5 12 12 18]]</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>В этом случае сортировка происходит по <strong>последнему</strong> измерению. Обходя матрицу, мы сначала выбираем строку, а потом идем по этой строке, поэтому последнее измерение в данном случае — это строка. В результате мы отсортировали независимо каждую строку.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token comment"># а теперь укажем конкретное измерение</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>a<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[[ 0  1  0  3]
+ [ 2  1  4  5]
+ [ 6  9  5  7]
+ [12 12 11 10]
+ [18 12 12 18]]</samp></pre>
+<p>Матрица отсортирована по столбцам.</p>
+<p>Но самое интересное в том, что если в качестве значения параметра <var>axis</var> указать <var>None</var>, то матрица перед сортировкой будет линеаризована, то есть превращена в одномерный массив.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>a<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[ 0  0  1  1  2  3  4  5  5  6  7  9 10 11 12 12 12 12 18 18]</samp></pre>
+<p>Обратите внимание: подобное поведение характерно не только для функции <code>sort()</code>, но и для многих других функций: <code>min()</code>, <code>sum()</code> и т. д.</p>
+<p>Но об этом вы можете почитать самостоятельно на странице с <a class="material__link" href="https://docs.scipy.org/doc/numpy/genindex.html" rel="noopener noreferrer" target="_blank">документацией</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="9">Вспомним PIL</h2>
+<p>Работая с библиотекой PIL, тоже можно использовать средства Numpy.</p>
+<p>Например, если мы хотим сделать изображение темнее оригинала, можем просто поделить его составляющие, например, на 10:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+<span class="token comment"># получим массив numpy из картинки, которую откроем из файла.</span>
+image <span class="token operator">=</span> np<span class="token punctuation">.</span>asarray<span class="token punctuation">(</span>Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'images/Риана.jpg'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># поделим все элементы массива на 10, приведем к типу uint8 (один байт без знака)</span>
+<span class="token comment"># преобразуем в изображение и сохраним в файл</span>
+Image<span class="token punctuation">.</span>fromarray<span class="token punctuation">(</span>np<span class="token punctuation">.</span>uint8<span class="token punctuation">(</span>image <span class="token operator">//</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'r2.jpg'</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/riana-numpy.jpeg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="10">Игра «Жизнь»</h2>
+<p>Несколько десятилетий назад Джон Конуэй придумал один из самых известных клеточных автоматов, который назвал игрой «Жизнь». Простота правил сочетается в ней с богатством результатов. Многие компьютерные инженеры хоть раз обращались к программированию и исследованию этой игры, которая послужила интересной моделью для многих отраслей науки.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Клеточный автомат</strong></p>
+<p>Клеточный автомат — модель однородного пространства с некоторыми клетками. Каждая клетка может находиться в одном из нескольких состояний и иметь некоторое количество соседей. Задаются правила перехода из одного состояния в другое в зависимости от текущего состояния клетки и ее соседей.</p>
+<p>Пространство «Жизни» — бесконечное поле клеток.</p>
+</section>
+<p>Каждая клетка имеет 8 соседей (сверху, снизу, справа, слева и по диагонали). Клетка может иметь два состояния — живое (на клетке стоит фишка) и мертвое (фишки нет).</p>
+<p>Правила изменения следующие:</p>
+<ul>
+<li>Если клетка была живой, она выживет, если у нее 2 или 3 соседа. Если соседей 4, 5, 6, 7 или 8, она умирает от перенаселенности, а если 0 или 1 — от одиночества</li>
+<li>Новая клетка рождается в поле, у которого есть ровно 3 соседа</li>
+</ul>
+<p>Время в этой игре дискретно и считается поколениями. Все начинается с начальной расстановки фишек (0 поколение), в дальнейшем рассматривается эволюция клеточного пространства в 1, 2, 3 и т. д. поколении. Процессы смерти и рождения происходят одновременно, после чего строится следующее поколение.</p>
+<p>Давайте попробуем написать игру «Жизнь», используя библиотеку Numpy. Пусть у нас будет поле 10×10, в центр которого поместим конструкцию, известную как глайдер. Мы скоро выясним, почему она так называется.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+population <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span>
+    <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dtype<span class="token operator">=</span>np<span class="token punctuation">.</span>uint8<span class="token punctuation">)</span>
+</code></pre>
+<p>Поле имеет тип <var>uint8</var>, чтобы оно занимало меньше памяти. Каждый его элемент занимает ровно 1 байт (8 бит) и является целым беззнаковым (unsigned) числом в диапазоне от 0 до 255.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Живые клетки обозначаются единицей, а мертвые — нулем. Нужно решить, что делать на границах поля. Мы не можем обеспечить бесконечность в обоих направлениях, поэтому замкнем поле само на себя. Если выйти за нижнюю границу, окажемся наверху, а если за правую — появимся слева, и наоборот. Получается что-то вроде бублика. Такая фигура называется тор.</p>
+</section>
+<p>Для начала познакомимся с операцией <var>roll</var>, доступной для массивов. Она сдвигает исходный массив вдоль одного из измерений (в данном случае — строки или столбца).</p>
+<pre class="language-python"><code class="language-python">population
+</code></pre>
+<pre><samp>    array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+           [0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)</samp></pre>
+<pre class="language-python"><code class="language-python">np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>    array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+           [0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)</samp></pre>
+<pre class="language-python"><code class="language-python">np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>    array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+           [0, 0, 0, 0, 0, 1, 1, 1, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)</samp></pre>
+<p>Мы можем посчитать количество соседей у каждой клетки, просто сделав 8 копий со сдвигом массива и просуммировав их.</p>
+<pre class="language-python"><code class="language-python">neighbors <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token punctuation">[</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Таки образом, матрица количества соседей выглядит так:</p>
+<pre><samp>    array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+           [0, 0, 0, 1, 1, 2, 1, 0, 0, 0],
+           [0, 0, 1, 3, 5, 3, 2, 0, 0, 0],
+           [0, 0, 1, 1, 3, 2, 2, 0, 0, 0],
+           [0, 0, 1, 2, 3, 2, 1, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)</samp></pre>
+<p>Теперь нужно получить новую популяцию.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Выполним на матрице следующую операцию: «если у клетки 3 соседа, то в следующем поколении на этом месте будет клетка; а если 2 — клетка будет при условии, что она была „жива“ в текущем поколении».</p>
+<p>Для этого воспользуемся операторами <var>|</var> (или) и <var>&amp;</var> (и).</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token comment"># выделим клетки, у которых ровно три соседа</span>
+neighbors <span class="token operator">==</span> <span class="token number">3</span>
+</code></pre>
+<pre><samp>    array([[False, False, False, False, False, False, False, False, False,
+            False],
+           [False, False, False, False, False, False, False, False, False,
+            False],
+           [False, False, False, False, False, False, False, False, False,
+            False],
+           [False, False, False, False, False, False, False, False, False,
+            False],
+           [False, False, False,  True, False,  True, False, False, False,
+            False],
+           [False, False, False, False,  True, False, False, False, False,
+            False],
+           [False, False, False, False,  True, False, False, False, False,
+            False],
+           [False, False, False, False, False, False, False, False, False,
+            False],
+           [False, False, False, False, False, False, False, False, False,
+            False],
+           [False, False, False, False, False, False, False, False, False,
+            False]], dtype=bool)</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># а теперь те, в которых была жизнь и имеется ровно два соседа</span>
+population <span class="token operator">&amp;</span> <span class="token punctuation">(</span>neighbors <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>    array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)</samp></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># и объединим их</span>
+population <span class="token operator">=</span> <span class="token punctuation">(</span>neighbors <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">|</span> <span class="token punctuation">(</span>population <span class="token operator">&amp;</span> <span class="token punctuation">(</span>neighbors <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+population
+</code></pre>
+<pre><samp>    array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)</samp></pre>
+<p>Объединить матрицы с логическими и целочисленными элементами можно, поскольку они в данном случае могут быть сведены друг к другу: 0 — False, 1 — True.</p>
+<p>Проследим эволюцию глайдера на протяжении четырех поколений. Для этого создадим функцию <code>next_population()</code>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">next_population</span><span class="token punctuation">(</span>population<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    neighbors <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token punctuation">[</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        np<span class="token punctuation">.</span>roll<span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>neighbors <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">|</span> <span class="token punctuation">(</span>population <span class="token operator">&amp;</span> <span class="token punctuation">(</span>neighbors <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+population <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span>
+    <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dtype<span class="token operator">=</span>np<span class="token punctuation">.</span>uint8<span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>population<span class="token punctuation">,</span> <span class="token string">'\n'</span><span class="token punctuation">)</span>
+    population <span class="token operator">=</span> next_population<span class="token punctuation">(</span>population<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[[0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 1 0 0 0 0 0]
+     [0 0 0 0 0 1 0 0 0 0]
+     [0 0 0 1 1 1 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]] 
+    
+    [[0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 1 0 1 0 0 0 0]
+     [0 0 0 0 1 1 0 0 0 0]
+     [0 0 0 0 1 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]] 
+    
+    [[0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 1 0 0 0 0]
+     [0 0 0 1 0 1 0 0 0 0]
+     [0 0 0 0 1 1 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]] 
+    
+    [[0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 1 0 0 0 0 0]
+     [0 0 0 0 0 1 1 0 0 0]
+     [0 0 0 0 1 1 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0]]</samp></pre>
+<p>С визуализацией у нас не очень здорово, но видно, что глайдер «летит»: каждые четыре поколения он сдвигается вниз и вправо. Иными словами, он движется в правый нижний угол, что демонстрирует красивая анимация <a class="material__link" href="https://ru.wikipedia.org/wiki/Игра_«Жизнь»" rel="noopener noreferrer" target="_blank">источника</a>.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/game-life.gif" width="500"/></div>
+<p>За время поисков были найдены разнообразные движущиеся комбинации, периодические комбинации, порождающие глайдеры («глайдерные ружья»). Была даже доказана возможность построить в игре «Жизнь» универсальную вычислительную машину.</p>
+<p><strong>Итоги</strong></p>
+<p>Мы увидели, что значительную часть вычислений можно реализовывать в библиотеках, избавляясь от циклов в Python и ускоряя вычисления. Массивы Numpy — одна из самых востребованных структур в вычислительной математике.</p>
+</section></article></section>

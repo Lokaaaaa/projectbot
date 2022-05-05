@@ -1,0 +1,137 @@
+<section class="lesson-material__content"><article class="material"><h1>Строки. Индексация</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Строка как коллекция</a></li>
+<li><a class="material__link" href="#2">Что мы знаем о строках</a></li>
+<li><a class="material__link" href="#3">Индексация в строках</a></li>
+<li><a class="material__link" href="#4">Перебор элементов строки</a></li>
+<li><a class="material__link" href="#5">Хранение текстов в памяти компьютера</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом занятии мы углубим свои знания о строках. Теперь мы сможем не только считывать строку, но и работать с ней, в том числе делать посимвольный перебор.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Строка как коллекция</h2>
+<p>На прошлом занятии мы познакомились с коллекцией, которая называется <strong>множество</strong>. Вспомним, что основная особенность коллекций — возможность хранить несколько значений под одним именем. Можно сказать, что коллекция является <strong>контейнером</strong> для этих значений.</p>
+<p>Но еще до изучения множеств мы уже знали тип данных, который ведет себя подобно коллекции. Этот тип данных — строка. Действительно, ведь строка фактически является последовательностью символов. В некоторых языках программирования есть специальный тип данных <strong>char</strong>, позволяющий хранить один символ. В Python такого типа данных нет, поэтому можно сказать, что строка — <strong>последовательность односимвольных строк</strong>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Что мы знаем о строках</h2>
+<p>Давайте вспомним, что мы уже знаем о работе со строками в языке Python. Мы умеем создавать строки четырьмя способами: задавать напрямую, считывать с клавиатуры функцией <code>input()</code>, преобразовывать число в строку функцией <var>str</var> и склеивать из двух других строк операцией <var>+</var>. Кроме того, мы умеем узнавать длину строки, используя функцию <var>len</var>, и проверять, является ли одна строка частью другой, используя операцию in:</p>
+<pre class="language-python"><code class="language-python">fixed_word <span class="token operator">=</span> <span class="token string">'опять'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>fixed_word<span class="token punctuation">)</span>
+word <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span>
+number <span class="token operator">=</span> <span class="token number">25</span>
+number_string <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>number_string<span class="token punctuation">)</span>
+word_plus_number <span class="token operator">=</span> fixed_word <span class="token operator">+</span> number_string
+<span class="token keyword">print</span><span class="token punctuation">(</span>word_plus_number<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>word_plus_number<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'оп'</span> <span class="token keyword">in</span> word_plus_number<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Индексация в строках</h2>
+<p>В отличие от множеств, в строках важен порядок элементов (символов). Действительно, если множества {1, 2, 3} и {3, 2, 1} — это одинаковые множества, то строки МИР и РИМ — две совершенно разные строки. Наличие порядка дает нам возможность пронумеровать символы. Нумерация символов начинается с 0:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-10/string-index-1.svg" width="680"/></div>
+<section class="material__note">
+<p class="material__note-heading"><strong>Индекс</strong></p>
+<p>По индексу можно получить соответствующий ему символ строки. Для этого нужно после самой строки написать в квадратных скобках индекс символа.</p>
+</section>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> <span class="token string">'привет'</span>
+initial_letter <span class="token operator">=</span> word<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>initial_letter<span class="token punctuation">)</span>  <span class="token comment"># сделает то же, что print('п')</span>
+other_letter <span class="token operator">=</span> word<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>other_letter<span class="token punctuation">)</span>  <span class="token comment"># сделает то же, что print('в')</span>
+</code></pre>
+<p>Естественно, в этом примере <var>word</var> с тем же успехом можно было считать с клавиатуры через <code>input()</code>. Тогда мы не могли бы заранее сказать, чему равны переменные <var>initial_letter</var> и <var>other_letter</var>.</p>
+<p>А что будет, если попытаться получить букву, номер которой слишком велик? В этом случае Python выдаст ошибку:</p>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> <span class="token string">'привет'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># builtins.IndexError: string index out of range</span>
+</code></pre>
+<p>Конечно, номер в квадратных скобках — не всегда фиксированное число, которое прописано в самой программе. Его тоже можно считать с клавиатуры или получить в результате арифметического действия.</p>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> <span class="token string">'привет'</span>
+number_of_letter <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># предположим, пользователь ввел 3</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">[</span>number_of_letter<span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># тогда будет выведена буква 'в'</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Отрицательные индексы</strong></p>
+<p>Кроме «прямой» индексации (начинающейся с 0), в Python разрешены отрицательные индексы: <code>word[-1]</code> означает последний символ строки <var>word</var>, <code>word[-2]</code> — предпоследний и т д.</p>
+</section>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-10/string-index-2.svg" width="680"/></div>
+<p>А можно ли, используя индексацию, изменить какой-либо символ строки? Давайте проверим:</p>
+<pre class="language-python"><code class="language-python">word <span class="token operator">=</span> <span class="token string">'карова'</span>  <span class="token comment"># Написали слово с ошибкой</span>
+word<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'о'</span>    <span class="token comment"># Пробуем исправить, но:</span>
+<span class="token comment"># TypeError: 'str' object does not support item assignment</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Интерпретатор Python выдает ошибку — значит, изменить отдельный символ строки невозможно, т. е. строка относится к <strong>неизменяемым</strong> типам данных в Python.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="4">Перебор элементов строки</h2>
+<p>В предыдущем уроке мы узнали, что цикл <var>for</var> можно использовать для перебора элементов множества. Таким же образом можно использовать цикл <var>for</var>, чтобы перебрать все буквы в слове:</p>
+<pre class="language-python"><code class="language-python">text <span class="token operator">=</span> <span class="token string">'hello, my dear friends!'</span>
+vowels <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">for</span> letter <span class="token keyword">in</span> text<span class="token punctuation">:</span>
+    <span class="token keyword">if</span> letter <span class="token keyword">in</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'e'</span><span class="token punctuation">,</span> <span class="token string">'i'</span><span class="token punctuation">,</span> <span class="token string">'o'</span><span class="token punctuation">,</span> <span class="token string">'u'</span><span class="token punctuation">,</span> <span class="token string">'y'</span><span class="token punctuation">}</span><span class="token punctuation">:</span>
+        vowels <span class="token operator">+=</span> <span class="token number">1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>vowels<span class="token punctuation">)</span>
+</code></pre>
+<p>Но, так как символы в строке пронумерованы, у нас есть еще один способ перебрать все элементы в строке: перебрать все индексы, используя уже знакомую нам конструкцию <code>for i in range(...)</code>.</p>
+<pre class="language-python"><code class="language-python">text <span class="token operator">=</span> <span class="token string">'hello, my dear friends!'</span>
+vowels <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> text<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">in</span> <span class="token string">'aeiouy'</span><span class="token punctuation">:</span>
+        vowels <span class="token operator">+=</span> <span class="token number">1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>vowels<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Хранение текстов в памяти компьютера</h2>
+<p>Давайте немного поговорим о том, как строки хранятся в памяти компьютера.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Кодирование</strong></p>
+<p>Поскольку компьютер умеет хранить только двоичные числа, для записи нечисловой информации (текстов, изображений, видео, документов) прибегают к кодированию.</p>
+<p>Самый простой случай кодирования — сопоставление кодов текстовым символам.</p>
+</section>
+<p>Один самых распространенных форматов такого кодирования — таблица ASCII (American standard code for information interchange).</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/ascii.png" width="423"/></div>
+<p>Изначально в этой таблице каждому символу был поставлен в соответствие 7-битный код, что позволяло идентифицировать 128 различных символов. В таблице вы не видите символы с кодами, меньшими 32, так как они являются служебными и не предназначены для непосредственного вывода на экран (пробел, перевод строки, табуляция и т. д.).</p>
+<p>Этого хватало на латинские буквы обоих регистров, знаки препинания и спецсимволы — например, перевод строки или разрыв страницы. Позже код расширили до 1 байта, что позволяло хранить уже 256 различных значений: в таблицу помещались буквы второго алфавита (например, кириллица) и дополнительные графические элементы (псевдографика).</p>
+<p>В некоторых относительно низкоуровневых языках (например, в С) можно в любой момент перейти от представления строки в памяти к последовательности байтов, начинающейся по какому-либо адресу.</p>
+<p>Сейчас однобайтные кодировки отошли на второй план, уступив место Юникоду.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Юникод</strong></p>
+<p>Юникод — таблица, которая содержит соответствия между числом и каким-либо знаком, причем количество знаков может быть любым. Это позволяет одновременно использовать любые символы любых алфавитов и дополнительные графические элементы. Кроме того, в Юникоде каждый символ, помимо кода, имеет некоторые свойства: например, буква это или цифра. Это позволяет более гибко работать с текстами.</p>
+</section>
+<p>В Юникод все время добавляются новые элементы, а сам размер этой таблицы не ограничен и будет только расти, поэтому сейчас при хранении в памяти одного юникод-символа может потребоваться от 1 до 8 байт. Отсутствие ограничений привело к тому, что стали появляться символы на все случаи жизни. Например, есть несколько снеговиков.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/unicode-snowman.png" width="201"/></div>
+<p>Этого вы можете увидеть, если наберете:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'\u2603'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>☃</samp></pre>
+<p>Важно понять, что все строки в Python хранятся именно как последовательность юникод-символов.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция ord</strong></p>
+<p>Для того чтобы узнать код некоторого символа, существует функция <var>ord</var> (от order — «порядок»).</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">ord</span><span class="token punctuation">(</span><span class="token string">'Б'</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>1041</samp></pre>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция chr</strong></p>
+<p>Зная код, всегда можно получить соответствующий ему символ. Для этого существует функция <var>chr</var> (от character — «символ»):</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">chr</span><span class="token punctuation">(</span><span class="token number">1041</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>'Б'</samp></pre>
+</section>
+<p>Функции <var>ord</var> и <var>chr</var> часто работают в паре. Попробуйте, например, предположить, что будет выведено на экран в результате работы следующей программы:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">26</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">chr</span><span class="token punctuation">(</span><span class="token builtin">ord</span><span class="token punctuation">(</span><span class="token string">'A'</span><span class="token punctuation">)</span> <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</section></article></section>

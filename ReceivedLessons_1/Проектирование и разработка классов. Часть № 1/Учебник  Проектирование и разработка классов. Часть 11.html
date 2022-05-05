@@ -1,0 +1,322 @@
+<section class="lesson-material__content"><article class="material"><h1>Проектирование и разработка классов. Часть 1</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение</a></li>
+<li><a class="material__link" href="#2">Подготовительный этап</a></li>
+<li><a class="material__link" href="#3">Движение фигуры по пустой доске</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом занятии мы коснемся обширной темы проектирования программ. Чем больше и сложнее программа, тем важнее еще до написания кода понять, что она должна делать и какова будет ее внутренняя структура.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Введение</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Проектирование</strong></p>
+<p>Этап определения внутренней структуры программы, разнесения функциональности между модулями (а затем и внутри модулей — между функциями, классами и методами) называется <strong>проектированием</strong>. Чем сложнее программа, тем больше возможностей придется рассмотреть при проектировании и тем важнее выбрать подходящий вариант. Результат проектирования должен быть внутренне непротиворечив, хорошо отражать логику предметной области и допускать дальнейшее развитие программы без перепроектирования.</p>
+</section>
+<p>Мы разберем проектирование программы для игры в шахматы. Программа предназначена для двух игроков, которые за одним компьютером будут по очереди делать ходы. Программа должна принимать только допустимые ходы и отображать на экране положение фигур после каждого хода с помощью псевдографики. Никакого искусственного интеллекта и возможности самостоятельно делать ходы от программы не требуется.</p>
+<p>Можно было бы просто выбрать готовый вариант проектирования и приступить к поэтапной реализации каждого класса и метода. Однако в этом случае мы не смогли бы рассмотреть варианты и увидеть, что бывает, когда программа спроектирована некорректно и ее приходится перепроектировать на лету. Такое случается, когда требования к программе изменяются и уточняются в ходе ее написания.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Этапы проектирования программы</strong></p>
+<p>Поэтому мы будем проектировать программу и сразу писать код, делая это в несколько этапов:</p>
+<ul>
+<li><strong>Подготовительный этап</strong> — цвет фигур, доска</li>
+<li><strong>Движение фигуры по пустой доске</strong> — реализация класса доски и классов пешки и ладьи</li>
+<li><strong>Движение фигуры по доске с другими фигурами</strong> — ферзь, ладья, слон и пешка (при ходе на две клетки) не должны иметь препятствий на пути</li>
+<li><strong>Взятие фигуры другой фигурой</strong></li>
+</ul>
+</section>
+<p>Мы не будем реализовывать взятие на проходе, рокировку, превращение пешки, запрет хода королем под шах и прочие сложные правила.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Подготовительный этап</h2>
+<p>Для начала опишем цвет фигуры. От цвета нам нужно три операции: задание цвета фигуры, проверка цвета (черный или белый) и получение противоположного цвета.</p>
+<p>Простейший способ описать цвет — определить две константы WHITE и BLACK и функцию, которая будет возвращать цвет, противоположный переданному.</p>
+<pre class="language-python"><code class="language-python">WHITE <span class="token operator">=</span> <span class="token number">1</span>
+BLACK <span class="token operator">=</span> <span class="token number">2</span>
+ 
+
+<span class="token comment"># Удобная функция для вычисления цвета противника</span>
+<span class="token keyword">def</span> <span class="token function">opponent</span><span class="token punctuation">(</span>color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> color <span class="token operator">==</span> WHITE<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> BLACK
+    <span class="token keyword">return</span> WHITE
+ 
+
+<span class="token comment"># Инициализация цвета</span>
+color <span class="token operator">=</span> WHITE
+<span class="token comment"># Проверка цвета</span>
+<span class="token keyword">if</span> color <span class="token operator">==</span> BLACK<span class="token punctuation">:</span>
+    do_something<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># сравнение цветов</span>
+color <span class="token operator">==</span> other_color
+<span class="token comment"># Цвет противника</span>
+opponent_color <span class="token operator">=</span> opponent<span class="token punctuation">(</span>color<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: используются именно константы, а не строки <code>"white"</code> и <code>"black"</code>. Если допустить в такой строке опечатку (например, whte вместо white), выражение всегда будет ложным. Однако в случае <code>color == "whte"</code> программа просто будет тихонько работать неправильно, и ошибку придется поискать. Если же написать <code>color == WHTE</code>, интерпретатор прекратит работу, встретив неизвестное имя WHTE, и сразу укажет, в какой строке ошибка.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Обозначение констант в Python</strong></p>
+<p>Переменные <var>BLACK</var> и <var>WHITE</var> названы в верхнем регистре, чтобы показать, что они фактически будут константами, т. е. мы не собираемся их изменять. Настоящих констант в Python нет, и <var>WHITE</var> — такая же переменная, как и любая другая, однако такие стандартные обозначения помогают писать и читать программы.</p>
+</section>
+<p>На этом варианте кода с константами <var>WHITE</var> и <var>BLACK</var> мы и остановимся в итоге. И все же давайте попробуем еще пару вариантов.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Не здравый пример лишнего класса для цвета:</span>
+WHITE <span class="token operator">=</span> <span class="token number">1</span>
+BLACK <span class="token operator">=</span> <span class="token number">2</span>
+ 
+
+<span class="token keyword">class</span> <span class="token class-name">PieceColor</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> color
+ 
+    <span class="token keyword">def</span> <span class="token function">opponent</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>color <span class="token operator">==</span> WHITE<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> PieceColor<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> PieceColor<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">is_black</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color <span class="token operator">==</span> BLACK
+ 
+    <span class="token keyword">def</span> <span class="token function">is_white</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color <span class="token operator">==</span> WHITE
+ 
+    <span class="token keyword">def</span> <span class="token function">__eq__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color <span class="token operator">==</span> other<span class="token punctuation">.</span>color
+ 
+
+<span class="token comment"># Инициализация цвета</span>
+color <span class="token operator">=</span> PieceColor<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span>
+<span class="token comment"># Проверка цвета</span>
+<span class="token keyword">if</span> color<span class="token punctuation">.</span>is_black<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    do_something<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># сравнение цветов</span>
+color <span class="token operator">==</span> other_color
+<span class="token comment"># Цвет противника</span>
+opponent_color <span class="token operator">=</span> color<span class="token punctuation">.</span>opponent<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Пример с отдельным классом для каждого цвета</span>
+<span class="token keyword">class</span> <span class="token class-name">Black</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__eq__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># истина, если другой операнд оператора ==</span>
+        <span class="token comment"># тоже является экземпляром (англ. instance) класса Black</span>
+        <span class="token keyword">return</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>other<span class="token punctuation">,</span> Black<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">opponent</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> White<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">is_black</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">is_white</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+ 
+
+<span class="token keyword">class</span> <span class="token class-name">White</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__eq__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>other<span class="token punctuation">,</span> White<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">opponent</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> Black<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">is_black</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">is_white</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+ 
+
+<span class="token comment"># Инициализация цвета</span>
+color <span class="token operator">=</span> White<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># Проверка цвета</span>
+color<span class="token punctuation">.</span>is_black<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># сравнение цветов</span>
+color <span class="token operator">==</span> other_color
+<span class="token comment"># Цвет противника</span>
+opponent_color <span class="token operator">=</span> color<span class="token punctuation">.</span>opponent<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Видно, что во втором варианте реализации цветов мы не смогли избавиться от констант <var>WHITE</var> и <var>BLACK</var>. В третьем вместо двух констант получились два класса, а код их использования прост и близок к человеческому языку. Однако все портит излишняя сложность классов <var>White</var> и <var>Black</var>. Возможно, в какой-то другой программе это было бы оправданно, однако здесь мы точно знаем постановку задачи и не будем «навешивать» на цвета фигур дополнительной функциональности. Поэтому остановимся на самом первом варианте с двумя константами и функцией.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Движение фигуры по пустой доске</h2>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-35/chess.svg" width="680"/></div>
+<p>На картинке желтым цветом показаны обозначения клеток, принятые в шахматах, а черным — индексы, которые будем использовать мы.</p>
+<p>Давайте спроектируем шахматную доску и позволим одной фигуре ходить по ней. Пока будем считать, что других фигур нет, и взаимодействия с ними учитывать не будем.</p>
+<p>Пока не очень понятно, какие у нас будут классы и методы. Очевидно, что нужно определить класс <var>Board</var> для доски и по классу для каждого типа фигуры. Но, как распределить между ними функциональность и кто будет отвечать за ходы и взятия фигур, пока неясно.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Проектирование «сверху вниз» и «снизу вверх»</strong></p>
+<p>Здесь можно пойти двумя путями: проектировать и программировать <strong>сверху вниз</strong> или <strong>снизу вверх</strong>.</p>
+<p>Проектирование <strong>сверху вниз</strong> идет от общего к частному: от интерфейса (набора методов для взаимодействия с объектами) — к деталям реализации. При движении <strong>снизу вверх</strong> сначала проектируются простые независимые классы и функции, а потом, на их основе, создаются более сложные классы и функции.</p>
+</section>
+<p>В начале урока мы написали код для цвета фигур, программируя снизу вверх. Однако сейчас мы плохо представляем, какой интерфейс должен быть у доски и фигур. Если мы попробуем реализовать эти классы сразу, есть риск, что при объединении в интерфейс пользователя мы не сумеем совместить их оптимальным образом. Поэтому сначала напишем интерфейс пользователя, чтобы понять, какие интерфейсы нам нужны от доски и фигур:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_board</span><span class="token punctuation">(</span>board<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token comment"># Распечатать доску в текстовом виде (см. скриншот)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'     +----+----+----+----+----+----+----+----+'</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> row <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">,</span> row<span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">'  '</span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> col <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'|'</span><span class="token punctuation">,</span> board<span class="token punctuation">.</span>cell<span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">' '</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'|'</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'     +----+----+----+----+----+----+----+----+'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>end<span class="token operator">=</span><span class="token string">'        '</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> col <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>col<span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">'    '</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+ 
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Создаём шахматную доску</span>
+    board <span class="token operator">=</span> Board<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># Цикл ввода команд игроков</span>
+    <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+        <span class="token comment"># Выводим положение фигур на доске</span>
+        print_board<span class="token punctuation">(</span>board<span class="token punctuation">)</span>
+        <span class="token comment"># Подсказка по командам</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Команды:'</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'    exit                               -- выход'</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'    move &lt;row&gt; &lt;col&gt; &lt;row1&gt; &lt;col1&gt;     -- ход из клетки (row, col)'</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'                                          в клетку (row1, col1)'</span><span class="token punctuation">)</span>
+        <span class="token comment"># Выводим приглашение игроку нужного цвета</span>
+        <span class="token keyword">if</span> board<span class="token punctuation">.</span>current_player_color<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> WHITE<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ход белых:'</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ход черных:'</span><span class="token punctuation">)</span>
+        command <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> command <span class="token operator">==</span> <span class="token string">'exit'</span><span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+        move_type<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1 <span class="token operator">=</span> command<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>col<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>row1<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>col1<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> board<span class="token punctuation">.</span>move_piece<span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ход успешен'</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Координаты некорректы! Попробуйте другой ход!'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Пример работы текстового интерфейса:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-35/chess-interface.png" width="680"/></div>
+<p>Теперь понятно, что от доски нам понадобится достаточно простой интерфейс: инициализация без аргументов; возможность определять цвет фигур текущего игрока; метод <var>cell</var>, возвращающий двубуквенное представление фигуры в клетке; и метод <var>move_piece</var>, перемещающий фигуру из одной клетки в другую. При этом метод <var>move_piece</var> должен возвращать истину, если ход сделан, и ложь, если по каким-то причинам ход невозможен.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-35/chessscheme.svg" width="680"/></div>
+<p>Схема движения ладьи и пешки. Ладья движется по вертикали или горизонтали на любое количество клеток. Пешка — на одну или две клетки вперед из начального положения и на одну клетку не из начального положения.</p>
+<p>Давайте реализуем этот класс:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">correct_coords</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Функция проверяет, что координаты (row, col) лежат
+    внутри доски"""</span>
+    <span class="token keyword">return</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> row <span class="token operator">&lt;</span> <span class="token number">8</span> <span class="token keyword">and</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> col <span class="token operator">&lt;</span> <span class="token number">8</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">Board</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> WHITE
+        self<span class="token punctuation">.</span>field <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> row <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>field<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token boolean">None</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">8</span><span class="token punctuation">)</span>
+        <span class="token comment"># Пешка белого цвета в клетке E2.</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">=</span> Pawn<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> WHITE<span class="token punctuation">)</span>  
+
+    <span class="token keyword">def</span> <span class="token function">current_player_color</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color
+
+    <span class="token keyword">def</span> <span class="token function">cell</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Возвращает строку из двух символов. Если в клетке (row, col)
+        находится фигура, символы цвета и фигуры. Если клетка пуста,
+        то два пробела."""</span>
+        piece <span class="token operator">=</span> self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span>
+        <span class="token keyword">if</span> piece <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">'  '</span>
+        color <span class="token operator">=</span> piece<span class="token punctuation">.</span>get_color<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        c <span class="token operator">=</span> <span class="token string">'w'</span> <span class="token keyword">if</span> color <span class="token operator">==</span> WHITE <span class="token keyword">else</span> <span class="token string">'b'</span>
+        <span class="token keyword">return</span> c <span class="token operator">+</span> piece<span class="token punctuation">.</span>char<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">move_piece</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Переместить фигуру из точки (row, col) в точку (row1, col1).
+        Если перемещение возможно, метод выполнит его и вернет True.
+        Если нет --- вернет False"""</span>
+
+        <span class="token keyword">if</span> <span class="token keyword">not</span> correct_coords<span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">not</span> correct_coords<span class="token punctuation">(</span>row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> row <span class="token operator">==</span> row1 <span class="token keyword">and</span> col <span class="token operator">==</span> col1<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>  <span class="token comment"># нельзя пойти в ту же клетку</span>
+        piece <span class="token operator">=</span> self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span>
+        <span class="token keyword">if</span> piece <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> piece<span class="token punctuation">.</span>get_color<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> self<span class="token punctuation">.</span>color<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> piece<span class="token punctuation">.</span>can_move<span class="token punctuation">(</span>row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>  <span class="token comment"># Снять фигуру.</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row1<span class="token punctuation">]</span><span class="token punctuation">[</span>col1<span class="token punctuation">]</span> <span class="token operator">=</span> piece  <span class="token comment"># Поставить на новое место.</span>
+        piece<span class="token punctuation">.</span>set_position<span class="token punctuation">(</span>row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> opponent<span class="token punctuation">(</span>self<span class="token punctuation">.</span>color<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+</code></pre>
+<p>В этом фрагменте кода мы определили функцию <var>correct_coords</var>, которая нужна для проверки корректности клетки, и класс <var>Board</var>, который отвечает за выбор фигуры и ее движение. Понятно и то, что от каждого класса фигур нам понадобится инициализатор с аргументом — цветом фигуры, методы <var>current_player_color</var>, <var>can_move</var> и <var>char</var>. Метод <var>current_player_color</var> должен возвращать цвет фигур текущего игрока, <var>can_move</var> — определять, может ли фигура данного класса пойти в клетку с заданными координатами, <var>char</var> — возвращать букву, обозначающую фигуру. У каждого класса фигуры будет своя реализация <var>can_move</var>, поэтому будет задействован полиморфизм.</p>
+<p>Давайте для примера напишем реализации классов пешки и ладьи.</p>
+<p><strong>Класс «Пешка»</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Pawn</span><span class="token punctuation">:</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>row <span class="token operator">=</span> row
+        self<span class="token punctuation">.</span>col <span class="token operator">=</span> col
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> color
+ 
+    <span class="token keyword">def</span> <span class="token function">set_position</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>row <span class="token operator">=</span> row
+        self<span class="token punctuation">.</span>col <span class="token operator">=</span> col
+ 
+    <span class="token keyword">def</span> <span class="token function">char</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">'P'</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">get_color</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color
+ 
+    <span class="token keyword">def</span> <span class="token function">can_move</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Пешка может ходить только по вертикали</span>
+        <span class="token comment"># "взятие на проходе" не реализовано</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>col <span class="token operator">!=</span> col<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+ 
+        <span class="token comment"># Пешка может сделать из начального положения ход на 2 клетки</span>
+        <span class="token comment"># вперёд, поэтому поместим индекс начального ряда в start_row.</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>color <span class="token operator">==</span> WHITE<span class="token punctuation">:</span>
+            direction <span class="token operator">=</span> <span class="token number">1</span>
+            start_row <span class="token operator">=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            direction <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
+            start_row <span class="token operator">=</span> <span class="token number">6</span>
+ 
+        <span class="token comment"># ход на 1 клетку</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>row <span class="token operator">+</span> direction <span class="token operator">==</span> row<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+ 
+        <span class="token comment"># ход на 2 клетки из начального положения</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>row <span class="token operator">==</span> start_row <span class="token keyword">and</span> self<span class="token punctuation">.</span>row <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">*</span> direction <span class="token operator">==</span> row<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+ 
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+</code></pre>
+<p><strong>Класс «Ладья»</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Rook</span><span class="token punctuation">:</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>row <span class="token operator">=</span> row
+        self<span class="token punctuation">.</span>col <span class="token operator">=</span> col
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> color
+ 
+    <span class="token keyword">def</span> <span class="token function">set_position</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>row <span class="token operator">=</span> row
+        self<span class="token punctuation">.</span>col <span class="token operator">=</span> col
+ 
+    <span class="token keyword">def</span> <span class="token function">char</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">'R'</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">get_color</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color
+ 
+    <span class="token keyword">def</span> <span class="token function">can_move</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Невозможно сделать ход в клетку, которая не лежит в том же ряду</span>
+        <span class="token comment"># или столбце клеток.</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>row <span class="token operator">!=</span> row <span class="token keyword">and</span> self<span class="token punctuation">.</span>col <span class="token operator">!=</span> col<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+ 
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+</code></pre>
+<p>Вы наверняка обратили внимание, что написанные нами классы для фигур, имеют очень много общего. Это должно навести нас на мысль, что можно эффективно применить механизм наследования. Попробуйте написать этот код самостоятельно.</p>
+</section></article></section>

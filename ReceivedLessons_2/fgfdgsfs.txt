@@ -1,0 +1,29 @@
+import argparse
+
+
+def format_text_block(height, width, text):
+    try:
+        sts = open(text, encoding="utf-8").readlines()
+        out = []
+        new_lines = [i if len(i) == 1 and i.find('\n') > -1 else i.replace('\n', '') for i in sts]
+        for line in ''.join(new_lines).split('\n'):
+            for i in range(0, len(line), width):
+                if len(out) == height:
+                    return '\n'.join(out[:height])
+                out.append(line[i:i + width])
+            else:
+                out.append('')
+    except FileNotFoundError as ex:
+        return ex
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--frame-height", type=int)
+    parser.add_argument("--frame-width", type=int)
+    parser.add_argument("file", type=str)
+    args = parser.parse_args()
+    try:
+        print(format_text_block(args.frame_height, args.frame_width, args.file))
+    except Exception as e:
+        print(e)

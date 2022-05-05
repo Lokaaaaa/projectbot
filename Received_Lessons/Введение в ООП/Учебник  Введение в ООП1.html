@@ -1,0 +1,309 @@
+<section class="lesson-material__content"><article class="material"><h1>Введение в ООП</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение</a></li>
+<li><a class="material__link" href="#2">Основные понятия</a></li>
+<li><a class="material__link" href="#3">Создание классов</a></li>
+<li><a class="material__link" href="#4">Методы классов</a></li>
+<li><a class="material__link" href="#5">Инициализация экземпляров класса</a></li>
+<li><a class="material__link" href="#6">Соглашения об именовании, вызов методов атрибутов</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Одна из самых распространенных методик разработки программных продуктов — объектно-ориентированное программирование (ООП). При работе с функциями мы уже использовали принцип модульности (сокрытие сложного алгоритма за вызовом функций) и библиотеки (упаковка функций, решающих схожие задачи, в одно хранилище — библиотеку). В ООП появляется еще один пример модульности — <strong>объект</strong>. Объекты хранят внутри себя и данные, и обрабатывающие их функции. Изучению парадигмы объектно-ориентированного программирования и посвящены следующие уроки.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Введение</h2>
+<p>Язык программирования Python появился в 1991 году. К этому времени была разработана теоретическая база объектно-ориентированного программирования, появились исследовательские языки программирования, проверившие эти идеи на практике, и даже возникло первое поколение объектно-ориентированных языков для широкого круга программистов.</p>
+<p>Поэтому, ориентируясь на чужие успехи и неудачи, Гвидо ван Россум и его коллеги смогли спроектировать достаточно простую и мощную реализацию ООП. Python поддерживает ООП на сто процентов: все данные в нем являются объектами. Числа всех типов, строки, списки, словари, даже функции, модули и, наконец, сами типы данных — все это объекты!</p>
+<p>Давайте для начала рассмотрим несколько предметов из реального мира. Вообще говоря, прямой аналогии между объектами материального мира и объектами из мира программирования нет. Ведь в программировании есть объекты, которые обозначают какой-то процесс (например, функции), или состояние процесса, или вообще произвольные абстрактные понятия. Например, массив или число с плавающей точкой — сами по себе достаточно абстрактные понятия, которые имеют отдаленные аналоги в реальном мире. Но все же давайте пока порассуждаем о реальных объектах.</p>
+<p>Представим себе комнату. В ней есть мебель: несколько столов, стулья, шкафы. Стулья могут отличаться цветом, формой, количеством ножек, но все равно мы всегда сможем отличить стул от шкафа.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Если задуматься, у каждого <strong>объекта</strong> есть набор <strong>свойств</strong> и <strong>действия</strong>, в которых он может участвовать. Основываясь на этих <strong>свойствах</strong> (наличие сиденья) и <strong>действиях</strong> (на стуле можно сидеть), мы классифицируем объекты, то есть относим их к тому или иному <strong>классу</strong>.</p>
+</section>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-30/2.svg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="2">Основные понятия</h2>
+<p>Давайте определим несколько терминов.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Класс</strong></p>
+<p>Описывает модель объекта, его свойства и поведение. Говоря языком программиста, класс — такой тип данных, который создается для описания сложных объектов.</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Экземпляр</strong></p>
+<p>Для краткости вместо «Объект, порожденный классом „Стул“» говорят «экземпляр класса „Стул“».</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Объект</strong></p>
+<p>Хранит конкретные значения свойств и информацию о принадлежности к классу. Может выполнять методы.</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Атрибут</strong></p>
+<p>Свойство, присущее объекту. Класс объекта определяет, какие атрибуты есть у объекта. Конкретные значения атрибутов — характеристика уже не класса, а конкретного экземпляра этого класса, то есть объекта.</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Метод</strong></p>
+<p>Действие, которое объект может выполнять над самим собой или другими объектами.</p>
+</section>
+<p>Чтобы стало чуть понятнее, давайте разберем на примере: <code>1</code>, <code>2</code>, <code>3</code>, <code>"abc"</code>, <code>[10, 20, 30]</code> — объекты. А <var>int</var>, <var>str</var>, <var>list</var> — классы. Да, все типы данных, которые мы изучали ранее, на самом деле — классы:</p>
+<ul>
+<li><code>1</code>, <code>2</code>, <code>3</code> — экземпляры класса <var>int</var></li>
+<li><code>"abc"</code> — класса <var>str</var></li>
+<li><code>[10, 20, 30]</code> — экземпляр класса <var>list</var>, в который вложены экземпляры <var>int</var></li>
+</ul>
+<p>Чтобы узнать, к какому классу относится тот или иной объект, можно воспользоваться функцией <var>type</var>.</p>
+<p>Например,</p>
+<pre class="language-python"><code class="language-python"><span class="token operator">&gt;&gt;</span><span class="token operator">&gt;</span> <span class="token builtin">type</span><span class="token punctuation">(</span><span class="token number">123</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; '&lt;class 'int'&gt;'</span>
+
+<span class="token operator">&gt;&gt;</span><span class="token operator">&gt;</span> <span class="token builtin">type</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; '&lt;class 'list'&gt;'</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Создание классов</h2>
+<p>Давайте создадим простейший класс, который будет моделировать обычный фрукт. На языке Python это будет выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Fruit</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>Имена классов по стандарту именования PEP 8 должны начинаться с большой буквы. Встроенные классы (<var>int</var>, <var>float</var>, <var>str</var>, <var>list</var> и др.) этому правилу не следуют, однако в вашем коде его лучше придерживаться — так делает большинство программистов на Python.</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Определение класса</strong></p>
+<p>Определение этого класса состоит из зарезервированного слова <var>class</var>, имени класса и пустой инструкции после отступа.</p>
+<p>Внутри класса с дополнительным уровнем отступов должны определяться его методы, но сейчас их нет. Однако хотя бы одна инструкция должна быть, поэтому приходится использовать пустую инструкцию-заглушку <var>pass</var>. Она предназначена как раз для таких случаев.</p>
+</section>
+<p>Описав класс, мы создали модель фрукта.</p>
+<p>Теперь создадим два конкретных фрукта — <strong>экземпляра класса</strong> <var>Fruit</var>:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> Fruit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+b <span class="token operator">=</span> Fruit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Переменные <var>a</var> и <var>b</var> содержат ссылки на два разных объекта — экземпляра класса <var>Fruit</var>, которые можно наделить разными атрибутами:</p>
+<pre class="language-python"><code class="language-python">a<span class="token punctuation">.</span>name <span class="token operator">=</span> <span class="token string">'apple'</span>
+a<span class="token punctuation">.</span>weight <span class="token operator">=</span> <span class="token number">120</span>
+<span class="token comment"># теперь a - это яблоко весом 120 грамм</span>
+b<span class="token punctuation">.</span>name <span class="token operator">=</span> <span class="token string">'orange'</span>
+b<span class="token punctuation">.</span>weight <span class="token operator">=</span> <span class="token number">150</span>
+<span class="token comment"># а b - это апельсин весом 150 грамм</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Атрибуты можно не только устанавливать, но и читать. При чтении еще не созданного атрибута будет появляться ошибка <var>AttributeError</var>. Вы ее часто увидите, допуская неточности в именах атрибутов и методов.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">.</span>name<span class="token punctuation">,</span> a<span class="token punctuation">.</span>weight<span class="token punctuation">)</span>  <span class="token comment"># apple 120</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">.</span>name<span class="token punctuation">,</span> b<span class="token punctuation">.</span>weight<span class="token punctuation">)</span>  <span class="token comment"># orange 150</span>
+b<span class="token punctuation">.</span>weight <span class="token operator">-=</span> <span class="token number">10</span>  <span class="token comment"># Апельсин долго лежал на складе и усох</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>b<span class="token punctuation">.</span>name<span class="token punctuation">,</span> b<span class="token punctuation">.</span>weight<span class="token punctuation">)</span>  <span class="token comment"># orange 140</span>
+ 
+c <span class="token operator">=</span> Fruit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+c<span class="token punctuation">.</span>name <span class="token operator">=</span> <span class="token string">'lemon'</span>
+c<span class="token punctuation">.</span>color <span class="token operator">=</span> <span class="token string">'yellow'</span>
+<span class="token comment"># Атрибут color появился только в объекте c.</span>
+<span class="token comment"># Забыли добавить свойство weight и обращаемся к нему</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>c<span class="token punctuation">.</span>name<span class="token punctuation">,</span> c<span class="token punctuation">.</span>weight<span class="token punctuation">)</span>  
+<span class="token comment"># Ошибка AttributeError, нет атрибута weight</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Методы классов</h2>
+<p>На данный момент мы пользуемся объектами только для хранения соответствий между именами атрибутов и их значениями. Но на самом деле возможности объектов значительно шире. Давайте рассмотрим, как можно запрограммировать объекты на выполнение определенных действий:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Greeter</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">hello_world</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Привет, Мир!"</span><span class="token punctuation">)</span>
+ 
+
+greet <span class="token operator">=</span> Greeter<span class="token punctuation">(</span><span class="token punctuation">)</span>
+greet<span class="token punctuation">.</span>hello_world<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># выведет "Привет, Мир!"</span>
+</code></pre>
+<p>После беглого осмотра этого кода видно, что внутри класса <var>Greeter</var> находится определение чего-то, похожего на функцию, печатающую фразу «Привет, Мир!» На самом деле мы написали метод, с синтаксисом вызова которого вы хорошо знакомы по методу строк <var>split</var> или методу списков <var>append</var>. Теперь мы можем создавать такие методы самостоятельно.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>При создании собственных методов обратите внимание на два момента:</p>
+<ul>
+<li>Метод должен быть определен внутри класса (добавляется уровень отступов)</li>
+<li>У методов всегда есть хотя бы один аргумент, и <strong>первый по счету аргумент должен называться self</strong></li>
+</ul>
+</section>
+<p>Аргументу <var>self</var> следует уделить особое внимание. В него передается тот объект, который вызвал этот метод. Поэтому <var>self</var> еще часто называют <strong>контекстным объектом</strong>. Рассмотрим чуть подробнее. Когда программа вызывает метод объекта, Python передает ему в первом аргументе экземпляр вызывающего объекта, который всегда связан с параметром <var>self</var>. Иными словами, <code>greet.hello_world()</code> преобразуется в вызов <code>Greeter.hello_world(greet)</code>. Этот факт объясняет особую важность параметра <var>self</var> и то, почему он всегда должен быть первым в любом методе объекта, который вы пишете. Вызывая метод, вы не должны передавать значение для <var>self</var> явно — интерпретатор сделает это за вас.</p>
+<p>Вообще говоря, <var>self</var> — обычная переменная, которая может называться по-другому. Но так категорически не рекомендуется делать: соглашение об имени контекстного объекта — самое строгое из всех соглашений в мире Python. Его выполняют 99,9 % программистов. Если нарушить это соглашение, другие программисты просто не будут понимать ваш код. Кроме того, некоторые текстовые редакторы подсвечивают слово <var>self</var> цветом, и это удобно.</p>
+<p>В примере выше мы не передавали нашему методу никаких аргументов. Это довольно скучно, ведь мы уже умеем передавать аргументы функциям. Давайте расширим пример и добавим в наш класс два новых метода:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Greeter</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">hello_world</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Привет, Мир!"</span><span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">greeting</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">'''Поприветствовать человека с именем name.'''</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string">!"</span></span><span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">start_talking</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> name<span class="token punctuation">,</span> weather_is_good<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">'''Поприветствовать и начать разговор с вопроса о погоде.'''</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string">!"</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> weather_is_good<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Хорошая погода, не так ли?"</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Отвратительная погода, не так ли?"</span><span class="token punctuation">)</span>
+ 
+ 
+greet <span class="token operator">=</span> Greeter<span class="token punctuation">(</span><span class="token punctuation">)</span>
+greet<span class="token punctuation">.</span>hello_world<span class="token punctuation">(</span><span class="token punctuation">)</span>     <span class="token comment"># Привет, Мир!</span>
+greet<span class="token punctuation">.</span>greeting<span class="token punctuation">(</span><span class="token string">"Петя"</span><span class="token punctuation">)</span>  <span class="token comment"># Привет, Петя!</span>
+ 
+greet<span class="token punctuation">.</span>start_talking<span class="token punctuation">(</span><span class="token string">"Саша"</span><span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">)</span>  
+<span class="token comment"># Привет, Саша!</span>
+<span class="token comment"># Хорошая погода, не так ли?</span>
+</code></pre>
+<p>Значение <var>self</var> автоматически получается из объекта, на котором сделан вызов метода, но мы его пока никак не используем.</p>
+<p>Давайте попробуем запоминать информацию из предыдущих вызовов методов. Напишем класс «Машина», которую, как известно, надо сначала завести, а потом уже ехать:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Car</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">start_engine</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        engine_on <span class="token operator">=</span> <span class="token boolean">True</span>  <span class="token comment"># К сожалению, не сработает</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">drive_to</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> city<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> engine_on<span class="token punctuation">:</span>  <span class="token comment"># Ошибка NameError</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Едем в город </span><span class="token interpolation"><span class="token punctuation">{</span>city<span class="token punctuation">}</span></span><span class="token string">."</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Машина не заведена, никуда не едем"</span><span class="token punctuation">)</span>
+ 
+
+c <span class="token operator">=</span> Car<span class="token punctuation">(</span><span class="token punctuation">)</span>
+c<span class="token punctuation">.</span>start_engine<span class="token punctuation">(</span><span class="token punctuation">)</span>
+c<span class="token punctuation">.</span>drive_to<span class="token punctuation">(</span><span class="token string">'Владивосток'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Итак, первая версия класса «Машина» специально сделана нерабочей, чтобы показать, что переменные внутри методов ведут себя точно так же, как и переменные функций. То есть если мы инициализируем переменную внутри метода, то после его завершения все созданные таким образом переменные уничтожаются и оказываются недоступны как следующему вызову этого же метода, так и другим методам. Под «уничтожением» мы понимаем исчезновение самих переменных, а не объектов, на которые они ссылаются. Если ссылка на объект сохранилась где-нибудь (например, мы вернули объект с помощью <var>return</var>), он все еще доступен. Если ссылок не осталось, объект будет скоро переработан сборщиком мусора.</p>
+<p>Напомним, что такие переменные называются <strong>локальными</strong>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Инициализация экземпляров класса</h2>
+<p>Но вернемся к методам. Пора нашей машине наконец поехать — и в этом нам поможет контекстный объект <var>self</var>. Он общий для всех методов класса, и именно в нем мы с помощью атрибутов сохраним информацию о состоянии двигателя:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Car</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">start_engine</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>engine_on <span class="token operator">=</span> <span class="token boolean">True</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">drive_to</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> city<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>engine_on<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Едем в город </span><span class="token interpolation"><span class="token punctuation">{</span>city<span class="token punctuation">}</span></span><span class="token string">."</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Машина не заведена, никуда не едем."</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь наша машина отлично заведется и поедет:</p>
+<pre class="language-python"><code class="language-python">car1 <span class="token operator">=</span> Car<span class="token punctuation">(</span><span class="token punctuation">)</span>
+car1<span class="token punctuation">.</span>start_engine<span class="token punctuation">(</span><span class="token punctuation">)</span>
+car1<span class="token punctuation">.</span>drive_to<span class="token punctuation">(</span><span class="token string">'Владивосток'</span><span class="token punctuation">)</span>  <span class="token comment"># Едем в город Владивосток.</span>
+</code></pre>
+<p>Однако одна проблема осталась. При попытке выехать на незаведенной машине</p>
+<pre class="language-python"><code class="language-python">car2 <span class="token operator">=</span> Car<span class="token punctuation">(</span><span class="token punctuation">)</span>
+car2<span class="token punctuation">.</span>drive_to<span class="token punctuation">(</span><span class="token string">'Лиссабон'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>вместо красивого сообщения о том, что незаведенная машина не поедет, получим «падение» программы с ошибкой <var>AttributeError</var> (отсутствие атрибута или метода). Еще бы! Ведь атрибут создавался в методе <var>start_engine</var>, а мы не вызвали его для объекта <var>car2</var>.</p>
+<p>Кроме того, стоит добавить метод <var>stop_engine</var>, чтобы не только заводить машину, но и глушить двигатель. Этот метод помог бы нам избежать вышеуказанной ошибки, но странно глушить еще не заведенную машину, чтобы избежать ошибки: ведь интуитивно мы понимаем, что машина должна создаваться с выключенным двигателем.</p>
+<p>Нет ли способа задать значение атрибута <var>engine_on</var> по умолчанию? Да. Есть метод <var>__init__</var>, который относится к группе так называемых специальных методов, которые имеют особое значение для интерпретатора Python.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Метод __init__</strong></p>
+<p>Особое значение метода <var>__init__</var> заключается в том, что, если такой метод в классе определен, интерпретатор <strong>автоматически</strong> вызывает его при создании каждого экземпляра этого класса для инициализации экземпляра.</p>
+</section>
+<p>Давайте воспользуемся этим, чтобы при создании объекта создать атрибут <var>engine_on</var> и записать в него False.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Car</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>engine_on <span class="token operator">=</span> <span class="token boolean">False</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">start_engine</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>engine_on <span class="token operator">=</span> <span class="token boolean">True</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">drive_to</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> city<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>engine_on<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Едем в город </span><span class="token interpolation"><span class="token punctuation">{</span>city<span class="token punctuation">}</span></span><span class="token string">."</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Машина не заведена, никуда не едем."</span><span class="token punctuation">)</span>
+ 
+
+car1 <span class="token operator">=</span> Car<span class="token punctuation">(</span><span class="token punctuation">)</span>
+car1<span class="token punctuation">.</span>start_engine<span class="token punctuation">(</span><span class="token punctuation">)</span>
+car1<span class="token punctuation">.</span>drive_to<span class="token punctuation">(</span><span class="token string">'Владивосток'</span><span class="token punctuation">)</span>  <span class="token comment"># Едем в город Владивосток.</span>
+car2 <span class="token operator">=</span> Car<span class="token punctuation">(</span><span class="token punctuation">)</span>
+car2<span class="token punctuation">.</span>drive_to<span class="token punctuation">(</span><span class="token string">'Лиссабон'</span><span class="token punctuation">)</span>     <span class="token comment"># Машина не заведена, никуда не едем.</span>
+</code></pre>
+<p>Метод <var>__init__</var> после <var>self</var> может получать параметры, передаваемые ему при создании экземпляра:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Car</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>engine_on <span class="token operator">=</span> <span class="token boolean">False</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> color
+
+    <span class="token keyword">def</span> <span class="token function">start_engine</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>engine_on <span class="token operator">=</span> <span class="token boolean">True</span>
+
+    <span class="token keyword">def</span> <span class="token function">drive_to</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> city<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>engine_on<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>color<span class="token punctuation">}</span></span><span class="token string"> машина едет в город </span><span class="token interpolation"><span class="token punctuation">{</span>city<span class="token punctuation">}</span></span><span class="token string">."</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>color<span class="token punctuation">}</span></span><span class="token string"> машина не заведена, никуда не едем."</span></span><span class="token punctuation">)</span>
+
+
+car1 <span class="token operator">=</span> Car<span class="token punctuation">(</span><span class="token string">'красная'</span><span class="token punctuation">)</span>  <span class="token comment"># Создали машину красного цвета</span>
+
+car2 <span class="token operator">=</span> Car<span class="token punctuation">(</span><span class="token string">'синяя'</span><span class="token punctuation">)</span>  <span class="token comment"># И еще одну синего</span>
+
+car1<span class="token punctuation">.</span>start_engine<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># Обратите внимание, что мы завели только одну машину,</span>
+<span class="token comment"># ту, на которую ссылается car1 (красную).</span>
+
+<span class="token comment"># car2 -- это другой объект, он не изменится.</span>
+
+car1<span class="token punctuation">.</span>drive_to<span class="token punctuation">(</span><span class="token string">'Владивосток'</span><span class="token punctuation">)</span>
+<span class="token comment"># красная машина едет в город Владивосток.</span>
+
+car2<span class="token punctuation">.</span>drive_to<span class="token punctuation">(</span><span class="token string">'Лиссабон'</span><span class="token punctuation">)</span>
+<span class="token comment"># синяя машина не заведена, никуда не едем.</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Еще раз обратите внимание на комментарии в тексте. Они показывают, что при записи атрибутов в <var>self</var> метод изменяет только свой контекстный объект. Мы знаем, что объекты класса совместно используют код методов класса (то есть поведение), но хранят свои собственные копии всех атрибутов данных (то есть состояние). Это достигается за счет связывания значений атрибутов с объектом, то есть с <var>self</var>.</p>
+</section>
+<p>Обсудим еще один вопрос: зачем нам понадобился метод <var>start_engine</var>, ведь его можно было бы заменить строчкой <code>car.engine_on = True</code>? Казалось бы, это лишнее усложнение. На самом деле нет. При дальнейшей разработке нашей программы может оказаться, что завести двигатель можно только в машине, в которой есть бензин. Если бы мы в нескольких десятках мест программы написали <code>car.engine_on = True</code>, нам пришлось бы найти все эти места и вставить в них проверку на наличие бензина в баке. А с методом <var>start_engine</var> мы можем изменить только этот метод.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Инкапсуляция</strong></p>
+<p>Такая технология сокрытия информации о внутреннем устройстве объекта за внешним интерфейсом из методов называется <strong>инкапсуляцией</strong>. Надо стараться делать интерфейс методов достаточно полным. Тогда вы, как и другие программисты, будете пользоваться этими методами, а изменения в атрибутах не будут расползаться по коду, использующему ваш класс. Кроме того, инкапсуляция позволяет шире использовать такое понятие, как полиморфизм. О нем мы поговорим на следующем уроке.</p>
+</section>
+<p>В некоторых языках программирования автор класса может закрыть доступ к атрибутам извне класса и заставить всех использующих его программистов работать только с методами. К сожалению, в Python так делать нельзя, однако стоит по возможности пользоваться только методами.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Соглашения об именовании, вызов методов атрибутов</h2>
+<p>Давайте разберемся еще с одним примером. Напишем класс робота-почтальона, который должен разносить письма в определенные дома и квартиры. (Для простоты считаем, что робот обслуживает одну улицу, и не будем ее указывать.) Класс назовем длинным именем <var>RoboticMailDelivery</var>, чтобы показать, как в Python принято называть классы с длинным составным именем.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>Имя класса должно начинаться с большой буквы, между словами не должно быть прочерка, каждое слово внутри имени должно начинаться с большой буквы.</p>
+<p>Например, <var>RoboticMailDelivery</var>.</p>
+</section>
+<p>Текст примера:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">RoboticMailDelivery</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>house_flat_pairs <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">add_mail</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> house_number<span class="token punctuation">,</span> flat_number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">'''Добавить информацию о доставке письма по номеру дома
+        house_number, квартирe flat_number.'''</span>
+        self<span class="token punctuation">.</span>house_flat_pairs<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>house_number<span class="token punctuation">,</span> flat_number<span class="token punctuation">)</span><span class="token punctuation">)</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">flat_numbers_for_house</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> house_number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">'''Вернуть список квартир в доме house_number,
+        в которые нужно доставить письма.'''</span>
+        flat_numbers <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> h<span class="token punctuation">,</span> f <span class="token keyword">in</span> self<span class="token punctuation">.</span>house_flat_pairs<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> h <span class="token operator">==</span> house_number<span class="token punctuation">:</span>
+                flat_numbers<span class="token punctuation">.</span>append<span class="token punctuation">(</span>f<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> flat_numbers
+</code></pre>
+<p>Метод <var>add_mail</var> добавляет кортеж (номер_дома, номер_квартиры) в список-атрибут с помощью метода <var>append</var>. Как видно, вызовы методов для объектов-атрибутов производят обычным образом, вызов метода дописывается справа от объекта: <code>self.house_flat_pairs.append(...)</code>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>Для имен атрибутов и методов применяются те же правила, что и для имен переменных и функций. Имя должно быть записано в нижнем регистре, слова внутри имени разделяются подчеркиванием: <var>flat_numbers_for_house</var>, <var>house_flat_pairs</var>.</p>
+</section>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Документация с описанием методов записывается в <code>'''многострочных строках'''</code> перед первой инструкцией как в функциях, так и в методах.</p>
+</section>
+</section></article></section>

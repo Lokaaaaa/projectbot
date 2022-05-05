@@ -1,0 +1,286 @@
+<section class="lesson-material__content"><article class="material"><h1>Функции</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Среда разработки PyCharm</a></li>
+<li><a class="material__link" href="#2">Функция как способ группировать команды и именовать участки кода</a></li>
+<li><a class="material__link" href="#3">Определение простейших функций</a></li>
+<li><a class="material__link" href="#4">Начальные знания о локальных переменных</a></li>
+<li><a class="material__link" href="#5">Аргументы функций</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Второе полугодие мы начнем с перехода на новую интегрированную среду разработку PyCharm. Эта среда динамично развивается, постоянно обновляется и предоставляет расширенную функциональность, которая в дальнейшем потребуется нам при решении задач.</p>
+<p>Сегодня мы поговорим о том, как группировать команды в функции — участки кода, которые можно использовать многократно. Обсудим, как можно сделать так, чтобы код функции работал по-разному в зависимости от параметров. Наконец, коснемся вопроса, что представляют собой локальные переменные.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Среда разработки PyCharm</h2>
+<p>Для программирования на Python можно использовать различные среды разработки: так, в первом полугодии мы работали в Wing IDE, которая очень хороша для старта. В этом полугодии мы познакомимся с другой средой, которая наиболее распространена в профессиональном сообществе, — PyCharm, созданной компанией JetBrains. Ее отличает значительный прогресс в развитии, наличие постоянных обновлений и широкое распространение на таких операционных системах, как Windows, MacOS, Linux.</p>
+<p>PyCharm доступна в двух основных вариантах: платный выпуск Professional и бесплатный Community. Мы будем использовать бесплатную версию, в которой доступны все необходимые в рамках нашего курса возможности.</p>
+<p>Для этого перейдем на <a class="material__link" href="https://www.jetbrains.com/pycharm/download/#section=windows" rel="noopener noreferrer" target="_blank">страницу загрузки</a> и загрузим установочный файл PyCharm Community. После загрузки выполним его установку.</p>
+<p>Далее запустим программу. При первом запуске открывается начальное окно:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-18/pycharm1.png" width="680"/></div>
+<p><strong>Шаг 1.</strong> Откройте/создайте проект в PyCharm</p>
+<p>А зачем вообще нужны проекты? Дело в том, что все, что вы делаете в PyCharm, выполняется в контексте проекта. Он служит основой для поддержки кодирования, переработки кода, согласованности стиля кодирования и т. д. Кроме того, вы, наверное, догадываетесь, что сложные проекты могут делиться на части (в терминологии Python — модули, но об этом позднее), которые реализовываются разными разработчиками. Концепция организации программного кода в проекты позволяет сделать такое взаимодействие более удобным.</p>
+<p>У вас есть два варианта начать работу над проектом внутри среды IDE:</p>
+<p>1. Открыть существующий проект</p>
+<p>Начните, открыв один из своих проектов, хранящихся на вашем компьютере. Папку с вашими решениями можно рассматривать как проект. Вы можете это сделать, нажав <strong>Открыть проект (Open)</strong> на экране приветствия (или <strong>File → Open</strong>).</p>
+<p>2. Создать проект с нуля</p>
+<p>Если вы предпочитаете начинать с нуля, нажмите <strong>New Project</strong>, на открывшемся экране введите местоположение проекта или выберите его в диалоговом окне (название конечной папки принято считать именем проекта). Нажмите кнопку <strong>Create</strong>, после чего будет создан проект Python.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-18/pycharm3.png" width="680"/></div>
+<p><strong>Шаг 2.</strong> Знакомство с интерфейсом</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-18/pycharm-4.png" width="680"/></div>
+<ol>
+<li><strong>Project Tool Window.</strong> Панель инструментов проекта. В этом окне отображаются файлы вашего проекта.</li>
+<li><strong>PyCharm Editor.</strong> Редактор PyCharm. Находится с правой стороны, где вы пишете свой код. В нем есть вкладки для удобной навигации между открытыми файлами.</li>
+<li><strong>Navigation Bar.</strong> Панель навигации. Находится над редактором, позволяет быстро запускать и отлаживать ваше приложение.</li>
+<li><strong>Left gutter.</strong> Левый столбец, вертикальная полоса рядом с редактором, показывает точки остановки и обеспечивает удобный способ перехода по иерархии кода.</li>
+<li><strong>Right gutter.</strong> Правый столбец, справа от редактора. PyCharm постоянно контролирует качество кода и постоянно показывает результаты проверки в правом столбце: ошибки, предупреждения и т. д. Тут же вы можете отслеживать соответствие вашего кода стандарту PEP 8. Индикатор в правом верхнем углу показывает общий статус проверки кода для всего файла.</li>
+<li><strong>PyCharm Tool Windows.</strong> Панель инструментов PyCharm. Это специальные окна, прикрепленные к низу и сторонам рабочей области, которые обеспечивают доступ к типичным задачам, таким как управление проектами, поиск и навигация по исходному коду, интеграция с системами контроля версий и т. д.</li>
+<li><strong>Status Bar.</strong> Строка состояния. Указывает состояние вашего проекта и показывает различные предупреждения и информационные сообщения.</li>
+</ol>
+<p>У PyCharm есть гибкая система настройки интерфейса и даже возможность задания собственного стиля кода. Но сейчас мы не будем останавливаться на этом, а перейдем непосредственно к написанию программ.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Функция как способ группировать команды и именовать участки кода</h2>
+<p>Работа любой компьютерной программы — это выполнение процессором большого набора элементарных инструкций. В машинном коде, с которым работает процессор, все команды очень простые:</p>
+<ul>
+<li>Считать из оперативной памяти одно целое число в специальную ячейку</li>
+<li>Прибавить к одному числу значение другой ячейки</li>
+<li>Сравнить ячейку с нулем</li>
+<li>Вернуться на пару команд назад и пр.</li>
+</ul>
+<p>Команды машинного кода не могут вывести окошко программы или проиграть аудиофайл, не могут посчитать среднюю оценку в классе или загрузить страничку из Интернета. Машинный код не умеет полноценно работать даже с обычными строками или списками и не может выполнять сложные математические расчеты. Однако программа целиком все это делает, потому что состоит из множества команд, которые в комбинации дают нужный эффект.</p>
+<p>Многие из команд Python, которые вы уже знаете, требуют от процессора выполнения десятков команд. Если бы программист писал их вручную, даже простейшие программы — вроде наших учебных заданий — создавались бы несколько дней. При этом даже опытному программисту было бы очень легко допустить ошибку.</p>
+<p>В качестве мотивирующего примера рассмотрим программу, в которой последовательно запрашивается имя, а затем выводится приветствие по имени для трех живых существ:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Как тебя зовут?'</span><span class="token punctuation">)</span>
+name_1 <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Привет'</span><span class="token punctuation">,</span> name_1<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'А тебя?'</span><span class="token punctuation">)</span>
+name_2 <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Привет'</span><span class="token punctuation">,</span> name_2<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'А твоего пса?'</span><span class="token punctuation">)</span>
+name_3 <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Привет'</span><span class="token punctuation">,</span> name_3<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Как тебя зовут?
+Вася
+Привет Вася
+А тебя?
+Коля
+Привет Коля
+А твоего пса?
+Шарик
+Привет Шарик</samp></pre>
+<p>Программа небольшая, но уже видно много проблем:</p>
+<ul>
+<li>Во-первых, три раза приходится повторять фактически одно и то же</li>
+<li>Во-вторых, приходится вводить разные имена переменных, чтобы ничего не перепутать и не поприветствовать кого-нибудь неправильным именем</li>
+<li>В-третьих, если вы захотите исправить приветствие на более официальное — например, «Здравствуйте», вам придется внести одинаковые исправления сразу в трех разных местах</li>
+</ul>
+<p>Даже в такой маленькой программе можно при исправлении допустить опечатку. А представьте, что фраза используется десять раз в разных местах большой программы — тогда придется искать каждое приветствие и исправлять его.</p>
+<p>Было бы здорово иметь возможность устранить дублирование кода: в каком-то одном месте сообщить интерпретатору, что именно мы понимаем под словом «поприветствовать», а затем попросить интерпретатор использовать определение термина «поприветствовать» там, где мы его попросим об этом.</p>
+<p>Итак, сформулируем, чего мы хотим добиться:</p>
+<ul>
+<li><strong>Один раз</strong> определить, что значит «поприветствовать», т. е. сгруппировать и поименовать повторяющийся кусок кода</li>
+<li><strong>Многократно</strong> в дальнейшем «ссылаться» на это определение везде, где нам только потребуется</li>
+</ul>
+<p>Замечательно, что язык Python действительно обладает такими выразительными возможностями — <strong>функциями</strong>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция</strong></p>
+<p>Функция — особым образом сгруппированный набор команд, которые выполняются последовательно, но воспринимаются как единое целое. При этом функция может возвращать (или не возвращать) свой результат.</p>
+</section>
+<p>Для того чтобы использовать какую-нибудь собственную функцию, вначале необходимо ее <strong>объявить</strong>, т. е. рассказать, что именно она будет делать. В нашем примере мы объявим функцию <var>greet</var> с помощью ключевого слова <var>def</var>, после которого идет название нашей функции, скобки, двоеточие, а затем на двух последующих строчках — описание того, что она собой представляет:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    name <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Привет'</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: это описание расположено в блоке кода с отступом.</p>
+<p>Далее мы можем использовать нашу функцию <var>greet</var> всякий раз, когда в нашем коде возникает необходимость кого-нибудь поприветствовать:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Как тебя зовут?'</span><span class="token punctuation">)</span>
+greet<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'А тебя?'</span><span class="token punctuation">)</span>
+greet<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'А твоего пса?'</span><span class="token punctuation">)</span>
+greet<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Вызов функции</strong></p>
+<p>Обращение к ранее объявленной функции с целью выполнения ее команд называется вызовом.</p>
+</section>
+<p>В нашем примере функция <var>greet</var> один раз объявляется, а затем три раза вызывается.</p>
+<p>Что мы получили в результате:</p>
+<ol>
+<li>Код сократился и стал понятнее. Теперь нам не нужно выискивать, где какая переменная заводится, где и для чего она используется. Функция сама говорит, что она делает: <var>greet</var> — «поприветствовать».</li>
+<li>Нам не приходится заводить несколько разных переменных.</li>
+<li>Чтобы поменять приветствие во всей программе, достаточно изменить одну строчку.</li>
+</ol>
+<p>Итак, функции нужны, чтобы группировать команды, а заодно — чтобы не писать один и тот же код несколько раз.</p>
+<p>Например, достаточно один раз написать функцию <var>greet</var> и потом пользоваться ею постоянно. Польза от этого особенно очевидна, когда функция действительно сложная и используется много раз в разных местах программы. Например, загрузку данных из Интернета или отрисовку персонажа компьютерной игры удобно оформлять в виде отдельных функций.</p>
+<p>Еще одна важная вещь состоит в том, что функции имеют <strong>имена</strong>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>Имена функций должны состоять из маленьких букв, а слова разделяться символами подчеркивания, это необходимо, чтобы увеличить читабельность.</p>
+</section>
+<p>Благодаря им программу можно сделать понятной не только компьютеру, но и человеку. Тут все так же, как с именами переменных: если переменная имеет ничего не говорящее название, сложно угадать, что в ней хранится. Если участок кода не сгруппирован в функцию, иногда приходится буквально дешифрировать, для чего он нужен в программе. А если он оформлен в виде функции, название функции само подскажет, что делает этот код.</p>
+<p>Проиллюстрируем сказанное на примере. Попробуйте угададать, что делает такой код:</p>
+<pre class="language-python"><code class="language-python">t <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">25</span><span class="token punctuation">,</span> <span class="token number">27</span><span class="token punctuation">,</span> <span class="token number">23</span><span class="token punctuation">,</span> <span class="token number">18</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">3</span><span class="token punctuation">]</span>
+s <span class="token operator">=</span> <span class="token number">0</span>
+mm <span class="token operator">=</span> <span class="token number">1000</span>
+mx <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1000</span>
+<span class="token keyword">for</span> e <span class="token keyword">in</span> t<span class="token punctuation">:</span>
+    s <span class="token operator">+=</span> e
+    <span class="token keyword">if</span> e <span class="token operator">&lt;</span> mm<span class="token punctuation">:</span>
+        mm <span class="token operator">=</span> e
+    <span class="token keyword">if</span> e <span class="token operator">&gt;</span> mx<span class="token punctuation">:</span>
+        mx <span class="token operator">=</span> e
+<span class="token keyword">print</span><span class="token punctuation">(</span>s <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>t<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>mm<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>mx<span class="token punctuation">)</span>
+</code></pre>
+<p>После некоторых нетривиальных усилий по дешифровке можно понять, что этот код вычисляет среднее, минимальное и максимальное значение списка:</p>
+<pre><samp>9.75
+-10
+27</samp></pre>
+<p>А вот тот же самый код, но переработанный с помощью встроенных функций и хороших названий переменных:</p>
+<pre class="language-python"><code class="language-python">temperatures <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">25</span><span class="token punctuation">,</span> <span class="token number">27</span><span class="token punctuation">,</span> <span class="token number">23</span><span class="token punctuation">,</span> <span class="token number">18</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">3</span><span class="token punctuation">]</span>
+average_temperature <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>temperatures<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token builtin">len</span><span class="token punctuation">(</span>temperatures<span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>average_temperature<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">min</span><span class="token punctuation">(</span>temperatures<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">max</span><span class="token punctuation">(</span>temperatures<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>9.75
+-10
+27</samp></pre>
+<p>Какой вариант вам нравится больше?</p>
+<p>На самом деле, когда программист думает о том, что должна делать программа, он обычно представляет ее как раз в форме функций. Мы обычно не говорим, какие действия должен выполнить алгоритм, а описываем, что мы хотим получить. Например, мы хотим посчитать среднегодовую температуру, значит, нам нужна функция вычисления среднего значения из набора чисел.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Определение простейших функций</h2>
+<p>Давайте подытожим то, что мы знаем о  функциях.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Заголовок и тело функции</strong></p>
+<p>У каждой функции есть заголовок (его обычно называют сигнатурой) и тело.</p>
+<p>Сигнатура описывает, как функцию вызывать, а тело описывает, что эта функция делает.</p>
+<p>Сигнатура содержит имя функции и аргументы (то есть параметры), которые передаются в функцию.</p>
+</section>
+<p>Записывается это так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token operator">&lt;</span>имя функции<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">[</span>аргументы<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token operator">&lt;</span>тело функции<span class="token operator">&gt;</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Тело функции, как и в операторе <var>if</var> или в операторе цикла, обязательно идет с <strong>отступом</strong>. Это нужно, чтобы интерпретатор Python знал, где заканчивается код функции. Заодно это здорово помогает структурировать программу. Даже в языках, где отступы не требуются, их все равно принято писать, чтобы упростить чтение программы.</p>
+</section>
+<p>Давайте напишем еще одну совсем простую функцию из одной единственной команды, которая просто выводит на экран приветствие.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">simple_greetings</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Привет!'</span><span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Вызов фукнции</strong></p>
+<p>Теперь, чтобы поприветствовать пользователя, вам достаточно в основной программе написать: <code>simple_greetings()</code>. Это называется «вызвать функцию».</p>
+<p>Обратите внимание: у этой функции нет аргументов ни в определении, ни при вызове. Однако пустые скобочки после названия функции писать все равно нужно.</p>
+</section>
+<p>Функцию, как и переменную, необходимо сначала объявить, и только потом использовать. Поэтому следующая программа выдаст вам ошибку <code>name ’simple_greetings2′ is not defined</code>.</p>
+<pre class="language-python"><code class="language-python">simple_greetings2<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">simple_greetings2</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Привет, username!'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>NameError                  Traceback (most recent call last)
+&lt;ipython-input-12-4f64c3fab903&gt; in &lt;module&gt;()
+----&gt; 1 simple_greetings2()
+      2 
+      3 
+      4 def simple_greetings2():
+      5     print('Привет, username!')
+
+NameError: name 'simple_greetings2' is not defined</samp></pre>
+<p>Впрочем, от такой функции проку не очень много: она не сокращает количество кода и не сильно упрощает понимание происходящего в программе. Поэтому в виде функции стоит оформлять только логически законченный блок кода, особенно если он необходим в нескольких местах программы.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>После функции до кода, который находится вне функции, необходимо делать отступ в две пустые строки для повышения читаемости кода. Если у вас есть несколько функций в одном файле, между кодом одной и сигнатурой другой функции тоже надо оставлять две пустые строки.</p>
+</section>
+<p>А теперь то, что заставит вас полюбить новую среду разработки еще сильнее: PyCharm умеет в автоматическом режиме исправлять часть недочетов кода, связанных в основном с отступами, пропущенными или лишними пробелами. Для автоформатирования кода по PEP 8 можно нажать комбинацию клавиш Ctrl + Alt + l.</p>
+<p>Обратите внимание на некоторые особенности, которые существуют при сдаче в LMS задач на функции:</p>
+<ol>
+<li>В LMS необходимо отправить файл только с необходимой функцией. Если в файле есть код вызова данной функции, закомментируйте его. В PyCharm можно выделить код, который необходимо закомментировать, и нажать Ctrl + /. Для раскомментирования надо повторить то же самое.</li>
+<li>При проверке функции тестирующая система запускает программу на Python, которая осуществляет вызов вашей функции (с передачей в нее параметров), поэтому необходимо точно соблюсти формат сигнатуры функции, который дается в условии.</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="4">Начальные знания о локальных переменных</h2>
+<p>В тот момент, когда вы вызываете функцию <var>greet</var>, начинают выполняться команды, написанные в теле функции. Когда работа функции доходит до конца, исполнение программы продолжается со строки, которая вызывала функцию. Мы еще посмотрим на этот процесс подробнее с помощью отладчика.</p>
+<p>Обратите внимание: теперь в программе используется только одна переменная — <var>name</var>. Как же так? Ведь мы договорились, что не будем использовать одну и ту же переменную для разных имен? На самом деле мы не используем одну и ту же  переменную. При каждом вызове функции эта переменная создается заново, а в конце работы функции — прекращает свое существование. Это очень важный момент.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Область видимости переменной</strong></p>
+<p>Снаружи функции <var>greet</var> переменная <var>name</var> вообще не существует. Таким образом, функция очерчивает тот участок программы, где переменная нужна и используется. Этот участок, в котором переменная <strong>живет</strong>, называется областью видимости переменной (по-английски — <em>scope</em>).</p>
+</section>
+<p>Благодаря ограничению области видимости переменной программисту не нужно беспокоиться, не «всплывет» ли эта переменная в другом месте программы. Изменяя переменную внутри функции, программист понимает, что он может что-то испортить <strong>только внутри</strong> функции, но не поломает работу остальной программы. Можно сказать, что вся работа с переменной локализована, т. е. сосредоточена внутри функции.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Локальные и глобальные переменные</strong></p>
+<p>Переменные, создаваемые внутри функций, недоступны извне и существуют только внутри функции. Они называются локальными.</p>
+<p>Создаваемые вне функции переменные могут быть доступны из функций. Они являются глобальными.</p>
+</section>
+<p>По возможности избегайте использования глобальных переменных для предотвращения конфликтов. О локальных переменных и областях видимости мы поговорим намного подробнее на следующих уроках.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Аргументы функций</h2>
+<p>Мы рассмотрели функции, которые выполняют всякий раз одни и те же действия. Это бывает полезно, но все же большая часть программ требует выполнения немного разных действий.</p>
+<p>Например, функция <var>print</var> (а это именно функция) должна каждый раз выводить на экран разные сообщения — в зависимости от переданных аргументов.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Аргументы функций</strong></p>
+<p>Аргументы (параметры) могут изменять поведение функции. Например, функция <var>len</var> принимает строки или списки (и другие коллекции). В зависимости от конкретного аргумента она возвращает разный результат, а значит, выполняет внутри немного различные действия.</p>
+</section>
+<p>Рассмотрим функцию, которая должна выводить на экран содержимое списка, печатая каждый элемент на своей строчке. Вряд ли нам захочется заводить функцию, которая раз за разом выводит содержимое одного и того же списка. Скорее, нужна функция, которая может распечатать любой список. Конкретный список мы передаем функции в качестве параметра при ее вызове. Функция же работает с тем, что ей передали. Выглядит это так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_array</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> element <span class="token keyword">in</span> array<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span>
+
+
+print_array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'Hello'</span><span class="token punctuation">,</span> <span class="token string">'world'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+print_array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">123</span><span class="token punctuation">,</span> <span class="token number">456</span><span class="token punctuation">,</span> <span class="token number">789</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Hello
+world
+
+123
+456
+789</samp></pre>
+<p>При первом вызове функции <var>print_array</var> переменная <var>array</var> будет равна <code>['Hello', 'world']</code>. При втором вызове переменная <var>array</var> будет равна <code>[123, 456, 789]</code>.</p>
+<p>Разберемся, в каком порядке выполняется код при вызове функций. В примере:</p>
+<pre class="language-python"><code class="language-python">print_array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'Hello'</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token punctuation">[</span><span class="token string">'world'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>ничего удивительного не происходит — списки складываются, а затем передаются в функцию.</p>
+<pre><samp>Hello
+world</samp></pre>
+<p>Давайте рассмотрим более сложный пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_hello</span><span class="token punctuation">(</span>arg_1<span class="token punctuation">,</span> arg_2<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'hello'</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_comrade</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'comrade'</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_petrov</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Petrov'</span><span class="token punctuation">)</span>
+
+
+print_hello<span class="token punctuation">(</span>print_comrade<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> print_petrov<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Аргументы в функции <var>print_hello</var> никак не используются, но сейчас это неважно. Рассмотрим, в каком порядке выполняются функции.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>В момент вызова функции ей необходимо передать вычисленные аргументы. Если аргументы не вычислены, они вычисляются слева направо.</p>
+</section>
+<p>В данном случае функция <var>print_hello</var> принимает аргумент <var>arg_1</var>, который является значением функции <var>print_comrade</var> (по умолчанию — <var>None</var>), и аргумент <var>arg_2</var>, который является значением функции <var>print_petrov</var>. Таким образом, сначала выполнится функция <var>print_comrade</var>, затем <var>print_petrov</var> и лишь в самом конце <var>print_hello</var>. Результатом работы программы будет напечатанный текст:</p>
+<pre><samp>comrade 
+Petrov 
+hello</samp></pre>
+</section></article></section>

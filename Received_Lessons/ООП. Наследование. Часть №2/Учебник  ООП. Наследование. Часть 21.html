@@ -1,0 +1,252 @@
+<section class="lesson-material__content"><article class="material"><h1>ООП. Наследование. Часть 2</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Расширение методов</a></li>
+<li><a class="material__link" href="#2">Использование методов наследников в базовом классе</a></li>
+<li><a class="material__link" href="#3">Переопределение методов</a></li>
+<li><a class="material__link" href="#4">Множественное наследование</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Этот урок посвящен приемам применения наследования: расширению и переопределению методов. Обсуждается и множественное наследование.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Расширение методов</h2>
+<p>Вернемся к иерархии классов геометрических фигур. И заодно рассмотрим способ, как отразить эту иерархию, представленную в виде картинки, кодом на языке Python.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-33/inheritance.svg" width="680"/></div>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Shape</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">describe</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Атрибут __class__ содержит класс или тип объекта self</span>
+        <span class="token comment"># Атрибут __name__ содержит строку, </span>
+        <span class="token comment"># в которой написано название класса или типа</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Класс: </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>__class__<span class="token punctuation">.</span>__name__<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> math <span class="token keyword">import</span> pi
+
+
+<span class="token keyword">class</span> <span class="token class-name">Circle</span><span class="token punctuation">(</span>Shape<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> radius<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>r <span class="token operator">=</span> radius
+
+    <span class="token keyword">def</span> <span class="token function">area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> pi <span class="token operator">*</span> self<span class="token punctuation">.</span>r <span class="token operator">**</span> <span class="token number">2</span>
+
+    <span class="token keyword">def</span> <span class="token function">perimeter</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">2</span> <span class="token operator">*</span> pi <span class="token operator">*</span> self<span class="token punctuation">.</span>r
+
+
+<span class="token keyword">class</span> <span class="token class-name">Rectangle</span><span class="token punctuation">(</span>Shape<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>a <span class="token operator">=</span> a
+        self<span class="token punctuation">.</span>b <span class="token operator">=</span> b
+
+    <span class="token keyword">def</span> <span class="token function">area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>a <span class="token operator">*</span> self<span class="token punctuation">.</span>b
+
+    <span class="token keyword">def</span> <span class="token function">perimeter</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>a <span class="token operator">+</span> self<span class="token punctuation">.</span>b<span class="token punctuation">)</span>
+</code></pre>
+<p>Давайте отнаследуем класс <var>Square</var> от класса <var>Rectangle</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Square</span><span class="token punctuation">(</span>Rectangle<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+side <span class="token operator">=</span> <span class="token number">5</span>
+sq <span class="token operator">=</span> Square<span class="token punctuation">(</span>side<span class="token punctuation">,</span> side<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>sq<span class="token punctuation">.</span>area<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>sq<span class="token punctuation">.</span>perimeter<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>25
+20</samp></pre>
+<p>Поскольку мы никак не «заполнили» код класса <var>Square</var>, он будет иметь те же самые методы, что были у класса <var>Rectangle</var>. Но это не очень удобно. Мы хотим, чтобы конструктор класса <var>Square</var> принимал на вход один аргумент (длину стороны). Однако конструктор класса <var>Rectangle</var> принимает на вход два аргумента (ширину и высоту). Как быть?</p>
+<p>Пока что мы сделали эту логику вручную, с помощью переменной <var>side</var>. Но, коль скоро мы программируем в объектно-ориентированном стиле, давайте «спрячем» (инкапсулируем) эту логику внутрь класса. А именно: мы немного модифицируем конструктор класса <var>Square</var> так, чтобы он принимал на вход только одно число, которое будет передаваться в качестве первого и второго аргумента конструктору базового класса.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Расширение метода</strong></p>
+<p>Такая процедура, когда метод производного класса дополняет аналогичный метод базового класса, называется <strong>расширением метода</strong>, а в коде это выглядит следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Square</span><span class="token punctuation">(</span>Rectangle<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Создаем квадрат'</span><span class="token punctuation">)</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>size<span class="token punctuation">,</span> size<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Функция <code>super()</code> возвращает специальный объект, который делегирует («передает») вызовы методов (в данном случае — метода <var>__init__</var>) от производного класса к базовому. Эту функцию можно вызывать в любом методе класса — в частности, в конструкторе.</p>
+<p>Фактически фраза <code>super().__init__(size, size)</code> звучит так: «Вызови метод <var>__init__</var> у моего базового (родительского) класса».</p>
+<p>Давайте проверим, что произойдет, если мы создадим объект класса <var>Square</var> и вызовем методы <code>area()</code> и <code>perimeter()</code>:</p>
+<pre class="language-python"><code class="language-python">sq <span class="token operator">=</span> Square<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>sq<span class="token punctuation">.</span>area<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>sq<span class="token punctuation">.</span>perimeter<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>sq<span class="token punctuation">.</span>a<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Создаем квадрат
+4
+8
+2</samp></pre>
+<p>Как видим, методы <code>area()</code> и <code>perimeter()</code> отработали корректно, и нам не пришлось переписывать эти методы заново — они были полностью наследованы от базового класса, а при создании экземпляра класса была выведена строка, которая при создании элементов базового класса не выводится.</p>
+<p>Кроме того, от базового класса унаследовались поля <var>a</var> и <var>b</var>.</p>
+<p>Заметим, что расширение можно использовать для любого метода класса, а не только для конструктора <var>__init__</var>. Например:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> datetime
+
+
+<span class="token keyword">class</span> <span class="token class-name">Greeter</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Good news, everyone"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">GreeterWithDate</span><span class="token punctuation">(</span>Greeter<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>datetime<span class="token punctuation">.</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>greet<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+g <span class="token operator">=</span> GreeterWithDate<span class="token punctuation">(</span><span class="token punctuation">)</span>
+g<span class="token punctuation">.</span>greet<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Использование методов наследников в базовом классе</h2>
+<p>На протяжении этого урока нам пару паз потребовалось вывести на экран небольшое «описание» фигуры — ее периметр и площадь. Поскольку все фигуры имеют для этого общий интерфейс (методы <code>perimeter()</code> и <code>area()</code> соответственно), можно, например, написать универсальную (т. е. <strong>полиморфную</strong>) функцию для этого:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">describe_shape</span><span class="token punctuation">(</span>shape<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Периметр: </span><span class="token interpolation"><span class="token punctuation">{</span>shape<span class="token punctuation">.</span>perimeter<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">\nПлощадь: </span><span class="token interpolation"><span class="token punctuation">{</span>shape<span class="token punctuation">.</span>area<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+
+describe_shape<span class="token punctuation">(</span>sq<span class="token punctuation">)</span>
+</code></pre>
+<p>Но есть одно неудобство. Что, если на вход этой функции подать переменную неправильного типа? Программа завершится с ошибкой:</p>
+<pre class="language-python"><code class="language-python">describe_shape<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>-------------------------------------------------------------------
+
+AttributeError                    Traceback (most recent call last)
+
+&lt;ipython-input-12-398f18afe0b6&gt; in &lt;module&gt;()
+----&gt; 1 describe_shape(5)
+    
+
+&lt;ipython-input-10-fafe33c63281&gt; in describe_shape(shape)
+      1 def describe_shape(shape):
+----&gt; 2     print(f"Периметр: {shape.perimeter()}\nПлощадь: {shape.area()}")
+    
+
+AttributeError: 'int' object has no attribute 'perimeter'</samp></pre>
+<p>Конечно, внутри <var>describe_shape</var> можно добавить необходимые проверки, но есть более правильное решение — нужно добавить соответствующий метод в базовый класс. В нашем случае можно просто немного дополнить метод <var>describe</var> класса <var>Shape</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Shape</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">describe</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Добавим еще и название класса</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Класс: </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>__class__<span class="token punctuation">.</span>__name__<span class="token punctuation">}</span></span><span class="token string">\n"</span></span>
+              <span class="token string-interpolation"><span class="token string">f"Периметр: </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>perimeter<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">\n"</span></span>
+              <span class="token string-interpolation"><span class="token string">f"Площадь: </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>area<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание: у класса <var>Shape</var> нет методов <code>perimeter()</code> и <code>area()</code>, поэтому метод <code>describe()</code> не будет работать для объектов этого класса. Но у всех производных классов эти методы есть, поэтому для них все сработает правильно:</p>
+<pre class="language-python"><code class="language-python">sq <span class="token operator">=</span> Square<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>
+sq<span class="token punctuation">.</span>describe<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Создаем квадрат
+Класс: Square
+Периметр: 12
+Площадь: 9</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Переопределение методов</h2>
+<p>Давайте «починим» метод <code>describe()</code> для класса <var>Shape</var>. Будем считать, что у «абстрактной» фигуры площадь и периметр не определены (т. е. равны None):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Shape</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">describe</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Класс: </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>__class__<span class="token punctuation">.</span>__name__<span class="token punctuation">}</span></span><span class="token string">\n"</span></span>
+              <span class="token string-interpolation"><span class="token string">f"Периметр: </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>perimeter<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">\n"</span></span>
+              <span class="token string-interpolation"><span class="token string">f"Площадь: </span><span class="token interpolation"><span class="token punctuation">{</span>self<span class="token punctuation">.</span>area<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>  
+
+    <span class="token keyword">def</span> <span class="token function">area</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">def</span> <span class="token function">perimeter</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">None</span>
+</code></pre>
+<p>А как теперь будет работать метод <code>describe()</code> для производных классов? У какого класса он будет вызывать методы <code>area()</code> и <code>perimeter()</code> — у производного или у базового?</p>
+<p>Давайте вспомним, что по сути представляет собой наследование классов в Python: если мы вызовем метод у производного класса, сперва ищется метод этого класса, а если его там нет, такой же поиск выполняется в его базовом классе. Значит, поведение производных классов измениться не должно.</p>
+<p>Давайте убедимся в этом:</p>
+<pre class="language-python"><code class="language-python">shape <span class="token operator">=</span> Shape<span class="token punctuation">(</span><span class="token punctuation">)</span>
+circle <span class="token operator">=</span> Circle<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>
+rectangle <span class="token operator">=</span> Rectangle<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span>
+square <span class="token operator">=</span> Square<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>
+
+shape<span class="token punctuation">.</span>describe<span class="token punctuation">(</span><span class="token punctuation">)</span>
+circle<span class="token punctuation">.</span>describe<span class="token punctuation">(</span><span class="token punctuation">)</span>
+rectangle<span class="token punctuation">.</span>describe<span class="token punctuation">(</span><span class="token punctuation">)</span>
+square<span class="token punctuation">.</span>describe<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Создаем квадрат
+Класс: Shape
+Периметр: None
+Площадь: None
+Класс: Circle
+Периметр: 31.41592653589793
+Площадь: 78.53981633974483
+Класс: Rectangle
+Периметр: 14
+Площадь: 12
+Класс: Square
+Периметр: 20
+Площадь: 25</samp></pre>
+<p>Итак, методы <code>perimeter()</code> и <code>area()</code> есть в базовом классе, но в производных классах они реализованы по-другому.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Переопределение методов</strong></p>
+<p>Это называется <strong>переопределением методов</strong>. В отличие от расширения методов, в данном случае метод <code>area()</code> базового класса <strong>не используется</strong> при реализации метода <code>area()</code> производного класса; то же самое относится и к методу <code>perimeter()</code>.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="4">Множественное наследование</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Множественное наследование</strong></p>
+<p>Python предоставляет возможность наследоваться сразу от нескольких классов. Такой механизм называется <strong>множественное наследование</strong>, и он позволяет вызывать в производном классе методы разных базовых классов.</p>
+</section>
+<p>Рассмотрим пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Base1</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">tic</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"tic"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">Base2</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">tac</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"tac"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">Derived</span><span class="token punctuation">(</span>Base1<span class="token punctuation">,</span> Base2<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+
+
+d <span class="token operator">=</span> Derived<span class="token punctuation">(</span><span class="token punctuation">)</span>
+d<span class="token punctuation">.</span>tic<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># метод, наследованный от Base1</span>
+d<span class="token punctuation">.</span>tac<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># метод, наследованный от Base2</span>
+</code></pre>
+<p>Множественное наследование на практике используется достаточно редко (хотя все же используется), поскольку при его использовании возникают закономерные вопросы:</p>
+<ul>
+<li>Что, если названия каких-то методов в базовых классах совпадают?</li>
+<li>Какой из них будет вызван из производного класса?</li>
+</ul>
+<p>Хотя в языке и зафиксирован порядок разрешения таких конфликтов (в общем случае классы просматриваются слева направо — подробнее в <a class="material__link" href="https://docs.python.org/3/tutorial/classes.html#multiple-inheritance" rel="noopener noreferrer" target="_blank">документации</a>), эта особенность все равно может привести к ошибкам при использовании множественного наследования.</p>
+<p>В нашей иерархии классов геометрических фигур можно привести следующий пример множественного наследования. Мы знаем, что квадрат является не только прямоугольником, но и правильным многоугольником. В любой правильный многоугольник, например, можно вписать окружность, а в произвольный прямоугольник нельзя. Давайте напишем отдельный класс <var>RegularPolygon</var> для правильных многоугольников:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> math <span class="token keyword">import</span> tan<span class="token punctuation">,</span> pi
+
+
+<span class="token keyword">class</span> <span class="token class-name">RegularPolygon</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> side<span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>side <span class="token operator">=</span> side  <span class="token comment"># длина стороны</span>
+        self<span class="token punctuation">.</span>n <span class="token operator">=</span> n  <span class="token comment"># число сторон</span>
+
+    <span class="token keyword">def</span> <span class="token function">inscribed_circle_radius</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">'''Радиус вписанной окружности'''</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>side <span class="token operator">/</span> <span class="token punctuation">(</span><span class="token number">2</span> <span class="token operator">*</span> tan<span class="token punctuation">(</span>pi <span class="token operator">/</span> self<span class="token punctuation">.</span>n<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Квадрат можно отнаследовать от прямоугольника и правильного многоугольника. Обратите внимание на конструктор класса <var>Square</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Square</span><span class="token punctuation">(</span>Rectangle<span class="token punctuation">,</span> RegularPolygon<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Приходится явно вызывать конструкторы базовых классов</span>
+        Rectangle<span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>self<span class="token punctuation">,</span> a<span class="token punctuation">,</span> a<span class="token punctuation">)</span>
+        RegularPolygon<span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>self<span class="token punctuation">,</span> a<span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span>
+        
+
+s <span class="token operator">=</span> Square<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>
+s<span class="token punctuation">.</span>describe<span class="token punctuation">(</span><span class="token punctuation">)</span>                        <span class="token comment"># метод класса Rectangle</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span>inscribed_circle_radius<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># метод класса RegularPolygon</span>
+</code></pre>
+</section></article></section>

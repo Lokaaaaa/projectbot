@@ -1,0 +1,197 @@
+<section class="lesson-material__content"><article class="material"><h1>Игра в целом</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Заставка и экран конца игры</a></li>
+<li><a class="material__link" href="#2">Уровни игры и их загрузка</a></li>
+<li><a class="material__link" href="#3">Отрисовка уровня</a></li>
+<li><a class="material__link" href="#4">Камера</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом занятии мы поговорим об игре в целом. Игра — это достаточно большая программа, и важно организовать ее правильно. Сегодня мы будем проектировать заготовку для игры Mario.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Заставка и экран конца игры</h2>
+<p>Практически каждая игра состоит из нескольких экранов, на которых происходит действие. Такими экранами являются <strong>заставка</strong> и <strong>конец игры</strong>.</p>
+<p>На отдельном экране (а в небольших играх — прямо на экране) заставки можно расположить правила. Небольшая проблема в том, что Pygame не умеет выводить несколько строк одновременно, приходится делать это построчно вручную.</p>
+<p>В функции <code>start_screen()</code>, приведенной ниже, мы организовали свой мини-игровой цикл, который выполняется до тех пор, пока игрок не нажмет клавишу на клавиатуре или кнопку мыши.</p>
+<p>На экране окончания игры обычно выводится итоговый счет, авторы игры, прочая рекламная информация.</p>
+<p>Преждевременный выход из игры возможен на любом экране, поэтому удобно «аварийное завершение» оформить в виде отдельной функции <code>terminate()</code>:</p>
+<pre class="language-python"><code class="language-python">FPS <span class="token operator">=</span> <span class="token number">50</span>
+
+<span class="token keyword">def</span> <span class="token function">terminate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    pygame<span class="token punctuation">.</span>quit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">start_screen</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    intro_text <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">"ЗАСТАВКА"</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">,</span>
+                  <span class="token string">"Правила игры"</span><span class="token punctuation">,</span>
+                  <span class="token string">"Если в правилах несколько строк,"</span><span class="token punctuation">,</span>
+                  <span class="token string">"приходится выводить их построчно"</span><span class="token punctuation">]</span>
+
+    fon <span class="token operator">=</span> pygame<span class="token punctuation">.</span>transform<span class="token punctuation">.</span>scale<span class="token punctuation">(</span>load_image<span class="token punctuation">(</span><span class="token string">'fon.jpg'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>WIDTH<span class="token punctuation">,</span> HEIGHT<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    screen<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>fon<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    font <span class="token operator">=</span> pygame<span class="token punctuation">.</span>font<span class="token punctuation">.</span>Font<span class="token punctuation">(</span><span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span>
+    text_coord <span class="token operator">=</span> <span class="token number">50</span>
+    <span class="token keyword">for</span> line <span class="token keyword">in</span> intro_text<span class="token punctuation">:</span>
+        string_rendered <span class="token operator">=</span> font<span class="token punctuation">.</span>render<span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> pygame<span class="token punctuation">.</span>Color<span class="token punctuation">(</span><span class="token string">'white'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        intro_rect <span class="token operator">=</span> string_rendered<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        text_coord <span class="token operator">+=</span> <span class="token number">10</span>
+        intro_rect<span class="token punctuation">.</span>top <span class="token operator">=</span> text_coord
+        intro_rect<span class="token punctuation">.</span>x <span class="token operator">=</span> <span class="token number">10</span>
+        text_coord <span class="token operator">+=</span> intro_rect<span class="token punctuation">.</span>height
+        screen<span class="token punctuation">.</span>blit<span class="token punctuation">(</span>string_rendered<span class="token punctuation">,</span> intro_rect<span class="token punctuation">)</span>
+
+    <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+                terminate<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">elif</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>KEYDOWN <span class="token keyword">or</span> \
+                    event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEBUTTONDOWN<span class="token punctuation">:</span>
+                <span class="token keyword">return</span>  <span class="token comment"># начинаем игру</span>
+        pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        clock<span class="token punctuation">.</span>tick<span class="token punctuation">(</span>FPS<span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-7-1.png" width="502"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="2">Уровни игры и их загрузка</h2>
+<p>Уровни в игре удобно хранить в текстовых файлах. Так их очень удобно редактировать. В этом примере мы будем использовать всего три символа:</p>
+<ol>
+<li># — означает стену</li>
+<li>@ — положение игрока</li>
+<li>. — пустая клетка</li>
+</ol>
+<p>Например,</p>
+<pre><code>...###
+..##.#.####
+.##..###..#
+##........#
+#...@..#..#
+###..###..#
+..#..#....#
+.##.##.#.##
+.#......##
+.#.....##
+.#######
+</code></pre>
+<p>Чтение карты из файла — это стандартная операция работы с файлами. После чтения удобно дополнить карту до прямоугольника.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">load_level</span><span class="token punctuation">(</span>filename<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    filename <span class="token operator">=</span> <span class="token string">"data/"</span> <span class="token operator">+</span> filename
+    <span class="token comment"># читаем уровень, убирая символы перевода строки</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>filename<span class="token punctuation">,</span> <span class="token string">'r'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> mapFile<span class="token punctuation">:</span>
+        level_map <span class="token operator">=</span> <span class="token punctuation">[</span>line<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> line <span class="token keyword">in</span> mapFile<span class="token punctuation">]</span>
+
+    <span class="token comment"># и подсчитываем максимальную длину    </span>
+    max_width <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">,</span> level_map<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># дополняем каждую строку пустыми клетками ('.')    </span>
+    <span class="token keyword">return</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span>max_width<span class="token punctuation">,</span> <span class="token string">'.'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> level_map<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Отрисовка уровня</h2>
+<p>С загруженным уровнем можно работать по-разному.</p>
+<p>Для больших уровней может потребоваться большая производительность, и тогда стоит делать так:</p>
+<ol>
+<li>Сначала отрисовать неподвижные элементы карты один раз на отдельном Surface-e</li>
+<li>А после выводить их как одну общую картинку</li>
+</ol>
+<p>Для «обычной жизни» достаточно сгенерировать соответствующие спрайты. И потом будет очень удобно проверять столкновения. Мы поступим именно так.</p>
+<p>Изображения <strong>тайлов</strong> (клеточек) удобно хранить в словаре.</p>
+<p>Стоит сразу определить тайлы и подвижные объекты в разные группы спрайтов.</p>
+<pre class="language-python"><code class="language-python">tile_images <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">'wall'</span><span class="token punctuation">:</span> load_image<span class="token punctuation">(</span><span class="token string">'box.png'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">'empty'</span><span class="token punctuation">:</span> load_image<span class="token punctuation">(</span><span class="token string">'grass.png'</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+player_image <span class="token operator">=</span> load_image<span class="token punctuation">(</span><span class="token string">'mario.png'</span><span class="token punctuation">)</span>
+
+tile_width <span class="token operator">=</span> tile_height <span class="token operator">=</span> <span class="token number">50</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">Tile</span><span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> tile_type<span class="token punctuation">,</span> pos_x<span class="token punctuation">,</span> pos_y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>tiles_group<span class="token punctuation">,</span> all_sprites<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> tile_images<span class="token punctuation">[</span>tile_type<span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>move<span class="token punctuation">(</span>
+            tile_width <span class="token operator">*</span> pos_x<span class="token punctuation">,</span> tile_height <span class="token operator">*</span> pos_y<span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">Player</span><span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> pos_x<span class="token punctuation">,</span> pos_y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>player_group<span class="token punctuation">,</span> all_sprites<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> player_image
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>move<span class="token punctuation">(</span>
+            tile_width <span class="token operator">*</span> pos_x <span class="token operator">+</span> <span class="token number">15</span><span class="token punctuation">,</span> tile_height <span class="token operator">*</span> pos_y <span class="token operator">+</span> <span class="token number">5</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Генерацию спрайтов лучше оформить в виде отдельной функции, которая создаст все элементы игрового поля и вернет спрайт игрока.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># основной персонаж</span>
+player <span class="token operator">=</span> <span class="token boolean">None</span>
+
+<span class="token comment"># группы спрайтов</span>
+all_sprites <span class="token operator">=</span> pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Group<span class="token punctuation">(</span><span class="token punctuation">)</span>
+tiles_group <span class="token operator">=</span> pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Group<span class="token punctuation">(</span><span class="token punctuation">)</span>
+player_group <span class="token operator">=</span> pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Group<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">generate_level</span><span class="token punctuation">(</span>level<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    new_player<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">None</span>
+    <span class="token keyword">for</span> y <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>level<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>level<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> level<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'.'</span><span class="token punctuation">:</span>
+                Tile<span class="token punctuation">(</span><span class="token string">'empty'</span><span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+            <span class="token keyword">elif</span> level<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'#'</span><span class="token punctuation">:</span>
+                Tile<span class="token punctuation">(</span><span class="token string">'wall'</span><span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+            <span class="token keyword">elif</span> level<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'@'</span><span class="token punctuation">:</span>
+                Tile<span class="token punctuation">(</span><span class="token string">'empty'</span><span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+                new_player <span class="token operator">=</span> Player<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+    <span class="token comment"># вернем игрока, а также размер поля в клетках            </span>
+    <span class="token keyword">return</span> new_player<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y
+</code></pre>
+<p>После этого для загрузки и отрисовки уровня нам понадобится примерно вот такой код:</p>
+<pre class="language-python"><code class="language-python">player<span class="token punctuation">,</span> level_x<span class="token punctuation">,</span> level_y <span class="token operator">=</span> generate_level<span class="token punctuation">(</span>load_level<span class="token punctuation">(</span><span class="token string">'map.txt'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-7-2.png" width="502"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="4">Камера</h2>
+<p>Если мы немного ошибемся в размерах экрана, то увидим, что игровое поле целиком на экран не влезает. Нам нужен скроллинг. Обычно в играх для этого добавляют специальный объект — камеру, которая «следит» за персонажем.</p>
+<p>В Pygame нет специального класса камеры. Вернее, модуль камеры есть, но он предназначен для работы с видеокамерой, подключенной к компьютеру.</p>
+<p>В простом случае камера должна выполнять две функции:</p>
+<ol>
+<li>Обновлять свое положение (менять viewpoint, область просмотра) и</li>
+<li>Влиять на игровое поле таким образом, чтобы оно менялось в зависимости от положения камеры</li>
+</ol>
+<p>Часто игровые объекты реализуют так, чтобы они <strong>отрисовывались</strong> правильным образом, опираясь на положение камеры. То есть, объекты сохраняют свое положение в игровом мире и только в момент отрисовки смещаются.</p>
+<p>В Pygame процесс отрисовки спрайтов не контролируется пользователем. И в простой игре вполне оправданно, чтобы камера изменяла <em>положение</em> объектов.</p>
+<p>Тогда класс камеры, которая <strong>держит</strong> цель, например, главного персонажа, в центре окна может выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Camera</span><span class="token punctuation">:</span>
+    <span class="token comment"># зададим начальный сдвиг камеры</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>dx <span class="token operator">=</span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>dy <span class="token operator">=</span> <span class="token number">0</span>
+        
+    <span class="token comment"># сдвинуть объект obj на смещение камеры</span>
+    <span class="token keyword">def</span> <span class="token function">apply</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> obj<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        obj<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x <span class="token operator">+=</span> self<span class="token punctuation">.</span>dx
+        obj<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">+=</span> self<span class="token punctuation">.</span>dy
+    
+    <span class="token comment"># позиционировать камеру на объекте target</span>
+    <span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>dx <span class="token operator">=</span> <span class="token operator">-</span><span class="token punctuation">(</span>target<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x <span class="token operator">+</span> target<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>w <span class="token operator">//</span> <span class="token number">2</span> <span class="token operator">-</span> width <span class="token operator">//</span> <span class="token number">2</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>dy <span class="token operator">=</span> <span class="token operator">-</span><span class="token punctuation">(</span>target<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">+</span> target<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>h <span class="token operator">//</span> <span class="token number">2</span> <span class="token operator">-</span> height <span class="token operator">//</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Перед началом игрового цикла создадим камеру:</p>
+<pre class="language-python"><code class="language-python">camera <span class="token operator">=</span> Camera<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>И потом на каждой итерации игрового цикла будем обновлять ракурс камеры и корректировать положение всех объектов в группе <var>all_sprites</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># изменяем ракурс камеры</span>
+camera<span class="token punctuation">.</span>update<span class="token punctuation">(</span>player<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment"># обновляем положение всех спрайтов</span>
+<span class="token keyword">for</span> sprite <span class="token keyword">in</span> all_sprites<span class="token punctuation">:</span>
+      camera<span class="token punctuation">.</span><span class="token builtin">apply</span><span class="token punctuation">(</span>sprite<span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-7-3.png" width="300"/> <img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-7-4.png" width="300"/></div>
+<p>Легко сделать, чтобы камера следила за другим объектом или управлялась игроком.</p>
+<p>Доведите до логического завершения разбираемую задачу, а затем продолжайте работать над своим проектом.</p>
+</section></article></section>

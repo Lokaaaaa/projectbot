@@ -1,0 +1,19 @@
+import argparse
+
+
+def print_error(message):
+    if type(message) is list:
+        print(f"ERROR: {' '.join([str(k) for k in message])}!!")
+    else:
+        print(f"ERROR: {message}!!")
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('name', nargs='*')
+args = parser.parse_args()
+
+# print (namespace)
+
+if args.name:
+    print("Welcome to my program")
+    print_error(args.name)

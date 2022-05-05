@@ -1,0 +1,122 @@
+<section class="lesson-material__content"><article class="material"><h1>Методы split и join. Списочные выражения</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Методы split и join</a></li>
+<li><a class="material__link" href="#2">Списочные выражения</a></li>
+<li><a class="material__link" href="#3">Использование списочных выражений в аргументах методов split и join. Считывание значений, введенных одной строкой</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке рассматриваются два очень популярных метода строк — <var>split</var> и <var>join</var>. Во второй части рассматриваются списочные выражения (<code>python list comprehensions [... for ... in ...]</code>), которые в сочетании с методом <var>split</var> позволяют, например, считывать из стандартного потока ввода несколько значений одной строкой.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Методы split и join</h2>
+<p>Изучая множества и списки, мы уже неоднократно встречались с методами — функциями, «приклеенными» к объекту (списку или множеству) и изменяющими его содержимое.</p>
+<p>Методы есть не только у списков и множеств, но и у строк. Сегодня мы изучим два очень полезных метода строк — <var>split</var> и <var>join</var>. Они противоположны по смыслу: <var>split</var> разбивает строку по произвольному разделителю на список «слов», а <var>join</var> собирает из списка слов единую строку через заданный разделитель.</p>
+<p>Чтобы вызвать эти методы, необходимо использовать уже знакомый нам синтаксис. После имени переменной, содержащей объект-строку, или просто после строки через точку пишется имя метода, затем в круглых скобках указываются аргументы. <var>split</var> и <var>join</var>, в отличие, например, от метода списков <var>append</var> или метода множеств <var>add</var>, не изменяют объект, которому принадлежат, а создают <strong>новый</strong> (список или строку) и возвращают его, как это делают обычные функции типа <var>len</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Метод split</strong></p>
+<p>Метод <var>split</var> можно вызвать вообще без аргументов или с одним аргументом-строкой. В первом случае строка разбивается на части, разделенные любыми символами пустого пространства (набором пробелов, символом табуляции и т. д.). Во втором случае разделителем слов считается строка-аргумент. Из получившихся слов формируется список.</p>
+</section>
+<p>В этом примере все сравнения истинны, т. е. все вызовы функции <var>print</var> выведут True.</p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token string">'раз два три'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token string">'раз'</span><span class="token punctuation">,</span> <span class="token string">'два'</span><span class="token punctuation">,</span> <span class="token string">'три'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'     one two  three  '</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token string">'one'</span><span class="token punctuation">,</span> <span class="token string">'two'</span><span class="token punctuation">,</span> <span class="token string">'three'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'192.168.1.1'</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'.'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token string">'192'</span><span class="token punctuation">,</span> <span class="token string">'168'</span><span class="token punctuation">,</span> <span class="token string">'1'</span><span class="token punctuation">,</span> <span class="token string">'1'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'а'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token string">'р'</span><span class="token punctuation">,</span> <span class="token string">'з дв'</span><span class="token punctuation">,</span> <span class="token string">' три'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'A##B##C'</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'##'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">,</span> <span class="token string">'B'</span><span class="token punctuation">,</span> <span class="token string">'C'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True
+True
+True
+True
+True
+</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Метод join</strong></p>
+<p><var>join</var> же всегда принимает один аргумент — список слов, которые нужно <strong>склеить</strong>. Разделителем (точнее, «соединителем») служит та самая строка, чей метод <var>join</var> вызывается. Это может быть и пустая строка, и пробел, и символ новой строки, и что угодно еще. В этих примерах все сравнения тоже истинны и каждый <var>print</var> выведет True.</p>
+</section>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'Тот'</span><span class="token punctuation">,</span> <span class="token string">'Кого'</span><span class="token punctuation">,</span> <span class="token string">'Нельзя'</span><span class="token punctuation">,</span> <span class="token string">'Называть'</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'ТотКогоНельзяНазывать'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'Тот Кого Нельзя Называть'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'-'</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'Тот-Кого-Нельзя-Называть'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'! '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'Тот! Кого! Нельзя! Называть'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True
+True
+True
+True</samp></pre>
+<p>Итак, <var>split</var> служит для преобразования строки в список, а <var>join</var> — для преобразования списка в строку:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-13/split-join.svg" width="680"/></div>
+<p>Обратите внимание: <var>split</var> и <var>join</var> — методы <strong>строк</strong>. Попытка вызвать такой метод у объекта, не являющегося строкой, вызовет ошибку! Например, если попытаться написать заведомо бессмысленное, с точки зрения интерпретатора Python, выражение:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>AttributeError                 Traceback (most recent call last)
+&lt;ipython-input-3-404b5f4d9169&gt; in &lt;module&gt;()
+----&gt; 1 [1, 2, 3].join([4, 5, 6])
+
+AttributeError: 'list' object has no attribute 'join'</samp></pre>
+<p>Как видно, указан тип объекта (<code>[1, 2, 3]</code> — список, <var>list</var>) и имя отсутствующего у него метода — <var>join</var>, который мы пытаемся вызвать.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Списочные выражения</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Списочные выражения</strong></p>
+<p>Для генерации списков из неповторяющихся элементов в Python имеется удобная синтаксическая конструкция — списочное выражение (list comprehension). Она позволяет создавать элементы списка в цикле <var>for</var>, не записывая цикл целиком.</p>
+</section>
+<p>Например, если нам необходимо создать список квадратов целых чисел от 0 до 9 включительно, мы можем записать следующий код:</p>
+<pre class="language-python"><code class="language-python">squares <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    squares<span class="token punctuation">.</span>append<span class="token punctuation">(</span>i <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>squares<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]</samp></pre>
+<p>То же самое, но гораздо короче можно сделать с помощью списочного выражения:</p>
+<pre class="language-python"><code class="language-python">squares <span class="token operator">=</span> <span class="token punctuation">[</span>i <span class="token operator">**</span> <span class="token number">2</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>squares<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]</samp></pre>
+<p>А если нам необходимы квадраты не всех чисел, а только четных? Тогда можно добавить условие:</p>
+<pre class="language-python"><code class="language-python">even_squares <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> i <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        even_squares<span class="token punctuation">.</span>append<span class="token punctuation">(</span>i <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>even_squares<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[0, 4, 16, 36, 64]</samp></pre>
+<p>То же самое, но короче, с помощью списочного выражения:</p>
+<pre class="language-python"><code class="language-python">even_squares <span class="token operator">=</span> <span class="token punctuation">[</span>i <span class="token operator">**</span> <span class="token number">2</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span> <span class="token keyword">if</span> i <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>even_squares<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>[0, 4, 16, 36, 64]</samp></pre>
+<p>На рисунке показано соответствие между кодом заполнения списка с помощью цикла <var>for</var> и списочным выражением:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/split-join-2.png" width="680"/></div>
+<p>В списочном выражении можно пройти по двум или более циклам:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token punctuation">[</span>i <span class="token operator">*</span> j <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span> <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>[0, 0, 0, 0, 1, 2, 0, 2, 4]</samp></pre>
+<p>На самом деле квадратные скобки не являются неотъемлемой частью списочного выражения. Если их не поставить, выражение будет вычисляться по мере надобности — когда очередной элемент становится нужен. Заключая списочное выражение в квадратные скобки, мы тем самым даем инструкцию сразу создать все элементы и составить из них список. Пока что мы в основном будем пользоваться именно такими списочными выражениями — заключенными в квадратные скобки и превращенными таким образом в список.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Использование списочных выражений</strong></p>
+<p>Списочные выражения часто используются для инициализации списков. Дело в том, что в Python не принято создавать пустые списки, чтобы потом заполнять их значениями, если можно этого избежать.</p>
+</section>
+<p>Если все-таки необходимо создать пустой список (скажем, длиной 10) и заполнить его нулями (не может же он быть совсем пустой), это легко сделать, используя умножение списка на число: <code>[0] * 10</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Использование списочных выражений в аргументах методов split и join. Считывание значений, введенных одной строкой</h2>
+<p>Списочные выражения часто используют в аргументах методов <var>split</var> и <var>join</var>. Например, комбинация метода <var>split</var> и списочного выражения позволяют нам удобно считать числа, записанные в одну строку:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token string">'976 929 289 809 7677'</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+evil<span class="token punctuation">,</span> good <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token string">'666 777'</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>evil<span class="token punctuation">,</span> good<span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">'\n'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>666
+777</samp></pre>
+<p>Здесь строка (обычно она не задается прямо в выражении, а получается из <code>input()</code>) разделяется на отдельные слова с помощью <var>split</var>. Затем списочное выражение пропускает каждый элемент получившегося списка через функцию <var>int</var>, превращая строку <code>'976'</code> в число <code>976</code>. Можно собрать все получившиеся значения в один список или разложить их по отдельным переменным с помощью множественного присваивания, как во второй строчке примера.</p>
+<p>Рассмотрим и пример использования метода <var>join</var> вместе со списочным выражением. Выведем на одной строке список квадратов натуральных чисел от 1 до 9: <code>1^2=1, 2^2=4, 3^2=9...</code> Для этого сначала с помощью списочного выражения сформируем список строк вида <code>['1^2=1', '2^2=4', '3^2=9', ...]</code>, а затем «склеим» его в одну строку методом <var>join</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">', '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'^2='</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>i <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>1^2=1, 2^2=4, 3^2=9, 4^2=16, 5^2=25, 6^2=36, 7^2=49, 8^2=64, 9^2=81</samp></pre>
+<p>Заметьте, что в аргументе функции <var>join</var> стоит списочное выражение, не заключенное в квадратные скобки (это можно сделать, но необязательно).</p>
+<p>Будьте внимательны! Обычно возведение в степень обозначают «крышечкой» перед степенью, но в Python эта «крышечка» обозначает совсем другое, а возведение в степень выполняется оператором <code>**</code>. В примере «крышечка» используется только как обозначение операции возведения в степень.</p>
+</section></article></section>

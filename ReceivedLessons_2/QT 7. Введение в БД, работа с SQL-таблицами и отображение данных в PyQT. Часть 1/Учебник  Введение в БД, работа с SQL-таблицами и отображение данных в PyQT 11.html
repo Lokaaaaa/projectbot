@@ -1,0 +1,316 @@
+<section class="lesson-material__content"><article class="material"><h1>Введение в БД, работа с SQL-таблицами и отображение данных в PyQT. Часть 1</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение в базы данных</a></li>
+<li><a class="material__link" href="#2">Основы SQL</a></li>
+<li><a class="material__link" href="#3">Работаем с SQLite базой данных из Python</a></li>
+<li><a class="material__link" href="#4">Возможности PyQT по работе с базами данных</a></li>
+<li><a class="material__link" href="#5">SQL: Получение данных из нескольких таблиц</a></li>
+<li><a class="material__link" href="#6">Заключение</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На уроке мы начнем знакомство с базами данных и языком SQL. Это большая тема, которая будет сопровождать нас до конца обучения, периодически «обрастая» новыми подробностями.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Введение в базы данных</h2>
+<p>На прошлых уроках вы уже сталкивались с хранением данных во внешних источниках: простых текстовых документах, документах с особым форматированием, например, csv-таблицах. Однако такая организация хранения мало пригодна при большом объеме информации по нескольким причинам: в них много дублирования, из-за чего требуется значительно больше места на жестком диске, а поиск работает медленно и слишком «дорогой» при сколько-либо значимом количестве обращений. Разработчики промышленного программного обеспечения столкнулись с этими проблемами достаточно давно, и в качестве одного из решений еще в 1970 году <a class="material__link" href="https://ru.wikipedia.org/wiki/Кодд,_Эдгар" rel="noopener noreferrer" target="_blank">Эдгар Кодд</a> предложил реляционную модель данных (файловые базы данных появились еще раньше — в 1955 году). Эта идея развилась в привычные сегодня для почти каждого программиста реляционные базы данных (БД).</p>
+<p>База данных — это непосредственное хранилище информации, которое без инструментов для взаимодействия с ним не очень то и полезно. Такой интерфейс для общения с БД разработчикам и системным администраторам предоставляет специальное программное обеспечение — Системы управления базами данных (<strong>СУБД</strong>).</p>
+<p>Существует достаточно много различных коммерческих и бесплатных СУБД. В наших проектах мы будем использовать компактную встраиваемую реляционную СУБД SQLite по нескольким причинам:</p>
+<ol>
+<li>SQLite — встраиваемая СУБД, поэтому не требует установки дополнительного программного обеспечения, а движок SQLite представляет собой отдельную библиотеку, написанную на C, которую можно использовать как составную часть вашей программы.</li>
+<li>SQLite база данных представляет собой один файл, с которым удобно работать.</li>
+<li>Исходный код SQLite передан в общественное достояние, то есть не существует никаких лицензионных ограничений на использование СУБД, как в некоммерческих, так и в коммерческих целях.</li>
+<li>Большая часть дополнительных инструментов для работы с SQLite бесплатна.</li>
+<li>И, наконец, в составе стандартной библиотеки Python уже содержится библиотека для работы с SQLite, даже не придется ничего устанавливать с использованием pip.</li>
+</ol>
+<p>Но не надо думать, что раз «SQLite» имеет слово «lite» в названии, то это какая-то «игрушечная» СУБД, которая используется только для обучения и при создании «настоящего» программного обеспечения не используется. Простота и удобство встраивания SQLite привели к тому, что библиотека используется в браузерах, музыкальных плеерах и многих других программах, например: Skype, Viber, Яндекс.Браузер, Google Chrome, Mozilla Firefox, Safari, Opera, Adobe Lightroom и т. д.</p>
+<p>Данные в SQLite базе данных, как и в любых других реляционных БД, хранятся с помощью таблиц и связей между этими таблицами. Если говорить в терминах баз данных, то таблицы — это сущности, а связи — отношения между этими сущностями. Строго говоря, проектирование и использование баз данных — серьезная область знаний в информационных технологиях, существует несколько разных профессий, специалисты в каждой из которых отвечают за отдельные части жизненного цикла базы данных. Поэтому рассмотреть все детали в рамках нашего курса, очевидно, не получится, и мы постараемся сосредоточиться на основных понятиях этой предметной области, которые вам пригодятся с вероятностью около ста процентов.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Основы SQL</h2>
+<p>Давайте рассмотрим модельный пример SQLite-базы данных. Она представляет собой хранилище информации о фильмах: название, год выпуска, жанр и продолжительность в минутах. Каждое поле занимает определенный объем в зависимости от типа данных: целочисленный, строковый или используемый для хранения времени. Подробнее о том, какие типы данных поддерживает SQLite, можно почитать <a class="material__link" href="https://www.sqlite.org/datatype3.html" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>Как мы уже говорили, отмечая недостатки хранения информации в csv-файлах, при хранении информации о каждом фильме полностью придется занимать место под название жанра. Поскольку у нас может быть в общем случае сотни тысяч записей о фильмах и всего несколько десятков разных названий жанров, хранить эту информацию в таком виде очень расточительно по отношению к ресурсам. В реляционных базах данных в подобных случаях создается дополнительная таблица, в которой в нашем случае будем хранить пару формата <strong>Ключ: Значение</strong>, где в качестве ключа используется уникальный целочисленный идентификатор (id), а в качестве значения — название жанра (title). А в первой таблице просто хранится ссылка на вторую.</p>
+<p>Итак у нас есть база данных <a class="material__link" href="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/films_db.sqlite" rel="noopener noreferrer" target="_blank">films_db.sqlite</a>. Давайте сначала посмотрим, как она выглядит в виде визуализации:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-1.png" width="300"/></div>
+<p>Такие визуализации используют достаточно часто для наглядного представления таблиц и связей, и называются они ER-диаграммами (сокращение от Entity-Relation или Сущность-Отношение).</p>
+<p>Итак, разберем, что есть в нашей базе данных. Есть две таблицы-сущности: films для хранения информации о фильмах и genres для хранения информации о жанрах. Таблица genres состоит всего из двух полей: id и title, в которых для каждого жанра хранится его идентификатор и название соответственно.</p>
+<p>Таблица films чуть сложнее. Там есть поля id, title, year, genre, duration для хранения идентификатора фильма, его названия, года выпуска, идентификатора жанра и длительности в минутах.</p>
+<p>Кроме того, как видно на диаграмме, между таблицами есть связь, которая говорит о том, что номер жанра genre у записи films соответствует записи в таблице genres с таким же значением идентификатора.</p>
+<p>Для работы с базами данных был придуман специальный язык — SQL (structured query language — «язык структурированных запросов»). Прежде чем начать работать с БД из Python, давайте немного попрактикуемся в написании запросов с помощью отдельного программного продукта. <a class="material__link" href="https://sqlitestudio.pl/" rel="noopener noreferrer" target="_blank">SQLiteStudio</a> — официальный менеджер SQLite баз данных. Менеджеры баз данных — это специальный класс ПО, предназначенный для удобного создания и управления базами данных, написания и отладки SQL-запросов.</p>
+<p>Скачайте и установите SQLiteStudio.</p>
+<p>Первое, что необходимо сделать после установки — добавить нашу базу. Для этого в основном меню необходимо выбрать пункт <strong>Add a Database</strong> и в открывшемся окне указать путь к файлу нашей БД.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-2.png" width="420"/></div>
+<p>Если все прошло успешно, можно писать запросы. Для этого необходимо открыть редактор SQL. Его логотип выглядит как свиток бумаги с карандашом. Интерфейс редактора состоит из двух частей: первая, где пишется сам запрос, и вторая, где отображаются результаты.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-3.png" width="680"/></div>
+<p>Основной командой для получения какой-либо информации из БД является команда <var>SELECT</var>. Ее базовый синтаксис выглядит так:</p>
+<pre class="language-python"><code class="language-python">SELECT перечень_полей FROM имя_таблицы
+        WHERE условие
+</code></pre>
+<p>Кроме этого, есть и различные модификаторы этой команды. Например, <code>ORDER BY ПОЛЕ</code> — тогда результаты будут выведены в отсортированном виде по заданному полю или нескольким полям, а в условии может быть вложенный запрос.</p>
+<p>Напишем наш первый запрос. Получим все фильмы, выпущенные в 2010 году.</p>
+<pre class="language-python"><code class="language-python">SELECT <span class="token operator">*</span> FROM Films
+    WHERE year <span class="token operator">=</span> <span class="token number">2010</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-4.png" width="469"/></div>
+<p>Символ <code>*</code> обозначает, что нам необходимо получить все поля. Однако очень часто нам нужно получить только одно или два поля. Модифицируем запрос так, чтобы выводилось только название.</p>
+<pre class="language-python"><code class="language-python">SELECT title FROM Films
+    WHERE year <span class="token operator">=</span> <span class="token number">2010</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-5.png" width="228"/></div>
+<p>Условий может быть и несколько: работают все знакомые нам логические операторы NOT, AND и OR. Например, выберем фильмы, выпущенные после 2005 года с продолжительностью от 40 минут до 1,5 часов:</p>
+<pre class="language-python"><code class="language-python">SELECT <span class="token operator">*</span> FROM Films
+    WHERE year <span class="token operator">&gt;</span> <span class="token number">2005</span> AND duration <span class="token operator">&gt;=</span> <span class="token number">45</span> AND duration <span class="token operator">&lt;=</span> <span class="token number">90</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-6.png" width="649"/></div>
+<p>А как вывести все фильмы определенного жанра, например, <strong>фантастика</strong>? Конечно, можно сходить в таблицу genres и посмотреть, какой id у жанра фантастика, а потом написать запрос вроде такого:</p>
+<pre class="language-python"><code class="language-python">SELECT title FROM films 
+    WHERE genre <span class="token operator">=</span> <span class="token number">8</span>
+</code></pre>
+<p>Но это плохой путь, потому что через некоторое время данные могут измениться, и id у фантастики может стать другим, тогда наш запрос будет давать ошибочный результат. Поэтому правильным решением в данной ситуации будет написать подзапрос, который сам найдет нам необходимое значение id.</p>
+<pre class="language-python"><code class="language-python">SELECT title FROM Films 
+    WHERE genre<span class="token operator">=</span><span class="token punctuation">(</span>
+SELECT <span class="token builtin">id</span> FROM genres 
+    WHERE title <span class="token operator">=</span> <span class="token string">'фантастика'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Сначала выполнится внутренний запрос: из таблицы <var>genres</var> будет получен id для записи с title«Фантастика», а затем будет выполнено сравнение и выведен результат.</p>
+<p>Помимо того, может быть выполнено сравнение не с одним элементом, а проверка на попадание в список. Это делается с помощью уже знакомого нам оператора <var>IN</var>. Например, так можно выбрать фильмы, продолжительность которых строго 45 или 90 минут:</p>
+<pre class="language-python"><code class="language-python">SELECT title<span class="token punctuation">,</span> duration FROM Films 
+WHERE duration IN <span class="token punctuation">(</span><span class="token number">45</span><span class="token punctuation">,</span> <span class="token number">90</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Кроме уже операторов знакомых нам по Python, SQL содержит еще и ряд тех, которых в Python нет. Давайте рассмотрим несколько из них.</p>
+<p>Оператор <var>BETWEEN</var> — проверяет, попадает ли заданное значение в диапазон (включая границы).</p>
+<pre class="language-python"><code class="language-python">SELECT <span class="token operator">*</span> FROM Films
+    WHERE <span class="token punctuation">(</span>year <span class="token operator">&gt;</span> <span class="token number">2005</span><span class="token punctuation">)</span> AND duration BETWEEN <span class="token number">45</span> AND <span class="token number">60</span> 
+</code></pre>
+<p>Оператор <var>LIKE</var> позволяет проверить, насколько похожа та или иная строка на заданный шаблон. Для шаблонов используются специальные символы:</p>
+<ul>
+<li><code>%</code> — обозначает любое количество, в том числе нулевое, любых символов</li>
+<li><code>_</code> — обозначает один любой символ</li>
+</ul>
+<p>Давайте получим список фильмов, у которых первая буква в названии — <strong>А</strong> и третья — <strong>к</strong>.</p>
+<pre class="language-python"><code class="language-python">SELECT <span class="token operator">*</span> FROM Films
+    WHERE title like <span class="token string">'А_к%'</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-7.png" width="412"/></div>
+<p>Оператор <var>LIKE</var> работает также в паре с <var>NOT</var>. Например, получим список фильмов, у которых третья буква в названии не равна <strong>д</strong>, а последняя не равна <strong>a</strong>.</p>
+<pre class="language-python"><code class="language-python">SELECT <span class="token operator">*</span> FROM films
+    WHERE title NOT LIKE <span class="token string">'__д%а'</span>
+</code></pre>
+<p>Кроме этого, есть возможность избавиться от повторов, используя в запросе специальный оператор — <code>DISTINCT</code>. Например, вот так можно получить список годов, в которые выходили фильмы в нашей базе данных, без повторений.</p>
+<pre class="language-python"><code class="language-python">SELECT DISTINCT year FROM Films
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Работаем с SQLite базой данных из Python</h2>
+<p>Так как различных СУБД достаточно много, крайне неудобно было бы, если при переходе на новую СУБД приходилось бы с нуля изучать библиотеку для работы с ней. Чтобы избежать таких ситуаций, есть специальный стандарт <strong>PEP 249</strong> (Python Database API Specification v2.0), в котором, помимо всего прочего, описано, какой интерфейс должна предоставлять программисту любая библиотека для работы с базами данных. Поэтому, какую бы СУБД вы не выбрали для управления хранением данных вашего приложения, принципы работы с ней будут очень похожи. Для работы с SQLite из Python используется библиотека sqlite3, которая реализует этот стандарт.</p>
+<p>PEP 249 оперирует такими понятиями, как подключения и курсоры:</p>
+<ul>
+<li><strong>Подключение</strong> — объект, в котором чаще всего указывается либо путь к файлу, либо путь к серверу. Он отвечает только за подключение к БД и, соответственно, отключение от нее</li>
+<li><strong>Курсор</strong> — объект, в котором непосредственно производится работа с БД</li>
+</ul>
+<p>Напишем программу (пока что без графического интерфейса), которая получает результаты одного из рассмотренных выше запросов и выводит их в консоль.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Импорт библиотеки</span>
+<span class="token keyword">import</span> sqlite3
+
+<span class="token comment"># Подключение к БД</span>
+con <span class="token operator">=</span> sqlite3<span class="token punctuation">.</span>connect<span class="token punctuation">(</span><span class="token string">"films_db.sqlite"</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Создание курсора</span>
+cur <span class="token operator">=</span> con<span class="token punctuation">.</span>cursor<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Выполнение запроса и получение всех результатов</span>
+result <span class="token operator">=</span> cur<span class="token punctuation">.</span>execute<span class="token punctuation">(</span><span class="token triple-quoted-string string">"""SELECT * FROM films
+            WHERE year = 2010"""</span><span class="token punctuation">)</span><span class="token punctuation">.</span>fetchall<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Вывод результатов на экран</span>
+<span class="token keyword">for</span> elem <span class="token keyword">in</span> result<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>elem<span class="token punctuation">)</span>
+
+con<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>(248, 'Алиса в стране чудес', 2010, 13, '')
+(4382, 'Железный человек 2', 2010, 11, '')
+(9138, 'Ноттингем', 2010, 11, '')
+(15495, 'Утомленные солнцем: Предстояние', 2010, 2, '')</samp></pre>
+<p>Как можно заметить, результат запроса — это список кортежей.</p>
+<p>Метод <code>.fetchall()</code> возвращает все полученные элементы. Существует еще метод <code>.fetchone()</code>, возвращающий, как несложно догадаться, только первый элемент, и метод <code>.fetchmany(n)</code>, возвращающий n первых записей.</p>
+<p>Для запросов очень часто необходимо указывать какие-либо параметры, в нашем случае: год выпуска, продолжительность фильма и т. д. Для этого существует удобный синтаксис. Вместо значения в запросе указывается вопросительный знак, а затем вторым параметром в итерируемом объекте (чаще всего в кортеже) указываются необходимые значения для подстановки.</p>
+<pre class="language-python"><code class="language-python">result <span class="token operator">=</span> cur<span class="token punctuation">.</span>execute<span class="token punctuation">(</span><span class="token triple-quoted-string string">"""SELECT * FROM films
+            WHERE year = ? and duration &gt; ?"""</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">2010</span><span class="token punctuation">,</span> <span class="token number">90</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>fetchall<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Важно не забыть, что, если мы указываем кортеж из одного элемента, нам все равно необходимо после него поставить запятую.</p>
+<pre class="language-python"><code class="language-python">result <span class="token operator">=</span> cur<span class="token punctuation">.</span>execute<span class="token punctuation">(</span><span class="token triple-quoted-string string">"""SELECT * FROM Films
+            WHERE year = ?"""</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">2009</span><span class="token punctuation">,</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>fetchall<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Давайте добавим к нашему приложению графический пользовательский интерфейс. Напишем программу, которая будет отображать результаты введенного запроса в таблице QTableWidget.</p>
+<p>С помощью QtDesigner создадим интерфейс: поле для ввода запроса, таблица для отображения результатов и кнопка для запуска выполнения запроса. Работа с данными из таблицы базы данных с помощью виджета QTableWidget полностью аналогична тому, что мы рассматривали на прошлом уроке во время работы с .csv-файлами.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-6/qt-6-8.png" width="540"/></div>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sqlite3
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5 <span class="token keyword">import</span> uic
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QMainWindow<span class="token punctuation">,</span> QTableWidgetItem
+
+
+<span class="token keyword">class</span> <span class="token class-name">DBSample</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        uic<span class="token punctuation">.</span>loadUi<span class="token punctuation">(</span><span class="token string">'UI1.ui'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>connection <span class="token operator">=</span> sqlite3<span class="token punctuation">.</span>connect<span class="token punctuation">(</span><span class="token string">"films_db.sqlite"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pushButton<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>select_data<span class="token punctuation">)</span>
+        <span class="token comment"># По умолчанию будем выводить все данные из таблицы films</span>
+        self<span class="token punctuation">.</span>textEdit<span class="token punctuation">.</span>setPlainText<span class="token punctuation">(</span><span class="token string">"SELECT * FROM films"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>select_data<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">select_data</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Получим результат запроса, </span>
+        <span class="token comment"># который ввели в текстовое поле</span>
+        query <span class="token operator">=</span> self<span class="token punctuation">.</span>textEdit<span class="token punctuation">.</span>toPlainText<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        res <span class="token operator">=</span> self<span class="token punctuation">.</span>connection<span class="token punctuation">.</span>cursor<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>execute<span class="token punctuation">(</span>query<span class="token punctuation">)</span><span class="token punctuation">.</span>fetchall<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token comment"># Заполним размеры таблицы</span>
+        self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setColumnCount<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setRowCount<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token comment"># Заполняем таблицу элементами</span>
+        <span class="token keyword">for</span> i<span class="token punctuation">,</span> row <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setRowCount<span class="token punctuation">(</span>
+                self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>rowCount<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token keyword">for</span> j<span class="token punctuation">,</span> elem <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                self<span class="token punctuation">.</span>tableWidget<span class="token punctuation">.</span>setItem<span class="token punctuation">(</span>
+                    i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> QTableWidgetItem<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>elem<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">closeEvent</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># При закрытии формы закроем и наше соединение </span>
+        <span class="token comment"># с базой данных</span>
+        self<span class="token punctuation">.</span>connection<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> DBSample<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Возможности PyQT по работе с базами данных</h2>
+<p>В курсе мы и дальше будем говорить про работу с базами данных как можно более обще, но нельзя не отметить то, что у PyQT (как и у некоторых других больших библиотек) есть своя универсальная надстройка для работы с БД — модуль PyQt5.QtSql. Рассмотрим простейший пример: отобразим все данные из таблицы films.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtSql <span class="token keyword">import</span> QSqlDatabase<span class="token punctuation">,</span> QSqlTableModel
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QWidget<span class="token punctuation">,</span> QTableView<span class="token punctuation">,</span> QApplication
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Зададим тип базы данных</span>
+        db <span class="token operator">=</span> QSqlDatabase<span class="token punctuation">.</span>addDatabase<span class="token punctuation">(</span><span class="token string">'QSQLITE'</span><span class="token punctuation">)</span>
+        <span class="token comment"># Укажем имя базы данных</span>
+        db<span class="token punctuation">.</span>setDatabaseName<span class="token punctuation">(</span><span class="token string">'films_db.sqlite'</span><span class="token punctuation">)</span>
+        <span class="token comment"># И откроем подключение</span>
+        db<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># QTableView - виджет для отображения данных из базы</span>
+        view <span class="token operator">=</span> QTableView<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        <span class="token comment"># Создадим объект QSqlTableModel,</span>
+        <span class="token comment"># зададим таблицу, с которой он будет работать,</span>
+        <span class="token comment">#  и выберем все данные</span>
+        model <span class="token operator">=</span> QSqlTableModel<span class="token punctuation">(</span>self<span class="token punctuation">,</span> db<span class="token punctuation">)</span>
+        model<span class="token punctuation">.</span>setTable<span class="token punctuation">(</span><span class="token string">'films'</span><span class="token punctuation">)</span>
+        model<span class="token punctuation">.</span>select<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># Для отображения данных на виджете</span>
+        <span class="token comment"># свяжем его и нашу модель данных</span>
+        view<span class="token punctuation">.</span>setModel<span class="token punctuation">(</span>model<span class="token punctuation">)</span>
+        view<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+        view<span class="token punctuation">.</span>resize<span class="token punctuation">(</span><span class="token number">617</span><span class="token punctuation">,</span> <span class="token number">315</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">650</span><span class="token punctuation">,</span> <span class="token number">450</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Пример работы с QtSql'</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Общий принцип работы с модулем следующий:</p>
+<ul>
+<li>Создаем и настраиваем объект QSqlDatabase для связи с базой данных</li>
+<li>С помощью QSqlTableModel или QSqlQueryModel получаем и управляем данными из базы данных</li>
+<li>С помощью виджета QTableView отображаем данные в табличном виде</li>
+</ul>
+<p>Подробнее почитать про работу с базами данных, использованием модуля QtSql можно почитать в официальной <a class="material__link" href="https://doc.qt.io/qt-5/sql-programming.html" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">SQL: Получение данных из нескольких таблиц</h2>
+<p>Язык SQL позволяет при помощи одного запроса получать информацию сразу из нескольких таблиц в базе данных. Рассмотрим для примера базу данных <a class="material__link" href="https://yastatic.net/s3/lyceum/content/presentation/Chinook_Sqlite.sqlite" rel="noopener noreferrer" target="_blank">Chinook_Sqlite.sqlite</a></p>
+<p>В ней много таблиц, но нас интересуют только некоторые.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://contest.yandex.ru/testsys/statement-image?imageId=1abd6854107cadb975d54191d7b1c272f50f5b300bb8af37f4ef12ee6436a19d"/></div>
+<p>В таблице <strong>Album</strong> в колонке <strong>ArtistId</strong> содержится код артиста из таблицы <strong>Artist</strong>. Каждому артисту может принадлежать несколько или ноль альбомов. Чтобы получить сразу данные из двух таблиц <strong>Album</strong> и <strong>Artist</strong> можно использовать команды <var>INNER JOIN</var>, <var>LEFT JOIN</var>.</p>
+<p>Приведенный ниже запрос вернет названия альбомов и соответствующие им имена артистов.</p>
+<pre class="language-python"><code class="language-python">SELECT
+    album<span class="token punctuation">.</span>Title<span class="token punctuation">,</span>
+    artist<span class="token punctuation">.</span>Name
+FROM
+    album
+INNER JOIN artist
+    ON artist<span class="token punctuation">.</span>ArtistId <span class="token operator">=</span> album<span class="token punctuation">.</span>ArtistId<span class="token punctuation">;</span>
+</code></pre>
+<p>Вот, что мы получим:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/presentation/photo_2021-10-11%2012.23.26.jpeg" width="auto"/></div>
+<p>В этом примере команда <var>INNER JOIN</var> сопоставляет каждую строку из таблицы <strong>Album</strong> с каждой строкой из таблицы <strong>Artist</strong> основываясь на условии <var>artist.ArtistId = album.ArtistId</var>, которое указано после ключевого слова <var>ON</var>. Если условие выполняется, то значения из обеих таблиц для колонок, которые мы указали в секции <var>SELECT</var> запроса, добавляются в результат его выполнения. Таким образом, если для альбома не будет найдено соответствие в таблице с артистами или наоборот, то такие записи <strong>не будут добавлены в результат выполнения запроса</strong>.</p>
+<p>Приведенный ниже запрос так же вернет названия альбомов и соответствующие им имена артистов.</p>
+<pre class="language-python"><code class="language-python">SELECT
+    album<span class="token punctuation">.</span>Title<span class="token punctuation">,</span>
+    artist<span class="token punctuation">.</span>Name
+FROM
+    album
+LEFT JOIN artist
+    ON artist<span class="token punctuation">.</span>ArtistId <span class="token operator">=</span> album<span class="token punctuation">.</span>ArtistId<span class="token punctuation">;</span>
+</code></pre>
+<p>В этом примере команда <var>LEFT JOIN</var> выберет <strong>все записи из таблицы <strong>Album</strong> </strong>(таблица находится слева от команды) и для тех строк, для которых выполняется условие <var>artist.ArtistId = album.ArtistId</var>, указанное после ключевого слова <var>ON</var>, сопоставит строку из таблицы <strong>Artist</strong>. Если же для каких-то строк условие не выполнится, то колонки, получаемые из таблицы <strong>Artist</strong> <strong>останутся пустыми (null)</strong>.</p>
+<p>В одном запросе можно использовать неограниченное количество соединений (JOIN'ов). В запросе приведенном ниже мы выберем названия всех треков из таблицы <strong>Track</strong> добавим к нему название жанра из таблицы <strong>Genre</strong>, название альбома из таблицы <strong>Album</strong> и имя артиста из таблицы <strong>Artist</strong>, и упорядочим результат по имени трека.</p>
+<pre class="language-python"><code class="language-python">SELECT
+    Track<span class="token punctuation">.</span>Name <span class="token keyword">as</span> TrackName<span class="token punctuation">,</span>
+    Genre<span class="token punctuation">.</span>Name <span class="token keyword">as</span> GenreName<span class="token punctuation">,</span>
+    Album<span class="token punctuation">.</span>Title <span class="token keyword">as</span> AlbumTitle<span class="token punctuation">,</span>
+    Artist<span class="token punctuation">.</span>Name
+FROM
+    Track
+LEFT JOIN Genre ON Track<span class="token punctuation">.</span>GenreId <span class="token operator">=</span> Genre<span class="token punctuation">.</span>GenreId
+LEFT JOIN Album ON Track<span class="token punctuation">.</span>AlbumId <span class="token operator">=</span> Album<span class="token punctuation">.</span>AlbumId
+LEFT JOIN Artist ON Album<span class="token punctuation">.</span>ArtistId <span class="token operator">=</span> Artist<span class="token punctuation">.</span>ArtistId
+ORDER BY TrackName<span class="token punctuation">;</span>
+</code></pre>
+<p>Результат:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/presentation/photo_2021-10-11%2012.23.24.jpeg" width="auto"/></div>
+<p>Результаты запросов с соединениями (JOIN) также можно фильтровать при помощи команды <var>WHERE</var>. Добавим в предыдущий запрос условие, для получения только треков исполнителя "U2".</p>
+<pre class="language-python"><code class="language-python">SELECT
+    Track<span class="token punctuation">.</span>Name <span class="token keyword">as</span> TrackName<span class="token punctuation">,</span>
+    Genre<span class="token punctuation">.</span>Name <span class="token keyword">as</span> GenreName<span class="token punctuation">,</span>
+    Album<span class="token punctuation">.</span>Title <span class="token keyword">as</span> AlbumTitle<span class="token punctuation">,</span>
+    Artist<span class="token punctuation">.</span>Name
+FROM
+    Track
+LEFT JOIN Genre ON Track<span class="token punctuation">.</span>GenreId <span class="token operator">=</span> Genre<span class="token punctuation">.</span>GenreId
+LEFT JOIN Album ON Track<span class="token punctuation">.</span>AlbumId <span class="token operator">=</span> Album<span class="token punctuation">.</span>AlbumId
+LEFT JOIN Artist ON Album<span class="token punctuation">.</span>ArtistId <span class="token operator">=</span> Artist<span class="token punctuation">.</span>ArtistId
+WHERE Artist<span class="token punctuation">.</span>Name <span class="token operator">=</span> <span class="token string">"U2"</span>
+ORDER BY TrackName<span class="token punctuation">;</span>
+</code></pre>
+<p>Результат:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/presentation/photo_2021-10-11%2012.23.22.jpeg" width="auto"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="6">Заключение</h2>
+<p>Итак, сегодня мы познакомились с базами данных в целом, подробнее остановились на реляционных на примере SQLite. Изучили одну из основных конструкций SQL — запрос SELECT для выборки произвольных данных из БД (разумеется, увидели только небольшую часть возможностей, более детально можно почитать <a class="material__link" href="http://www.sqlitetutorial.net/" rel="noopener noreferrer" target="_blank">тут</a>). Кроме того, посмотрели, как подключаться и взаимодействовать с базами данных из Python-приложений.</p>
+<p>На следующем уроке мы продолжим работу с базами данных и посмотрим, как можно манипулировать данными: создавать новые записи, изменять и удалять существующие.</p>
+</section></article></section>

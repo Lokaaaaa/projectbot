@@ -1,0 +1,105 @@
+<section class="lesson-material__content"><article class="material"><h1>Разворачиваем проект в облаке. Дорешка</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение</a></li>
+<li><a class="material__link" href="#2">Туннель в Интернет</a></li>
+<li><a class="material__link" href="#3">Heroku</a></li>
+<li><a class="material__link" href="#4">Яндекс.Облако</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы посмотрим, как разместить свой проект в Интернете, чтобы к нему могли получить доступ все желающие, а также изучим несколько сервисов, которые смогут нам в этом помочь.</p>
+<p>Этот урок не содержит задач.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Введение</h2>
+<p>Разрабатывать веб-приложения, которые «живут» только на нашем локальном компьютере, согласитесь, не очень весело. Само слово «веб» подразумевает, что к результатам нашей работы должны иметь доступ все пользователи сети Интернет, ну или те, которым мы даем на это право. Процесс размещения ресурсов в Интернете называется deploy.</p>
+<p>Пока наше flask-приложение размещено на локальном компьютере, и мы помним, что каждый компьютер в мире думает про себя, что его IP-адрес 127.0.0.1. Как же тогда пользовательский запрос из Интернета может добраться до нашего компьютера и получить нужную веб-страницу или json-ответ от сервиса? Ведь таких машин с адресом 127.0.0.1 миллионы!</p>
+<p>Для решения этой задачи есть несколько способов и множество разных сервисов. С некоторыми из них мы сегодня познакомимся.</p>
+<p>Давайте сделаем простейшее веб-приложение, на примере которого мы будем проверять различные способы организации доступа к веб-приложению через Интернет.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+
+<span class="token keyword">from</span> flask <span class="token keyword">import</span> Flask
+
+app <span class="token operator">=</span> Flask<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+
+
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">index</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">"Привет от приложения Flask"</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    port <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>environ<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"PORT"</span><span class="token punctuation">,</span> <span class="token number">5000</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    app<span class="token punctuation">.</span>run<span class="token punctuation">(</span>host<span class="token operator">=</span><span class="token string">'0.0.0.0'</span><span class="token punctuation">,</span> port<span class="token operator">=</span>port<span class="token punctuation">)</span>
+</code></pre>
+<p>Из нового: <var>os.environ</var> пытается получить значение переменной окружения с именем <var>PORT</var>, а если не получается, то выставляет порт 5000. Это нам пригодится позднее.</p>
+<p><code>host = 0.0.0.0</code> означает, что мы разрешаем подключения из любой сети по любому интерфейсу.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Туннель в Интернет</h2>
+<p>Очень часто при отладке веб-приложений хочется посмотреть, что происходит, когда в приложение приходят запросы из Интернета, или продемонстрировать результаты работы другу/заказчику. Не всегда удобно ради тестирования или ради одноразовой демонстрации арендовать и настраивать сервер в Интернете.</p>
+<p>Согласитесь, было бы удобно получить какой-то временный адрес в Интернете «в один клик» для таких целей. К счастью, для этого есть сервисы, которые организуют виртуальный туннель из Интернета на ваш локальный компьютер. Один из них — <a class="material__link" href="https://ngrok.com/" rel="noopener noreferrer" target="_blank">ngrok</a>.</p>
+<p>Важная его особенность: у ngrok есть бесплатный план, но даже этой ограниченной версии хватит для наших целей. Сначала надо зарегистрироваться и залогиниться на <a class="material__link" href="https://ngrok.com" rel="noopener noreferrer" target="_blank">сайте</a> сервиса.</p>
+<p>На странице <a class="material__link" href="https://dashboard.ngrok.com/get-started/setup" rel="noopener noreferrer" target="_blank">"Setup &amp; Installation"</a> приведена подробная инструкция по настройке и запуску утилиты.</p>
+<p>1. Необходимо скачать исполняемый файл приложения для нужной операционной системы со <a class="material__link" href="https://ngrok.com/download" rel="noopener noreferrer" target="_blank">страницы загрузки</a>.</p>
+<p>2. Распаковать архив и в окне терминала перейти в папку с распакованной утилитой.</p>
+<p>3. Скопировать со страницы "Setup &amp; Installation" команду для настройки работы ngrok с вашей учетной записью и запустить ее в терминале. Выглядит она так <code>ngrok authtoken 25srTxReQIIwsPMX67ZiY1E5TMH_7KbpfVGLcg9rRDd2hwfk9</code></p>
+<p>4. Настройка завершена.</p>
+<p>Теперь запустим наше тестовое приложение в PyCharm или через командную строку. Выполним в терминале команду:</p>
+<pre><code>ngrok http 5000
+</code></pre>
+<p>После этого ngrok создаст временный адрес в Интернете вида <code>набор_символов.ngrok.io</code> и виртуальный туннель с этого адреса на пятитысячный порт нашего локального компьютера. Теперь все запросы по протоколу http и https, которые придут на созданный временный адрес, будут перенаправляться на наш компьютер. Давайте проверим. Перейдем по этому адресу (скопируем и вставим его в строку запроса браузера) и посмотрим на результат.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-cloud-2.png" width="361"/></div>
+<p>Все работает! А в консоли ngrok появилось сообщение, что GET-запрос успешно обработан:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-cloud-3.png" width="501"/></div>
+<p>Таким образом можно организовывать тестирование приложения в Интернете. Особенно такой подход удобен, когда для проверки функциональности приложения надо получить запрос извне. В дальнейшем мы будем использовать эту методику при отладке приложений для голосового помощника Алисы.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Heroku</h2>
+<p>Более продвинутый способ, который (при использовании платных планов) подойдет для «боевого» разворачивания приложения в Интернете (деплоя) — аренда контейнеров для приложений на одном из множества сервисов, которые предоставляют такие услуги.</p>
+<p>Сервисов действительно очень много, и все они разнятся как в стоимости (некоторые предлагают бесплатный тариф, который подойдет для приложения с небольшим количеством пользователей), так и в сложности настроек для запуска.</p>
+<p>В качестве одного из самых легких стоит привести в пример <a class="material__link" href="https://www.pythonanywhere.com/" rel="noopener noreferrer" target="_blank">pythonanywhere.com</a>, который содержит ряд преднастроенных шаблонов для различных приложений, разработанных на Python. К недостатку этого сервиса можно отнести то, что приложения, размещенные на нем, могут обращаться только к тем ресурсам, которые были внесены в «белый список» доступных адресов.</p>
+<p>Немного более сложным в обращении является сервис <a class="material__link" href="https://dashboard.heroku.com/apps" rel="noopener noreferrer" target="_blank">Heroku</a>. Он поддерживает приложения не только на Python, но и на других языках программирования, различные базы данных и разные преднастроенные сторонние приложения.</p>
+<p>Зарегистрируйтесь на Heroku. После чего создайте новое приложение по адресу <a class="material__link" href="https://dashboard.heroku.com/apps" rel="noopener noreferrer" target="_blank">https://dashboard.heroku.com/apps</a></p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-cloud-5.png" width="350"/></div>
+<p>Придумайте приложению имя и выберите расположение.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-cloud-6.png" width="680"/></div>
+<p>Есть несколько способов разместить свое приложение на Heroku:</p>
+<ul>
+<li>Через консольный клиент Heroku CLI</li>
+<li>Подключив свой репозиторий на GitHub</li>
+</ul>
+<p>Давайте пойдем по второму пути и создадим репозиторий (не имеет значение публичный или приватный), в который <strong>запушим</strong> файл с нашим простейшим веб-приложением, а также еще несколько файлов. Первый из них — служебный текстовый файл Procfile (без расширения), в котором для Heroku будет указано, какой файл запускать, с текстом:</p>
+<pre><code>web: python main.py
+</code></pre>
+<p>Второй — уже знакомый нам из раздела PyQT requirements.txt, в котором необходимо указать все используемые сторонние модули (flask).</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-cloud-7.png" width="680"/></div>
+<p>Подключим GitHub к Heroku и выберем нужный репозиторий, а затем и ветку, с которой будем забирать для размещения код. Это можно сделать автоматически или в ручном режиме.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-cloud-8.png" width="680"/></div>
+<p>Если не включено автоматическое размещение кода, надо нажать на кнопку Delpoy branch.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-cloud-8.png" width="680"/></div>
+<p>Все. Можно переходить по адресу <code>имя_приложения.herokuapp.com</code> и наслаждаться результатом.</p>
+<p>При размещении приложений на Heroku очень важно указывать порт, на котором будет работать ваше приложение именно так, как мы сделали в первом примере этого урока.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    port <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>environ<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"PORT"</span><span class="token punctuation">,</span> <span class="token number">5000</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    app<span class="token punctuation">.</span>run<span class="token punctuation">(</span>host<span class="token operator">=</span><span class="token string">'0.0.0.0'</span><span class="token punctuation">,</span> port<span class="token operator">=</span>port<span class="token punctuation">)</span>
+</code></pre>
+<p>Когда приложение разворачивается в Heroku, для него будет выделен порт и установлен в переменную окружения. Важно, чтобы ваше приложение слушало именно этот порт, иначе оно не заработает.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Яндекс.Облако</h2>
+<p>Самым сложным, но одновременно самым гибким и продвинутым вариантом является размещение приложения на облачной виртуальной машине с использованием сервиса Яндекс.Облако или аналогов.</p>
+<p>Создание и настройка таких виртуальных машин требует определенных усилий и несколько сложнее, чем сервисы, которые мы рассматривали ранее, но зато вы сможете полностью контролировать результат и реализовывать разные продвинутые сценарии разворачивания вашего приложения.</p>
+<p>Для начала необходимо зайти на <a class="material__link" href="http://cloud.yandex.ru/" rel="noopener noreferrer" target="_blank">Яндекс.Облако</a> и нажать кнопку «Подключиться» в правом верхнем углу экрана. Далее алгоритм работы можно описать так:</p>
+<ol>
+<li>Необходимо создать виртуальную машину</li>
+<li>Выбрать и установить образ операционной системы, которую вы планируете использовать. Можно использовать как «чистый» образ (только операционная система), так и подготовленный командой Яндекс.Облака или сторонними разработчиками</li>
+<li>Установить все необходимое ПО: интерпретатор Python, все библиотеки, системные утилиты, которые обеспечат работу при большой нагрузке и т. д.</li>
+<li>Загрузить разработанный вами сервер и ...</li>
+<li>Поддерживать работу вашего ресурса</li>
+</ol>
+<p>Поверьте, это далеко не просто.</p>
+<p>Поэтому мы немного вам помогли. Мы подготовили для вас видео, в котором рассказываем, как сделать базовую настройку сервера и установить на него ваше приложение.</p>
+</section></article></section>

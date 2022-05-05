@@ -1,0 +1,189 @@
+<section class="lesson-material__content"><article class="material"><h1>Обработка клавиатуры и курсора. Сборка независимого приложения</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Обработка нажатий клавиатуры</a></li>
+<li><a class="material__link" href="#2">Работа с мышью</a></li>
+<li><a class="material__link" href="#3">Создание standalone приложений</a></li>
+<li><a class="material__link" href="#4">Создание БД</a></li>
+<li><a class="material__link" href="#5">Управление зависимостями</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы научимся взаимодействовать с пользователем на новом уровне: добавим в программу работу с клавиатурой и мышкой. Рассмотрим, как собрать нашу программу в exe-файл. А также изучим основы создания SQLite-базы данных.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Обработка нажатий клавиатуры</h2>
+<p>Мы уже умеем забирать данные пользовательского ввода из различных виджетов и это здорово, но иногда возникают ситуации, когда нам надо получить не введенные данные, а сам факт нажатия на ту или иную клавишу (или комбинацию клавиш). Давайте посмотрим, как это можно сделать с использованием библиотеки PyQt.</p>
+<p>На уроке про Tkinter в прошлом году мы узнали, что у каждой клавиши на клавиатуре есть свой <strong>уникальный</strong> код. В PyQt также, как в Tkinter, есть достаточно удобная функциональность сопоставления кода клавиши и понятного имени. Она расположена в модуле PyQt5.QtCore.Qt. Согласитесь, что гораздо легче понимать смысл вот такой строки: <code>print(Qt.Key_F)</code>, нежели такой: <code>print(70)</code>.</p>
+<p>Подключить модуль <var>Qt</var> можно, например, таким способом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtCore <span class="token keyword">import</span> Qt
+</code></pre>
+<p>Все имена кнопок и их коды можно найти <a class="material__link" href="https://doc.qt.io/qt-5/qt.html" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+<p>Для обработки нажатий на клавиши в классе создаваемого виджета необходимо переопределить (создать) метод <code>keyPressEvent(self, event)</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">keyPressEvent</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> event<span class="token punctuation">.</span>key<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> Qt<span class="token punctuation">.</span>Key_F<span class="token punctuation">:</span>
+        <span class="token comment"># code</span>
+</code></pre>
+<p>Если во время работы приложения будет нажата клавиша <strong>F</strong>, условие выполнится.</p>
+<p>Для обработки комбинаций клавиш можно использовать понятие модификатора клавиши, например: Qt.AltModifier или Qt.ShiftModifier. Для обработки «горячего сочетания» (<strong>Hotkey</strong>) ALT + SHIFT + Q код должен быть таким:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">keyPressEvent</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">int</span><span class="token punctuation">(</span>event<span class="token punctuation">.</span>modifiers<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">(</span>Qt<span class="token punctuation">.</span>AltModifier <span class="token operator">+</span> Qt<span class="token punctuation">.</span>ShiftModifier<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span>key<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> Qt<span class="token punctuation">.</span>Key_Q<span class="token punctuation">:</span>
+            <span class="token comment"># code</span>
+</code></pre>
+<p>Параметр <var>event</var> в этом методе будет иметь класс <var>QKeyEvent</var>. Почитать про этот класс можно <a class="material__link" href="https://doc.qt.io/qt-5/qkeyevent.html" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>Важно не забывать, что кнопки обработаются только в том случае, если окно <strong>активно</strong>. Активным называется окно, с которым пользователь работает в данный момент.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Работа с мышью</h2>
+<p>Для работы с мышью точно так же, как и в случае с клавиатурой, необходимо переопределять встроенные методы. Рассмотрим пример, в котором мы будем выводить координаты курсора на экран.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QWidget<span class="token punctuation">,</span> QApplication<span class="token punctuation">,</span> QLabel
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Координаты'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>coords <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>coords<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Координаты: None, None"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>coords<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">mouseMoveEvent</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>coords<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Координаты: </span><span class="token interpolation"><span class="token punctuation">{</span>event<span class="token punctuation">.</span>x<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">, </span><span class="token interpolation"><span class="token punctuation">{</span>event<span class="token punctuation">.</span>y<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Метод <var>mouseMoveEvent()</var> срабатывает при изменении положения мышки. Функции <code>x()</code> и <code>y()</code> у параметра <var>event</var> класса <var>QMouseEvent</var> (<a class="material__link" href="https://doc.qt.io/qt-5/qmouseevent.html" rel="noopener noreferrer" target="_blank">ссылка на документацию</a>) возвращают координаты текущего положения курсора относительно левого верхнего угла формы. Но, если вы запустите эту программу и попробуете просто поводить мышкой, ничего не произойдет. По умолчанию это событие активируется только при зажатой клавише мыши (причем неважно какой, хоть при нажатии колесика). Зажмите любую клавишу — и все заработает. А чтобы отлавливать положение мыши, даже когда клавиша не зажата, в инициализатор нашего виджета надо добавить следующую строку:</p>
+<pre class="language-python"><code class="language-python">self<span class="token punctuation">.</span>setMouseTracking<span class="token punctuation">(</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/mouse1.gif" width="301"/></div>
+<p>Кроме метода <var>mouseMoveEvent()</var>, есть и другие. Полный список событий виджета, реакции на которые можно переопределить, можно посмотреть <a class="material__link" href="https://doc.qt.io/qt-5/qwidget.html#protected-functions" rel="noopener noreferrer" target="_blank">тут</a>. Применительно к работе с мышкой, помимо рассмотренного метода <var>mouseMoveEvent()</var>, есть еще:</p>
+<ul>
+<li><var>mousePressEvent</var>, отвечающий за обработку нажатия на какую-либо из кнопок мыши</li>
+<li><var>mouseReleaseEvent</var>, отвечающий за отпускания нажатия на кнопку мыши</li>
+<li><var>mouseDoubleClickEvent</var>, обрабатывающий двойной клик</li>
+</ul>
+<p>Все они в качестве параметра принимают объект класса <var>QMouseEvent</var>, который может сообщить не только координаты, но и какая из кнопок была нажата. Для этого существует метод <code>button()</code>. Сравнить результат вызова можно со встроенными значениями из модуля PyQt5.QtCore.Qt: LeftButton, RightButton и даже MiddleButton.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtCore <span class="token keyword">import</span> Qt
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QWidget<span class="token punctuation">,</span> QApplication<span class="token punctuation">,</span> QLabel
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Координаты'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>coords <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>coords<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Координаты: None, None"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>coords<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>btn <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Никакая"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">mousePressEvent</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> event<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>coords<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Координаты:</span><span class="token interpolation"><span class="token punctuation">{</span>event<span class="token punctuation">.</span>x<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">, </span><span class="token interpolation"><span class="token punctuation">{</span>event<span class="token punctuation">.</span>y<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>event<span class="token punctuation">.</span>button<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> Qt<span class="token punctuation">.</span>LeftButton<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Левая"</span><span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> <span class="token punctuation">(</span>event<span class="token punctuation">.</span>button<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> Qt<span class="token punctuation">.</span>RightButton<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Правая"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/mouse2.gif" width="302"/></div>
+<p>Если есть необходимость обработать одновременное нажатие на несколько кнопок мыши, то можно воспользоваться не методом <code>button()</code>, а методом <code>buttons()</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Создание standalone приложений</h2>
+<p>В отличие от компилируемых языков программирования вроде C++, Python — язык интерпретируемый. А языки подобного плана не совсем предназначены для создания привычных нам исполняемых exe-файлов (если говорить про ОС Windows), поэтому создание standalone приложения — по своей сути, «упаковка» виртуальной машины Python, заточенной под выполнение одной программы.</p>
+<p>Мы будем рассматривать работу в операционной системе Windows, отличия в других ОС (Linux и MacOS) не являются существенными.</p>
+<p>Для создания .exe приложений из программ на Python есть несколько библиотек. Мы используем одну из самых популярных. Она называется <var>pyinstaller</var>.</p>
+<p>Сначала необходимо ее установить:</p>
+<pre><code>pip install pyinstaller
+</code></pre>
+<p>Затем открываем командную строку, переходим в папку с нашим проектом и выполняем следующую команду:</p>
+<pre><code>pyinstaller --onefile --noconsole main.py
+</code></pre>
+<p>Где main.py — главный файл вашего приложения.</p>
+<p>Что делают модификаторы:</p>
+<ul>
+<li><strong>onefile</strong> собирает программу в один exe-файл. Это удобно, если программа небольшая, у нее мало графических, аудио и прочих файлов, не относящихся к программному коду</li>
+<li><strong>noconsole</strong>. Если не писать этот модификатор, то, кроме окна программы будет открываться Python-консоль. Иногда, например, для отладки, удобно оставлять командную строку для вывода системных сообщений, при передаче же программы клиенту консоль обычно скрывают</li>
+</ul>
+<p>Есть и другие модификаторы. Например, <strong>icon</strong>. В нем можно указать путь до картинки в формате .ico, и она будет отображаться при просмотре программы в проводнике. Документацию на библиотеку можно почитать <a class="material__link" href="https://pyinstaller.readthedocs.io/en/stable/" rel="noopener noreferrer" target="_blank">тут</a>.</p>
+<p>После выполнения команды упаковки в исполняемый файл в директории проекта появится две папки: build и dist. В папке dist будет лежать наша программа, или, если мы не указали модификатор <strong>onefile</strong>, кроме .exe, там будет еще множество файлов и папок. В нее следует добавить папки с графическими и другими файлами, которые используются в программе.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Создание БД</h2>
+<p>С чего начинается любой проект по созданию приложения для работы с базой данных? Конечно же, с проектирования базы данных. Как мы уже отмечали ранее, процесс проектирования сложных баз данных — это достаточно серьезная область знаний, и мы к ней только прикоснемся. Есть большое количество специализированных инструментов, которые помогают в создании масштабных баз данных, которые насчитывают сотни или тысячи таблиц и связей, но для простых баз данных этап проектирования достаточно часто объединяется с непосредственно созданием с помощью менеджеров баз данных. Мы уже работали с SQLiteStudio, давайте воспользуемся им для создания базы данных, которая будет хранить информацию о любимых книгах.</p>
+<p>Открываем в верхнем меню вкладку <strong>Database</strong> и выбираем пункт <strong>Add a database</strong>.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-2.png" width="381"/></div>
+<p>Нажимаем на <strong>плюс</strong> и вводим желаемое имя для нашей базы.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-3.png" width="500"/></div>
+<p>Сохраняем. В боковом меню должна появиться новая база данных.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-4.png" width="161"/></div>
+<p>Теперь в нашей БД необходимо создать таблицы, в которых будет храниться информация. Для этого необходимо навести курсор на базу, нажать правую кнопку и выбрать пункт <strong>Create a table</strong>. Откроется окно для создания таблицы. Введем ее имя.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-5.png" width="600"/></div>
+<p>Двойным нажатием на белое поле откроем редактор столбца. Для того чтобы идентифицировать книги, создадим специальный столбец, назовем его id. Это будет число (то есть тип INTEGER), которое будет являться т. н. <strong>первичным ключом</strong>, то есть оно должно быть обязательно заполнено (не может быть NULL, аналог None в Python), уникально и для удобства он будет автоматически увеличиваться при добавлении новых значений (это называется <strong>Автоинкремент</strong>).</p>
+<p>Настроим все эти значения:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-6.png" width="422"/></div>
+<p>Чтобы включить функцию автоинкремента, необходимо нажать на кнопку <strong>Настроить</strong> напротив <strong>Первичного ключа</strong>:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-7.png" width="399"/></div>
+<p>Теперь в нашей таблице есть первое поле — id. Добавим еще одно поле — author, в котором будем хранить фамилию автора и его инициалы. Для него подойдет тип данных STRING.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-8.png" width="600"/></div>
+<p>После добавления всех полей необходимо применить все изменения. Выполнить <var>commit</var>. При нажатии на зеленую кнопку с галочкой будет показан запрос для создания таблицы, которую мы создали с помощью графического интерфейса.</p>
+<p>Смело нажимаем ОК.</p>
+<p>Теперь аналогичным образом создаем таблицу для хранения книг. Но будем указывать не ФИО автора, а его идентификатор из первой таблицы.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-9.png" width="600"/></div>
+<p>Теперь заполним наши таблицы. Таблицу авторов:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-10.png" width="300"/></div>
+<p>И таблицу книг:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-11.png" width="500"/></div>
+<p>Зачем мы использовали идентификаторы вместо полных ФИО? На это есть несколько причин:</p>
+<ol>
+<li>Чтобы избежать опечаток и последующих проблем с выборками. Ведь ФИО можно записать очень по-разному.</li>
+<li>Для экономии памяти. Одна ячейка типа INTEGER занимает во много раз меньше, нежели строковая ячейка.</li>
+</ol>
+<p>Поздравляем! Вы создали вашу первую базу данных и первые две таблицы в ней. Подробнее про создание БД и таблиц можно прочитать <a class="material__link" href="http://www.sqlitetutorial.net/" rel="noopener noreferrer" target="_blank">здесь</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Управление зависимостями</h2>
+<p>Относительно большие проекты, вы в этом сможете убедиться уже очень скоро, содержат массу зависимостей. Под зависимостями подразумеваются библиотеки, необходимые для корректной работы программы. Если программа распространяется не как standalone приложение, а в исходном коде, хорошим тоном считается создавать специальный файл, в котором указываются зависимости. Принято называть этот файл <strong>requirements.txt</strong>. Как он выглядит? На каждой новой строке написано название пакета и необходимая версия в таком формате:</p>
+<pre><code>название_пакета==его.версия
+</code></pre>
+<p>Например:</p>
+<pre class="language-python"><code class="language-python">PyQt5<span class="token operator">==</span><span class="token number">5.11</span>
+matplotlib<span class="token operator">==</span><span class="token number">2.2</span><span class="token number">.2</span>
+</code></pre>
+<p>Если не указать версию пакета, будет установлена последняя стабильная версия. Кроме равенства версий, можно указывать версии, которые должны быть больше/меньше/не больше/не меньше указанных с помощью соответствующих операторов сравнения. Например, запись <code>pkg&gt;=1.0,&lt;=2.0</code> означает, что должна быть установлена версия пакета не меньше 1.0, но не больше 2.0.</p>
+<p>И чтобы установить все зависимости, достаточно в консоли (терминале) вызвать команду</p>
+<pre><code>pip install -r requirements.txt
+</code></pre>
+<p>Благодаря ключу <code>-r</code> pip автоматически установит внутренние зависимости. То есть, если в файле есть указание пакета X, которому для работы требуется пакет Y, который не указан в этом файле и не является стандартным, он все равно будет установлен.</p>
+<p>Чтобы узнать версию уже установленных библиотек, достаточно воспользоваться командой <code>pip list</code>. Эта команда отображает список установленных пакетов и их версии.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-8/qt-8-12.png" width="640"/></div>
+</section></article></section>

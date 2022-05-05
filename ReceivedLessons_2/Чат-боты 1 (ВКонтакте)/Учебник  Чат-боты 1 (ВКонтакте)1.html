@@ -1,0 +1,224 @@
+<section class="lesson-material__content"><article class="material"><h1>Чат-боты 1</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Про чат-ботов</a></li>
+<li><a class="material__link" href="#2">Выполнение запросов от имени пользователя</a></li>
+<li><a class="material__link" href="#3">Загрузка файлов</a></li>
+<li><a class="material__link" href="#4">Работа с событиями и чатами</a></li>
+<li><a class="material__link" href="#5">Заключение</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом цикле дополнительных занятий мы поговорим о создании чат-ботов для различных популярных платформ и начнем, пожалуй, с самой популярной социальной сети в России и странах СНГ — vk.com.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Про чат-ботов</h2>
+<p>Мы уже не раз использовали API сторонних сервисов для своих нужд, вызывая его из программ для встраивания в некоторый наш желаемый сценарий преобразования данных. Многие платформы пошли еще дальше и начали предоставлять разработчикам более продвинутое API, которое позволяет практически встроить свое приложение в эту платформу прозрачно для пользователя. При таком подходе пользователь получает функциональность вашего приложения, не покидая привычного интерфейса сервиса или социальной сети.</p>
+<p>Последние годы такой подход набрал очень большую популярность, количество платформ с качественным API для разработки своих ботов растет. Сегодня мы рассмотрим API самой популярной социальной сети в России и странах СНГ — vk.com.</p>
+<p>API для vk.com и для многих подобных платформ можно условно разделить на две части:</p>
+<ul>
+<li>Пользовательское API</li>
+<li>API ботов</li>
+</ul>
+<p>Когда мы выполняем некоторое обращение к пользовательскому API, мы авторизуемся и выполняем действия от лица этого пользователя, то есть все изменения будут выполнены как бы руками самого пользователя: он будет автором сообщения, записи на стене, загруженного изображения и т. д. Такой подход позволяет создавать программы, имитирующие реальных людей или альтернативные клиенты для платформы. Чтобы снизить количество мошенников, которые разрабатывают «поддельных» пользователей, разработчики обычно накладывают ограничение на использование такого типа API, например, делают некоторые методы недоступными (совсем или без дополнительного подтверждения вашей личности).</p>
+<p>API ботов, как правило, не имеют таких ограничений, но пользователь будет обязательно осведомлен, что он общается не с человеком, а с некоторой сущностью внутри системы. В случае vk такая сущность называется «Сообщество». Это не обязательно именно программа, разбирать сообщения в сообществе могут и реальные люди, но именно разделение на пользователей и сообщества позволяет ввести особые возможности по автоматизации деятельности последних.</p>
+<p>В описании API обязательно присутствует информация о том, кто может вызывать тот или иной сервис: пользователь и/или бот и/или кто-то еще. Для vk.com данная информация выглядит так:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-1/chat-bot-1.png" width="680"/></div>
+<p>Мы рассмотрим несколько примеров как разрабатывать программы на Python, которые действуют как от имени пользователя, так и от имени сообщества.</p>
+<p>Никто не запрещает нам обращаться к API vk.com с использованием методов библиотеки requests, но зачастую в PyPi уже есть библиотеки, которые немного облегчают нам доступ к API популярных сервисов. Мы рассмотрим библиотеку vk_api: одну из самых популярных, но не единственную. Сначала ее надо установить:</p>
+<pre><code>pip install vk_api
+</code></pre>
+<section class="material__note">На 08.04.2022 API авторизации в ВК немного изменилось и пока не поддерживается актуальной версией библиотеки vk-api. В качестве временного решения мы сделали форк библиотеки и внесли необходимые исправления. Чтобы его установить: 1. Удалите ранее установленную библиотеку <code>pip uninstall vk_api</code> 2. Установите форк <code>pip install git+https://github.com/vmedinskiy/vk_api.git</code></section>
+</section>
+<section class="material__chapter">
+<h2 id="2">Выполнение запросов от имени пользователя</h2>
+<p>Для выполнения запросов от имени пользователя необходимо указать его логин и пароль в своей программе (или ввести с клавиатуры, считать из файла).</p>
+<p>У vk.com есть достаточно подробное описание сервисов, доступное <a class="material__link" href="https://vk.com/dev/manuals" rel="noopener noreferrer" target="_blank">тут</a>. Модуль vk_api представляет из себя некоторую обертку, которая делает часть работы по формированию запроса и разбору ответа за нас. Давайте получим три сообщения со стены пользователя, начиная со второго, то есть обратимся к методу <a class="material__link" href="https://vk.com/dev/wall.get" rel="noopener noreferrer" target="_blank">wall.get</a> API.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> vk_api
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    login<span class="token punctuation">,</span> password <span class="token operator">=</span> LOGIN<span class="token punctuation">,</span> PASSWORD
+    vk_session <span class="token operator">=</span> vk_api<span class="token punctuation">.</span>VkApi<span class="token punctuation">(</span>login<span class="token punctuation">,</span> password<span class="token punctuation">)</span>
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        vk_session<span class="token punctuation">.</span>auth<span class="token punctuation">(</span>token_only<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> vk_api<span class="token punctuation">.</span>AuthError <span class="token keyword">as</span> error_msg<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>error_msg<span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+    vk <span class="token operator">=</span> vk_session<span class="token punctuation">.</span>get_api<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># Используем метод wall.get</span>
+    response <span class="token operator">=</span> vk<span class="token punctuation">.</span>wall<span class="token punctuation">.</span>get<span class="token punctuation">(</span>count<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> offset<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> response<span class="token punctuation">[</span><span class="token string">'items'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> response<span class="token punctuation">[</span><span class="token string">'items'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для доступа к API необходимо создать объект типа <var>VkApi</var>, который принимает на вход два обязательных параметра — логин и пароль пользователя. После этого пытаемся авторизоваться, если нам это не удается, печатаем текст ошибки и завершаем работу программы. После успешной авторизации необходимо создать объект класса <var>VkApiMethod</var>, который позволит обращаться к методам API как к методам класса. То есть для обращения к сервису <var>wall.get</var> API необходимо написать код <code>vk.wall.get()</code>, где <code>vk: VkApiMethod</code>. В качестве аргументов метода надо передать параметры вызова сервиса.</p>
+<p>Обратите внимание: все методы, которые отвечают за вызов сервисов API, не содержат позиционных аргументов, только именованные.</p>
+<p>При вызове сервиса получения сообщений со стены указываем параметр <var>count</var> — количество записей, затем <var>offset</var> — необязательный параметр, который указывает на то, начиная с какой записи надо возвращать результат. При вызове метода можно также указать <var>owner_id</var> — идентификатор пользователя или сообщества, со стены которых надо вернуть записи. По умолчанию записи возвращаются для пользователя, чей логин и пароль мы ввели. Результат нам вернется в виде json, описание полей которого можно посмотреть в документации.</p>
+<p>Проблема с авторизацией может возникнуть не только в случае неправильного логина или пароля. Приведенный пример не сработает, если у пользователя, под которым мы пытаемся авторизоваться, настроена двухфакторная аутентификация. В этом случае пользователю нужно дополнительно ввести одноразовый код для подтверждения полномочий нашей программы. Чтобы корректно обрабатывать двухфакторную аутентификацию, необходимо написать такой код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> vk_api
+
+
+<span class="token keyword">def</span> <span class="token function">auth_handler</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">""" При двухфакторной аутентификации вызывается эта функция. """</span>
+
+    <span class="token comment"># Код двухфакторной аутентификации,</span>
+    <span class="token comment"># который присылается по смс или уведомлением в мобильное приложение</span>
+    key <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">"Enter authentication code: "</span><span class="token punctuation">)</span>
+    <span class="token comment"># Если: True - сохранить, False - не сохранять.</span>
+    remember_device <span class="token operator">=</span> <span class="token boolean">True</span>
+
+    <span class="token keyword">return</span> key<span class="token punctuation">,</span> remember_device
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    login<span class="token punctuation">,</span> password <span class="token operator">=</span> LOGIN<span class="token punctuation">,</span> PASSWORD
+    vk_session <span class="token operator">=</span> vk_api<span class="token punctuation">.</span>VkApi<span class="token punctuation">(</span>
+        login<span class="token punctuation">,</span> password<span class="token punctuation">,</span>
+        <span class="token comment"># функция для обработки двухфакторной аутентификации</span>
+        auth_handler<span class="token operator">=</span>auth_handler
+    <span class="token punctuation">)</span>
+
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        vk_session<span class="token punctuation">.</span>auth<span class="token punctuation">(</span>token_only<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+    <span class="token keyword">except</span> vk_api<span class="token punctuation">.</span>AuthError <span class="token keyword">as</span> error_msg<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>error_msg<span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+
+    <span class="token comment"># ...</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Рассмотрим еще несколько примеров обращения к API. Получим список своих друзей, то есть вызовем метод API <a class="material__link" href="https://vk.com/dev/friends.get" rel="noopener noreferrer" target="_blank">friends.get</a>. Помимо основных полей, которые возвращает сервис, попросим еще дату рождения и город:</p>
+<pre class="language-python"><code class="language-python">    response <span class="token operator">=</span> vk<span class="token punctuation">.</span>friends<span class="token punctuation">.</span>get<span class="token punctuation">(</span>fields<span class="token operator">=</span><span class="token string">"bdate, city"</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> response<span class="token punctuation">[</span><span class="token string">'items'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> response<span class="token punctuation">[</span><span class="token string">'items'</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+</code></pre>
+<p>Получим информацию о каком-нибудь пользователе по id — <a class="material__link" href="https://vk.com/dev/users.get" rel="noopener noreferrer" target="_blank">users.get</a>:</p>
+<pre class="language-python"><code class="language-python">    response <span class="token operator">=</span> vk<span class="token punctuation">.</span>users<span class="token punctuation">.</span>get<span class="token punctuation">(</span>user_id<span class="token operator">=</span>идентификатор_пользователя<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>response<span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Загрузка файлов</h2>
+<p>API vk.com поддерживает загрузку разных типов файлов, причем для каждого из типов — изображения, видео, документы — используются разные сервисы. Однако вне зависимости от типа файла весь процесс сводится к тому, что надо загрузить файл на сервер и получить его идентификатор, а затем прикладывать идентификатор туда, куда мы хотим приложить изображение: в сообщение, на стену, в ленту сообщества и т. д. Подробное описание можно прочитать <a class="material__link" href="https://vk.com/dev/upload_files" rel="noopener noreferrer" target="_blank">тут</a>. В модуле vk_api все методы по загрузке файлов обернуты в класс <var>VkUpload</var>.</p>
+<p>Рассмотрим, как это работает, на примере загрузки изображения и создания сообщения с ним на стену:</p>
+<pre class="language-python"><code class="language-python">upload  <span class="token operator">=</span> vk_api<span class="token punctuation">.</span>VkUpload<span class="token punctuation">(</span>vk_session<span class="token punctuation">)</span>
+photo <span class="token operator">=</span> upload<span class="token punctuation">.</span>photo_wall<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'Picture1.png'</span><span class="token punctuation">]</span>
+<span class="token punctuation">)</span>
+
+vk_photo_id <span class="token operator">=</span> <span class="token string-interpolation"><span class="token string">f"photo</span><span class="token interpolation"><span class="token punctuation">{</span>photo<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'owner_id'</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">_</span><span class="token interpolation"><span class="token punctuation">{</span>photo<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'id'</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">"</span></span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>photo<span class="token punctuation">,</span> vk_photo_id<span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">"\n"</span><span class="token punctuation">)</span>
+vk <span class="token operator">=</span> vk_session<span class="token punctuation">.</span>get_api<span class="token punctuation">(</span><span class="token punctuation">)</span>
+vk<span class="token punctuation">.</span>wall<span class="token punctuation">.</span>post<span class="token punctuation">(</span>message<span class="token operator">=</span><span class="token string">"Test"</span><span class="token punctuation">,</span> attachments<span class="token operator">=</span><span class="token punctuation">[</span>vk_photo_id<span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для загрузки фотографии для стены создадим объект типа <var>VkUpload</var>, и потом вызовем у него метод <var>photo_wall</var>, который принимает список имен файлов, которые мы хотим загрузить (грузить можно сразу несколько штук), после чего получаем идентификатор изображения вида <code>&lt;type&gt;&lt;owner_id&gt;_&lt;media_id&gt;</code>, где тип — <var>photo</var>, а оставшиеся части можно получить из результата загрузки изображения. Вызываем сервис <a class="material__link" href="https://vk.com/dev/wall.post" rel="noopener noreferrer" target="_blank">wall.post</a> с помощью метода <var>wall.post</var> объекта типа <var>VkApiMethod</var>, где в качестве параметра указываем сообщение <var>message</var> и список идентификаторов вложений <var>attachments</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Работа с событиями и чатами</h2>
+<p>К сожалению, в настоящее время работа с событиями чатов для пользовательских программ ограничена из соображения безопасности (вам могут сделать доступ, если вы свяжетесь с vk.com и докажете, что делаете не мошенническую программу, а, например, альтернативный клиент сообщений), поэтому для работы с чатами нам надо будет создать сообщество, но большая часть событий, не связанных с чатами, работает и для клиентских программ.</p>
+<p>Создадим сообщество.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-1/chat-bot-2.png" width="680"/></div>
+<p>После этого перейдите в управление сообществом в раздел <strong>Работа с API</strong>.</p>
+<p>Включите там LongPoll API, укажите версию API (примеры ниже тестировались на версии API 5.103), выберите типы событий, оповещения о которых вы хотите получать, а затем создайте ключ доступа.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-1/chat-bot-3.png" width="680"/></div>
+<p>Также в настройках в пункте «Сообщения» включите эту функцию.</p>
+<p>Кроме того, не забудьте на главной странице управления сообществом разрешить сообщения.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-1/chat-bot-4.png" width="300"/></div>
+<p>Подготовительные работы готовы. Теперь напишем такую программу:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> vk_api
+<span class="token keyword">from</span> vk_api<span class="token punctuation">.</span>bot_longpoll <span class="token keyword">import</span> VkBotLongPoll<span class="token punctuation">,</span> VkBotEventType
+<span class="token keyword">import</span> random
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    vk_session <span class="token operator">=</span> vk_api<span class="token punctuation">.</span>VkApi<span class="token punctuation">(</span>
+        token<span class="token operator">=</span>TOKEN<span class="token punctuation">)</span>
+
+    longpoll <span class="token operator">=</span> VkBotLongPoll<span class="token punctuation">(</span>vk_session<span class="token punctuation">,</span> id_сообщества<span class="token punctuation">)</span>
+
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> longpoll<span class="token punctuation">.</span>listen<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> VkBotEventType<span class="token punctuation">.</span>MESSAGE_NEW<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>event<span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Новое сообщение:'</span><span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Для меня от:'</span><span class="token punctuation">,</span> event<span class="token punctuation">.</span>obj<span class="token punctuation">.</span>message<span class="token punctuation">[</span><span class="token string">'from_id'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Текст:'</span><span class="token punctuation">,</span> event<span class="token punctuation">.</span>obj<span class="token punctuation">.</span>message<span class="token punctuation">[</span><span class="token string">'text'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            vk <span class="token operator">=</span> vk_session<span class="token punctuation">.</span>get_api<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            vk<span class="token punctuation">.</span>messages<span class="token punctuation">.</span>send<span class="token punctuation">(</span>user_id<span class="token operator">=</span>event<span class="token punctuation">.</span>obj<span class="token punctuation">.</span>message<span class="token punctuation">[</span><span class="token string">'from_id'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                             message<span class="token operator">=</span><span class="token string">"Спасибо, что написали нам. Мы обязательно ответим"</span><span class="token punctuation">,</span>
+                             random_id<span class="token operator">=</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span> <span class="token operator">**</span> <span class="token number">64</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В этот раз при создании <var>VkAPi</var> мы используем не логин/пароль, а ключ доступа. После этого создаем очередь сообщений, которую мы хотим прослушивать. Для сообществ надо использовать класс <var>VkBotLongPoll</var>, который принимает сессию подключения и идентификатор сообщества (его можно посмотреть в ссылке на страницу сообщества — это только цифры). Если мы действуем не как сообщество, а как пользователь, надо использовать класс <var>VkLongPoll</var>. После чего запускаем бесконечный цикл ожидания сообщений в нашей очереди.</p>
+<p>Если приходит сообщение типа <code>VkBotEventType.MESSAGE_NEW</code>, мы выводим само сообщение (там много интересной информации), затем — <var>id</var> пользователя-автора сообщения и текст сообщения. Кроме того, мы можем сразу ответить пользователю, вызвав сервис <a class="material__link" href="https://vk.com/dev/messages.send" rel="noopener noreferrer" target="_blank">messages.send</a>.</p>
+<p>Для корректного вызова необходимо передать <var>user_id</var> — идентификатор пользователя или группового чата, куда мы пишем сообщение, текст сообщения <var>message</var>, а также большое случайное число <var>random_id</var>, которое нужно для того, чтобы не отправлять пользователю одни и те же сообщения несколько раз.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/chatbot-1/chat-bot-5.png" width="680"/></div>
+<p>В настоящий момент vk_api поддерживает следующие типы событий:</p>
+<pre class="language-python"><code class="language-python">    MESSAGE_NEW <span class="token operator">=</span> <span class="token string">'message_new'</span>
+    MESSAGE_REPLY <span class="token operator">=</span> <span class="token string">'message_reply'</span>
+    MESSAGE_EDIT <span class="token operator">=</span> <span class="token string">'message_edit'</span>
+    MESSAGE_TYPING_STATE <span class="token operator">=</span> <span class="token string">'message_typing_state'</span>
+    MESSAGE_ALLOW <span class="token operator">=</span> <span class="token string">'message_allow'</span>
+    MESSAGE_DENY <span class="token operator">=</span> <span class="token string">'message_deny'</span>
+    PHOTO_NEW <span class="token operator">=</span> <span class="token string">'photo_new'</span>
+    PHOTO_COMMENT_NEW <span class="token operator">=</span> <span class="token string">'photo_comment_new'</span>
+    PHOTO_COMMENT_EDIT <span class="token operator">=</span> <span class="token string">'photo_comment_edit'</span>
+    PHOTO_COMMENT_RESTORE <span class="token operator">=</span> <span class="token string">'photo_comment_restore'</span>
+    PHOTO_COMMENT_DELETE <span class="token operator">=</span> <span class="token string">'photo_comment_delete'</span>
+    AUDIO_NEW <span class="token operator">=</span> <span class="token string">'audio_new'</span>
+    VIDEO_NEW <span class="token operator">=</span> <span class="token string">'video_new'</span>
+    VIDEO_COMMENT_NEW <span class="token operator">=</span> <span class="token string">'video_comment_new'</span>
+    VIDEO_COMMENT_EDIT <span class="token operator">=</span> <span class="token string">'video_comment_edit'</span>
+    VIDEO_COMMENT_RESTORE <span class="token operator">=</span> <span class="token string">'video_comment_restore'</span>
+    VIDEO_COMMENT_DELETE <span class="token operator">=</span> <span class="token string">'video_comment_delete'</span>
+    WALL_POST_NEW <span class="token operator">=</span> <span class="token string">'wall_post_new'</span>
+    WALL_REPOST <span class="token operator">=</span> <span class="token string">'wall_repost'</span>
+    WALL_REPLY_NEW <span class="token operator">=</span> <span class="token string">'wall_reply_new'</span>
+    WALL_REPLY_EDIT <span class="token operator">=</span> <span class="token string">'wall_reply_edit'</span>
+    WALL_REPLY_RESTORE <span class="token operator">=</span> <span class="token string">'wall_reply_restore'</span>
+    WALL_REPLY_DELETE <span class="token operator">=</span> <span class="token string">'wall_reply_delete'</span>
+    BOARD_POST_NEW <span class="token operator">=</span> <span class="token string">'board_post_new'</span>
+    BOARD_POST_EDIT <span class="token operator">=</span> <span class="token string">'board_post_edit'</span>
+    BOARD_POST_RESTORE <span class="token operator">=</span> <span class="token string">'board_post_restore'</span>
+    BOARD_POST_DELETE <span class="token operator">=</span> <span class="token string">'board_post_delete'</span>
+    MARKET_COMMENT_NEW <span class="token operator">=</span> <span class="token string">'market_comment_new'</span>
+    MARKET_COMMENT_EDIT <span class="token operator">=</span> <span class="token string">'market_comment_edit'</span>
+    MARKET_COMMENT_RESTORE <span class="token operator">=</span> <span class="token string">'market_comment_restore'</span>
+    MARKET_COMMENT_DELETE <span class="token operator">=</span> <span class="token string">'market_comment_delete'</span>
+    GROUP_LEAVE <span class="token operator">=</span> <span class="token string">'group_leave'</span>
+    GROUP_JOIN <span class="token operator">=</span> <span class="token string">'group_join'</span>
+    USER_BLOCK <span class="token operator">=</span> <span class="token string">'user_block'</span>
+    USER_UNBLOCK <span class="token operator">=</span> <span class="token string">'user_unblock'</span>
+    POLL_VOTE_NEW <span class="token operator">=</span> <span class="token string">'poll_vote_new'</span>
+    GROUP_OFFICERS_EDIT <span class="token operator">=</span> <span class="token string">'group_officers_edit'</span>
+    GROUP_CHANGE_SETTINGS <span class="token operator">=</span> <span class="token string">'group_change_settings'</span>
+    GROUP_CHANGE_PHOTO <span class="token operator">=</span> <span class="token string">'group_change_photo'</span>
+    VKPAY_TRANSACTION <span class="token operator">=</span> <span class="token string">'vkpay_transaction'</span>
+</code></pre>
+<p>Например, так можно узнать, когда кто-то начал писать сообществу сообщение в чат:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> VkBotEventType<span class="token punctuation">.</span>MESSAGE_TYPING_STATE<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'Печатает </span><span class="token interpolation"><span class="token punctuation">{</span>event<span class="token punctuation">.</span>obj<span class="token punctuation">.</span>from_id<span class="token punctuation">}</span></span><span class="token string"> для </span><span class="token interpolation"><span class="token punctuation">{</span>event<span class="token punctuation">.</span>obj<span class="token punctuation">.</span>to_id<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>А так, что пользователь добавился в сообщество:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> VkBotEventType<span class="token punctuation">.</span>GROUP_JOIN<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>event<span class="token punctuation">.</span>obj<span class="token punctuation">.</span>user_id<span class="token punctuation">}</span></span><span class="token string"> вступил в группу!'</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Поэкспериментируйте с сообществом с запущенной программой обработки события, выводите их через <code>print(event.type)</code>, посмотрите, в каком случае возникают события того или иного вида (об этом достаточно просто догадаться по названию события).</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Заключение</h2>
+<p>API vk.com очень обширно и мы лишь немного прикоснулись к нему. Однако надеемся, что это даст вам импульс к самостоятельному изучению и написанию приложений для этой платформы.</p>
+</section></article></section>

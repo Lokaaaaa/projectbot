@@ -1,0 +1,129 @@
+<section class="lesson-material__content"><article class="material"><h1>Украшения игры</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Анимация спрайтов</a></li>
+<li><a class="material__link" href="#2">Система частиц</a></li>
+<li><a class="material__link" href="#3">Что же дальше?</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На последнем занятии мы рассмотрим два способа на порядок улучшить впечатление от игры (примерно в 10 раз).</p>
+<p>Этот урок не содержит задач.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Анимация спрайтов</h2>
+<p>В игре важно все: и удобство управления, и тщательно разработанные уровни. Но в первую очередь пользователи обращают внимание на графические эффекты и звук.</p>
+<p>Для того чтобы картинка ожила, используют анимацию. Просто рисуют несколько изображений и последовательно их меняют. Обычно для анимации спрайтов берут листы, совмещающие в себе несколько последовательных изображений. Например, такие:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-8-1.png" width="680"/></div>
+<p>Удобно создать специальный класс «анимированный спрайт», где разрезать лист на отдельные спрайты.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">AnimatedSprite</span><span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> sheet<span class="token punctuation">,</span> columns<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>all_sprites<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>frames <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>cut_sheet<span class="token punctuation">(</span>sheet<span class="token punctuation">,</span> columns<span class="token punctuation">,</span> rows<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>cur_frame <span class="token operator">=</span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> self<span class="token punctuation">.</span>frames<span class="token punctuation">[</span>self<span class="token punctuation">.</span>cur_frame<span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>move<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">cut_sheet</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> sheet<span class="token punctuation">,</span> columns<span class="token punctuation">,</span> rows<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> pygame<span class="token punctuation">.</span>Rect<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> sheet<span class="token punctuation">.</span>get_width<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">//</span> columns<span class="token punctuation">,</span> 
+                                sheet<span class="token punctuation">.</span>get_height<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">//</span> rows<span class="token punctuation">)</span>
+        <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>rows<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>columns<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                frame_location <span class="token operator">=</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>w <span class="token operator">*</span> i<span class="token punctuation">,</span> self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>h <span class="token operator">*</span> j<span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>frames<span class="token punctuation">.</span>append<span class="token punctuation">(</span>sheet<span class="token punctuation">.</span>subsurface<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>Rect<span class="token punctuation">(</span>
+                    frame_location<span class="token punctuation">,</span> self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>size<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>cur_frame <span class="token operator">=</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>cur_frame <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>frames<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> self<span class="token punctuation">.</span>frames<span class="token punctuation">[</span>self<span class="token punctuation">.</span>cur_frame<span class="token punctuation">]</span>
+</code></pre>
+<p>Смены кадров удобно делать в методе <code>update()</code>. По времени, чтобы элементы игры оживали, или по координатам, чтобы, например, герой ходил, переставляя ноги. Реализация выше — лишь один из возможных примеров.</p>
+<p>Смена кадра на каждой итерации цикла — это очень часто.</p>
+<p>На рисунке показана работа спрайта, созданного командой</p>
+<pre class="language-python"><code class="language-python">dragon <span class="token operator">=</span> AnimatedSprite<span class="token punctuation">(</span>load_image<span class="token punctuation">(</span><span class="token string">"dragon_sheet8x2.png"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-8-2.gif" width="166"/></div>
+<p>при обновлении 10 раз в секунду (<code>clock.tick(10)</code>).</p>
+<p>Для того чтобы не тормозить всю игру, можно ввести в классе счетчик итераций и менять изображение, скажем, каждую пятую итерацию.</p>
+<p>Сложнее всего — нарисовать персонажа. Для первых игр вполне можно использовать <a class="material__link" href="https://yandex.ru/search/?text=free+sprite+sheets&amp;lr=213&amp;clid=2270455&amp;win=413&amp;suggest_reqid=429699388157469083249185062493782," rel="noopener noreferrer" target="_blank">свободно распространяемые сеты</a>. Обычно в них содержится несколько анимаций, например, движение игрока в разные стороны. Можно создать несколько списков с индексами изображений и переключать их в зависимости от направления движения.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Система частиц</h2>
+<p>Система частиц очень украшает игру. Взрывы, туман, искры — все эти эффекты делаются по одной технологии. В ее основе, как в жизни, много маленьких объектов, которые связаны со своим источником (эммитером) и иногда между собой.</p>
+<p>Удобно оформлять частицу в виде класса, наследника спрайта. При этом можно просто проверять вылет частиц за границы экрана пересечением прямоугольника спрайта с прямоугольником экрана.</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token comment"># для отслеживания улетевших частиц</span>
+<span class="token comment"># удобно использовать пересечение прямоугольников</span>
+screen_rect <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Particle</span><span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Sprite<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># сгенерируем частицы разного размера</span>
+    fire <span class="token operator">=</span> <span class="token punctuation">[</span>load_image<span class="token punctuation">(</span><span class="token string">"star.png"</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> scale <span class="token keyword">in</span> <span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        fire<span class="token punctuation">.</span>append<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>transform<span class="token punctuation">.</span>scale<span class="token punctuation">(</span>fire<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>scale<span class="token punctuation">,</span> scale<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> pos<span class="token punctuation">,</span> dx<span class="token punctuation">,</span> dy<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>all_sprites<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>image <span class="token operator">=</span> random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span>self<span class="token punctuation">.</span>fire<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>rect <span class="token operator">=</span> self<span class="token punctuation">.</span>image<span class="token punctuation">.</span>get_rect<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># у каждой частицы своя скорость — это вектор</span>
+        self<span class="token punctuation">.</span>velocity <span class="token operator">=</span> <span class="token punctuation">[</span>dx<span class="token punctuation">,</span> dy<span class="token punctuation">]</span>
+        <span class="token comment"># и свои координаты</span>
+        self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x<span class="token punctuation">,</span> self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">=</span> pos
+
+        <span class="token comment"># гравитация будет одинаковой (значение константы)</span>
+        self<span class="token punctuation">.</span>gravity <span class="token operator">=</span> GRAVITY
+
+    <span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># применяем гравитационный эффект: </span>
+        <span class="token comment"># движение с ускорением под действием гравитации</span>
+        self<span class="token punctuation">.</span>velocity<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+=</span> self<span class="token punctuation">.</span>gravity
+        <span class="token comment"># перемещаем частицу</span>
+        self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>x <span class="token operator">+=</span> self<span class="token punctuation">.</span>velocity<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>y <span class="token operator">+=</span> self<span class="token punctuation">.</span>velocity<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+        <span class="token comment"># убиваем, если частица ушла за экран</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> self<span class="token punctuation">.</span>rect<span class="token punctuation">.</span>colliderect<span class="token punctuation">(</span>screen_rect<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>kill<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для демонстрационного примера не будем создавать класс эмиттера, а ограничимся функцией, принимающей в себя позицию, из которой будут вылетать звезды:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">create_particles</span><span class="token punctuation">(</span>position<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># количество создаваемых частиц</span>
+    particle_count <span class="token operator">=</span> <span class="token number">20</span>
+    <span class="token comment"># возможные скорости</span>
+    numbers <span class="token operator">=</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>particle_count<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        Particle<span class="token punctuation">(</span>position<span class="token punctuation">,</span> random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span>numbers<span class="token punctuation">)</span><span class="token punctuation">,</span> random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span>numbers<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Эту функцию будем вызывать по щелчку мыши, передавая в нее координаты нажатия клавиши мыши:</p>
+<pre class="language-python"><code class="language-python">all_sprites <span class="token operator">=</span> pygame<span class="token punctuation">.</span>sprite<span class="token punctuation">.</span>Group<span class="token punctuation">(</span><span class="token punctuation">)</span>
+clock <span class="token operator">=</span> pygame<span class="token punctuation">.</span>time<span class="token punctuation">.</span>Clock<span class="token punctuation">(</span><span class="token punctuation">)</span>
+running <span class="token operator">=</span> <span class="token boolean">True</span>
+<span class="token keyword">while</span> running<span class="token punctuation">:</span>
+    <span class="token keyword">for</span> event <span class="token keyword">in</span> pygame<span class="token punctuation">.</span>event<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>QUIT<span class="token punctuation">:</span>
+            running <span class="token operator">=</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> event<span class="token punctuation">.</span><span class="token builtin">type</span> <span class="token operator">==</span> pygame<span class="token punctuation">.</span>MOUSEBUTTONDOWN<span class="token punctuation">:</span>
+            <span class="token comment"># создаём частицы по щелчку мыши</span>
+            create_particles<span class="token punctuation">(</span>pygame<span class="token punctuation">.</span>mouse<span class="token punctuation">.</span>get_pos<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    all_sprites<span class="token punctuation">.</span>update<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    screen<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    all_sprites<span class="token punctuation">.</span>draw<span class="token punctuation">(</span>screen<span class="token punctuation">)</span>    
+    pygame<span class="token punctuation">.</span>display<span class="token punctuation">.</span>flip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    clock<span class="token punctuation">.</span>tick<span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span>
+
+pygame<span class="token punctuation">.</span>quit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/pygame-8-3.gif" width="494"/></div>
+<p>Картинку для задания можно взять тут:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pygame/star.png" width="32"/></div>
+<p>Конечно, это всего лишь пример. Впереди — большое поле для экспериментов и изучения теории. Существует много сложных алгоритмов систем частиц, с которыми обязательно стоит познакомиться.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Что же дальше?</h2>
+<p>К этому занятию нет специальных задач. Разберитесь с приведенными в уроке примерами и продолжайте разрабатывать свою игру.</p>
+<p>У хорошей игры должно быть звуковое оформление. Мы не обсуждали звук на занятиях, но попробуйте разобраться по документации с возможностями модуля <a class="material__link" href="https://www.pygame.org/docs/ref/mixer.html" rel="noopener noreferrer" target="_blank">pygame.mixer</a> и добавьте в игру музыку и эффекты.</p>
+</section></article></section>

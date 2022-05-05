@@ -1,0 +1,323 @@
+<section class="lesson-material__content"><article class="material"><h1>Шаблоны. flask-wtf</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Шаблоны</a></li>
+<li><a class="material__link" href="#2">Условия в шаблонах</a></li>
+<li><a class="material__link" href="#3">Циклы в шаблонах</a></li>
+<li><a class="material__link" href="#4">Создание переменных в шаблоне</a></li>
+<li><a class="material__link" href="#5">Наследование шаблонов</a></li>
+<li><a class="material__link" href="#6">Знакомство с Flask-WTF</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом уроке избавимся от необходимости создавать HTML-разметку непосредственно в коде, а также рассмотрим возможность создания форм с использованием объектного подхода с помощью библиотеки flask-wtf.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Шаблоны</h2>
+<p>Делать разметку непосредственно в коде Python плохо в 99,99 % случаев. Это сложно поддерживать, неудобно писать, и наверняка вы почувствовали дискомфорт, пока делали предыдущие примеры. А у нас были достаточно простые страницы и небольшое количество информации, которая менялась динамически.</p>
+<p>Для того чтобы сделать жизнь программистов лучше, во Flask есть прекрасный механизм создания HTML-шаблонов, который мы сейчас и рассмотрим.</p>
+<p>Практически всегда отделение логики приложения от макетов веб-страниц — отличная идея. Таким образом достигается нормальная организация внутри команды и становится возможным разделение работ. Каждый занимается своим делом: веб-дизайнер делает красиво, а разработчик — чтобы работало. Шаблоны как раз помогают достичь этого разделения. Во Flask шаблоны записываются как отдельные файлы, хранящиеся в папке templates, которая находится (по умолчанию) в корневой папке приложения. Давайте ее создадим. И добавим в эту папку файл с HTML-разметкой — index.html со следующим содержимым:</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+        &lt;title&gt;{{ title }}&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Привет, {{ username }}!&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Для нас такая разметка не представляет ничего сложного. Интерес вызывают разве что непонятные параметры в двух фигурных скобках. Давайте посмотрим, как шаблон будет работать. Для этого импортируем <var>render_template</var> из flask и напишем для нашего приложения новый обработчик главной страницы:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span>
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/index'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">index</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    user <span class="token operator">=</span> <span class="token string">"Ученик Яндекс.Лицея"</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'index.html'</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">'Домашняя страница'</span><span class="token punctuation">,</span> 
+                           username<span class="token operator">=</span>user<span class="token punctuation">)</span>
+</code></pre>
+<p>И никакой разметки в нашем python-файле — прекрасно, не правда ли? Операция, которая преобразует шаблон в HTML-страницу, называется <strong>рендерингом</strong>. Чтобы отобразить шаблон, нам пришлось импортировать функцию <code>render_template()</code>. Эта функция принимает имя файла шаблона и перечень аргументов шаблона и возвращает тот же шаблон, но при этом все блоки <code>{{...}}</code> в нем заменяются фактическими значениями переданных аргументов. Этот процесс работает схоже с прекрасно знакомым нам методом <var>format</var> для строк в Python. Механизм шаблонов, встроенный во Flask, называется Jinja2.</p>
+<p>Запустите приложение и перейдите по ссылке http://127.0.0.1:8080/, из контекстного меню по правому клику в браузере выбирите «Показать исходный код» или «view page source». Посмотрите, какой HTML-код был сгенерирован на основе шаблона.</p>
+<p>Важно не забывать, что кроме непосредственно переданных параметров внутри шаблона мы имеем доступ и к служебным объектам. Например, уже знакомый нам <var>request</var>, или <var>session</var>, о котором мы поговорим позже.</p>
+<p>Параметры в шаблон не обязательно передавать по отдельности, так как их может быть много и получать мы их можем внутри нашей потенциально длиной функции в разных местах. Можно собирать их в словарь параметров, а потом распаковывать его в вызове функции <var>render_template</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span>
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/index'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">index</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    param <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    param<span class="token punctuation">[</span><span class="token string">'username'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"Ученик Яндекс.Лицея"</span>
+    param<span class="token punctuation">[</span><span class="token string">'title'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'Домашняя страница'</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'index.html'</span><span class="token punctuation">,</span> <span class="token operator">**</span>param<span class="token punctuation">)</span>
+</code></pre>
+<p>Если мы не заполним какой-то из параметров шаблона, то он по умолчанию будет считаться равным пустой строке.</p>
+<p>Кроме простой подстановки параметров Jinja2 умеет делать еще несколько полезных вещей. Речь о них пойдет далее.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Условия в шаблонах</h2>
+<p>Шаблонизатор Flask поддерживает условные операторы, заданные внутри блоков <code>{% ...%}</code>. Давайте создадим шаблон odd_even.html:</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Четное-нечетное&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+ {% if number % 2 == 0 %}
+        &lt;div&gt;{{ number }} - чётное&lt;/div&gt;
+ {% else %}
+       &lt;div&gt;{{ number }} - нечётное&lt;/div&gt;
+ {% endif %}
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>И обработчик:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/odd_even'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">odd_even</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'odd_even.html'</span><span class="token punctuation">,</span> number<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь в зависимости от того, что мы передали в шаблон, будет отрабатывать тот или иной блок.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-2-3.png" width="394"/></div>
+<p>Общий синтаксис условного оператора в шаблонах очень похож на тот, к которому мы привыкли в Python:</p>
+<pre class="language-python"><code class="language-python"> <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">if</span> условие_1 <span class="token operator">%</span><span class="token punctuation">}</span>
+        ветка <span class="token number">1</span>
+  <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">elif</span> условие_2 <span class="token operator">%</span><span class="token punctuation">}</span> <span class="token punctuation">(</span>не обязательно<span class="token punctuation">)</span>
+        ветка <span class="token number">1</span>
+ <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">else</span> <span class="token operator">%</span><span class="token punctuation">}</span> <span class="token punctuation">(</span>не обязательно<span class="token punctuation">)</span>
+       ветка <span class="token number">2</span>
+ <span class="token punctuation">{</span><span class="token operator">%</span> endif <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>Поддерживаются вложенные условия.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Циклы в шаблонах</h2>
+<p>Jinja2 поддерживает еще и циклы <var>for</var>. Давайте создадим тестовый json-файл со списком новостей примерно следующего содержания:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span>
+    <span class="token string">"news"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">"title"</span><span class="token punctuation">:</span> <span class="token string">"Сегодня хорошая погода"</span><span class="token punctuation">,</span>
+            <span class="token string">"content"</span><span class="token punctuation">:</span> <span class="token string">"Невероятно, сегодня хорошая погода"</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">"title"</span><span class="token punctuation">:</span> <span class="token string">"Завтра хорошая погода"</span><span class="token punctuation">,</span>
+            <span class="token string">"content"</span><span class="token punctuation">:</span> <span class="token string">"С ума сойти, и завтра хорошая погода"</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">"title"</span><span class="token punctuation">:</span> <span class="token string">"Послезавтра дождь"</span><span class="token punctuation">,</span>
+            <span class="token string">"content"</span><span class="token punctuation">:</span> <span class="token string">"Все вошло в норму"</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Напишем обработчик:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/news'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">news</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"news.json"</span><span class="token punctuation">,</span> <span class="token string">"rt"</span><span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">"utf8"</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+        news_list <span class="token operator">=</span> json<span class="token punctuation">.</span>loads<span class="token punctuation">(</span>f<span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>news_list<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'news.html'</span><span class="token punctuation">,</span> news<span class="token operator">=</span>news_list<span class="token punctuation">)</span>
+</code></pre>
+<p>И шаблон:</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Новости&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    {% for item in news['news'] %}
+        &lt;h2&gt;{{item["title"]}}&lt;/h2&gt;
+        &lt;div&gt;{{item["content"]}}&lt;/div&gt;
+    {% endfor %}
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/webserver-2-4.png" width="354"/></div>
+<p>Как вы можете заметить, общий синтаксис цикла выглядит так:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> переменная цикла <span class="token keyword">in</span> набор значений <span class="token operator">%</span><span class="token punctuation">}</span>
+    код
+<span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>В качестве набора значений может выступать все то же, что и в обычном цикле на Python. Можно использовать и <var>range</var> (тогда можно смоделировать ситуации, когда значение в шаблон передавать не нужно, а цикл все равно сработает). Поддерживается вложенность.</p>
+<p>Внутри цикла доступна переменная <var>loop</var> с рядом полезных атрибутов, например:</p>
+<ul>
+<li><code>index</code> — индекс итерации с 1</li>
+<li><code>index0</code> — индекс итерации с нуля</li>
+<li><code>first</code> — True, если первая итерация, иначе False</li>
+<li><code>last</code> — True, если последняя итерация, иначе False</li>
+</ul>
+</section>
+<section class="material__chapter">
+<h2 id="4">Создание переменных в шаблоне</h2>
+<p>Несмотря на то что практически все значения для шаблона мы передаем из нашего кода на Python, периодически возникают ситуации, когда возникает необходимость создать переменную непосредственно в шаблоне, например, для хранения промежуточного результата вычислений. Это можно сделать с помощью ключевого слова <var>set</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> <span class="token builtin">set</span> a <span class="token operator">=</span> <span class="token number">10</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>Давайте рассмотрим пример для иллюстрации создания переменных в шаблоне, а заодно посмотрим на переменную <var>loop</var> внутри цикла:</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;{{ title }}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Кто стоит в очереди?&lt;/h1&gt;
+{% set user_list = ['Ваня', 'Петя', 'Саша', 'Кирилл'] %}
+&lt;ul&gt;
+    {% for user in user_list %}
+    &lt;li&gt;{{ loop.index }} - {{ user }} {% if loop.first %} первый в очереди {% elif loop.last %} последний. {% endif %}
+    &lt;/li&gt;
+    {% endfor %}
+&lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Добавим обработчик, запустим:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-wtf-1.png" width="450"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="5">Наследование шаблонов</h2>
+<p>В большинстве веб-приложений вверху или сбоку страницы есть главное меню, панели навигации с несколькими часто используемыми ссылками, внизу страницы зачастую располагается подвал (футер) с контактной информацией и т. д. Если веб-приложение содержит несколько страниц, не составит большого труда добавить такую информацию во все шаблоны. Но по мере увеличения масштаба это будет становиться все труднее и труднее. Может возникнуть ситуация, когда при изменении номера телефона или добавлении нового пункта меню придется изменить несколько сотен шаблонов. Кроме того, вы помните, что надо переиспользовать код, где это возможно, а писать одно и тоже несколько раз — плохая практика.</p>
+<p>Jinja2 имеет функцию наследования шаблона, которая решает эту проблему. Мы можем разместить общие для всех шаблонов части макета страницы в базовом шаблоне, из которого выводятся все остальные шаблоны.</p>
+<p>Давайте создадим базовый шаблон, который будет содержать небольшое верхнее меню, в файле base.html:</p>
+<pre><code>&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"&gt;
+    &lt;link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous"&gt;
+    &lt;title&gt;{{title}}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;header&gt;
+    &lt;nav class="navbar navbar-light bg-light"&gt;
+        &lt;a class="navbar-brand" href="#"&gt;Наше приложение&lt;/a&gt;
+    &lt;/nav&gt;
+&lt;/header&gt;
+&lt;!-- Begin page content --&gt;
+&lt;main role="main" class="container"&gt;
+    {% block content %}{% endblock %}
+&lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>В базовом шаблоне используется оператор управления блоком <code>{% block %}{% endblock %}</code>, чтобы определить место, куда будет вставляться содержимое дочерних шаблонов. Блокам присваивается уникальное имя (в нашем случае — content), на которое производные шаблоны могут ссылаться.</p>
+<p>Давайте изменим и наш index.html, который теперь будет выглядеть следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> extends <span class="token string">"base.html"</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+
+<span class="token punctuation">{</span><span class="token operator">%</span> block content <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>h1<span class="token operator">&gt;</span>Привет<span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token punctuation">{</span> username <span class="token punctuation">}</span><span class="token punctuation">}</span>!<span class="token operator">&lt;</span><span class="token operator">/</span>h1<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endblock <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<p>В <var>extends</var> мы указываем, какой шаблон мы хотим расширить, а в <var>block</var> — какой именно блок (их может быть несколько).</p>
+<p>Обычно базовые шаблоны делают таким образом, чтобы они отвечали за общую структуру страницы. Новые страницы веб-приложения создают как производные шаблоны из одного и того же базового шаблона для избежания дублирования кода. Дочерний шаблон может расширять несколько блоков родительского шаблона, и при этом сам быть родительским для другого шаблона. Про все тонкости можно почитать в <a class="material__link" href="https://jinja.palletsprojects.com/en/2.10.x/templates/#template-inheritance" rel="noopener noreferrer" target="_blank">официальной документации</a>.</p>
+<p><strong>И еще.</strong></p>
+<p>Jinja поддерживает еще много интересного:</p>
+<ul>
+<li>Макросы — аналог функций из Python — куски кода шаблона, которые можно переиспользовать, обращаясь по имени</li>
+<li>Фильтры — некоторые функции, которые можно применять к данным при выводе, в большинстве случаев они дублируют функциональность методов строк, и позволяют немного модифицировать данные при отображении в шаблоне</li>
+</ul>
+<p>Про это и много другое можно почитать в <a class="material__link" href="https://jinja.palletsprojects.com/en/2.10.x/" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Знакомство с Flask-WTF</h2>
+<p>Микрофреймворк Flask силен, в том числе, и своей расширяемостью, которая позволяет значительно наращивать функциональность веб-приложения за счет дополнительных модулей с небольшими усилиями. Мы рассмотрим модуль flask-wtf для создания и обработки форм. У вас может возникнуть закономерный вопрос — зачем, ведь мы уже научились работать с формами? На самом деле, работа со сложными формами через разметку все равно достаточно непростая задача, а flask-wtf помогает не только скрыть эту сложность, но и использует при этом объектно-ориентированный подход.</p>
+<p>Чтобы установить flask-wtf, достаточно выполнить команду:</p>
+<pre><code>pip install flask-wtf
+</code></pre>
+<p>Прежде чем приступить к дальнейшей работе, давайте сделаем небольшую настройку нашего приложения и добавим следующую строку после создания переменной <var>app</var>:</p>
+<pre class="language-python"><code class="language-python">app<span class="token punctuation">.</span>config<span class="token punctuation">[</span><span class="token string">'SECRET_KEY'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'yandexlyceum_secret_key'</span>
+</code></pre>
+<p>Эта настройка защитит наше приложение от <a class="material__link" href="https://ru.wikipedia.org/wiki/Межсайтовая_подделка_запроса" rel="noopener noreferrer" target="_blank">межсайтовой подделки запросов</a>.</p>
+<p>Конечно, наш придуманный ключ довольно простой, но этот параметр необходим для корректной работы модуля. В принципе, защиту от CSRF-атаки можно отключить, но это не рекомендуется даже в учебных приложениях, как наше, чтобы при разработке своих больших проектов вы про это ненароком не забыли. Хорошая идея — хранить настройки приложения в отдельном файле конфигурации и считывать их при старте приложения.</p>
+<p>Давайте создадим форму авторизации для входа в наше абстрактное приложение, которая будет содержать текстовое поле для ввода логина, поле для ввода пароля, чекбокс «Запомнить меня» и кнопку отправки формы на сервер. Для начала создадим класс нашей будущей формы. Создадим файл loginform.py, в котором напишем следующий код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> flask_wtf <span class="token keyword">import</span> FlaskForm
+<span class="token keyword">from</span> wtforms <span class="token keyword">import</span> StringField<span class="token punctuation">,</span> PasswordField<span class="token punctuation">,</span> BooleanField<span class="token punctuation">,</span> SubmitField
+<span class="token keyword">from</span> wtforms<span class="token punctuation">.</span>validators <span class="token keyword">import</span> DataRequired
+
+
+<span class="token keyword">class</span> <span class="token class-name">LoginForm</span><span class="token punctuation">(</span>FlaskForm<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    username <span class="token operator">=</span> StringField<span class="token punctuation">(</span><span class="token string">'Логин'</span><span class="token punctuation">,</span> validators<span class="token operator">=</span><span class="token punctuation">[</span>DataRequired<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    password <span class="token operator">=</span> PasswordField<span class="token punctuation">(</span><span class="token string">'Пароль'</span><span class="token punctuation">,</span> validators<span class="token operator">=</span><span class="token punctuation">[</span>DataRequired<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    remember_me <span class="token operator">=</span> BooleanField<span class="token punctuation">(</span><span class="token string">'Запомнить меня'</span><span class="token punctuation">)</span>
+    submit <span class="token operator">=</span> SubmitField<span class="token punctuation">(</span><span class="token string">'Войти'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Как видно из примера, мы импортируем класс <var>FlaskForm</var> из модуля flask_wtf — основной класс, от которого мы будем наследоваться при создании своей формы. Из модуля wtforms (flask_wtf — обертка для этого модуля) мы импортируем типы полей, которые нам пригодятся для создания нашей формы: текстовое поле, поле ввода пароля, булевое поле (из него получается чекбокс), и кнопку отправки данных.</p>
+<p>Кроме этого, из модуля <code>wtforms.validators</code> импортируем проверку, которая скажет нам о том, введены ли данные в поле или нет. Создаем необходимые поля, на поля ввода логина и пароля вешаем проверку наличия там введенной информации.</p>
+<p>Прежде чем добраться до шаблона, давайте напишем обработчик, который будет оперировать пока не созданным шаблоном login.html (шаблон мы оставим на потом, чтобы посмотреть несколько вариантов):</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@app<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/login'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'GET'</span><span class="token punctuation">,</span> <span class="token string">'POST'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">login</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    form <span class="token operator">=</span> LoginForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> form<span class="token punctuation">.</span>validate_on_submit<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> redirect<span class="token punctuation">(</span><span class="token string">'/success'</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> render_template<span class="token punctuation">(</span><span class="token string">'login.html'</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">'Авторизация'</span><span class="token punctuation">,</span> form<span class="token operator">=</span>form<span class="token punctuation">)</span>
+</code></pre>
+<p>Тут мы создаем нашу форму, и если все поля прошли валидацию, после нажатия на кнопку отправки данных отправляем нашего пользователя на страницу удачного логина (не забудьте ее сначала создать, а также импортировать <var>redirect</var> из модуля flask).</p>
+<p>Теперь перейдем к шаблону. Давайте создадим новый шаблон login.html, который будет расширять уже существующий шаблон base.html. Есть несколько вариантов того, как мы можем отобразить поля нашей формы <var>LoginForm</var>. Если мы хотим просто создать поля и отобразить их с минимальной настройкой внешнего вида, тогда можно просто обойти их в цикле вот таким достаточно универсальным кодом:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> extends <span class="token string">"base.html"</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+
+<span class="token punctuation">{</span><span class="token operator">%</span> block content <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>form action<span class="token operator">=</span><span class="token string">""</span> method<span class="token operator">=</span><span class="token string">"post"</span> novalidate<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>
+            <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>csrf_token <span class="token punctuation">}</span><span class="token punctuation">}</span>
+        <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> field <span class="token keyword">in</span> form <span class="token keyword">if</span> field<span class="token punctuation">.</span>name <span class="token operator">!=</span> <span class="token string">'csrf_token'</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+            <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>
+                <span class="token punctuation">{</span><span class="token punctuation">{</span> field<span class="token punctuation">.</span>label<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span>
+                <span class="token punctuation">{</span><span class="token punctuation">{</span> field<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span>
+                <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> error <span class="token keyword">in</span> field<span class="token punctuation">.</span>errors <span class="token operator">%</span><span class="token punctuation">}</span>
+                    <span class="token operator">&lt;</span>div <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"error"</span><span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> error <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+                <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+            <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>form<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endblock <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-wtf-2.png" width="640"/></div>
+<p>Если нам нужно больше контроля над отображением полей, можно обращаться в верстке к каждому из них по отдельности:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">{</span><span class="token operator">%</span> extends <span class="token string">"base.html"</span> <span class="token operator">%</span><span class="token punctuation">}</span>
+
+<span class="token punctuation">{</span><span class="token operator">%</span> block content <span class="token operator">%</span><span class="token punctuation">}</span>
+<span class="token operator">&lt;</span>h1<span class="token operator">&gt;</span>Авторизация<span class="token operator">&lt;</span><span class="token operator">/</span>h1<span class="token operator">&gt;</span>
+<span class="token operator">&lt;</span>form action<span class="token operator">=</span><span class="token string">""</span> method<span class="token operator">=</span><span class="token string">"post"</span> novalidate<span class="token operator">&gt;</span>
+    <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>hidden_tag<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>username<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>username<span class="token punctuation">(</span><span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"form-control"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> error <span class="token keyword">in</span> form<span class="token punctuation">.</span>username<span class="token punctuation">.</span>errors <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>div <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"alert alert-danger"</span> role<span class="token operator">=</span><span class="token string">"alert"</span><span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> error <span class="token punctuation">}</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+    <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>password<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>password<span class="token punctuation">(</span><span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"form-control"</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token string">"password"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span>br<span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token operator">%</span> <span class="token keyword">for</span> error <span class="token keyword">in</span> form<span class="token punctuation">.</span>password<span class="token punctuation">.</span>errors <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span>div <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"alert alert-danger"</span> role<span class="token operator">=</span><span class="token string">"alert"</span><span class="token operator">&gt;</span>
+        <span class="token punctuation">{</span><span class="token punctuation">{</span> error <span class="token punctuation">}</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+    <span class="token punctuation">{</span><span class="token operator">%</span> endfor <span class="token operator">%</span><span class="token punctuation">}</span>
+    <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>remember_me<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span> <span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>remember_me<span class="token punctuation">.</span>label <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span><span class="token punctuation">{</span><span class="token punctuation">{</span> form<span class="token punctuation">.</span>submit<span class="token punctuation">(</span><span class="token builtin">type</span><span class="token operator">=</span><span class="token string">"submit"</span><span class="token punctuation">,</span> <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">"btn btn-primary"</span><span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+<span class="token operator">&lt;</span><span class="token operator">/</span>form<span class="token operator">&gt;</span>
+<span class="token punctuation">{</span><span class="token operator">%</span> endblock <span class="token operator">%</span><span class="token punctuation">}</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-wtf-3.png" width="680"/></div>
+<p>Как видите, здесь для создания формы мы оперируем уже не разметкой, а атрибутами объекта <var>form</var>. <var>form.hidden_tag</var> — атрибут, который добавляет в форму токен для защиты от атаки, о которой мы говорили раньше. Из интересного в шаблоне есть еще циклы, которые добавляют вывод ошибок заполнения полей. В нашем случае валидатор только один, но в общем случае их может быть несколько, поэтому ошибки лучше выводить именно таким образом.</p>
+<p>Если мы хотим добавить к компонентам какой-нибудь стиль, класс или указать какой-то другой атрибут, то их можно просто передать как параметры к вызову нужной части формы.</p>
+<p>Проверьте, как все работает.</p>
+<p>Обратите внимание: проверка правильности значений полей в нашем случае ведется на сервере. Поэтому важно поставить у нашей формы в шаблоне параметр <var>novalidate</var>, иначе Bootstrap будет проверять поля прямо в браузере и до сервера информация не дойдет. Вообще значения полей лучше проверять и там, и там:</p>
+<ul>
+<li>На клиенте для удобства пользователя (ему не надо ждать обновления страницы, чтобы получить ошибку)</li>
+<li>На сервере для безопасности, чтобы злоумышленники не смогли изменить информацию, которую вы проверили на клиенте. В конце концов, никто не запретит желающему сделать POST значений формы по нужному адресу не с HTML-страницы, а с помощью библиотеки <var>requests</var></li>
+</ul>
+<p>Может возникнуть ситуация, когда данные формы были проверены на клиенте, а затем они были изменены уже после отправки формы (например, добавлен вредоносный код в текст поля). Если на сервере не проверить данные еще раз, то ваше веб-приложение может утратить работоспособность и потерять все данные.</p>
+<p>С загрузкой файлов в flask-wtf тоже есть свои небольшие особенности. Для загрузки файла достаточно создать поле типа <var>FileField</var>, а в обработке отправленной информации для получения содержимого файла добавить:</p>
+<pre class="language-python"><code class="language-python">f <span class="token operator">=</span> form<span class="token punctuation">.</span><span class="token operator">&lt;</span>название поля с файлом<span class="token operator">&gt;</span><span class="token punctuation">.</span>data
+</code></pre>
+<p>В библиотеке flask-wtf есть поля для всех самых распространенных типов полей ввода, которые мы рассматривали на прошлом уроке, различные валидаторы.</p>
+<p>Уверены, что для вас не является секретом факт, что большинство веб-приложений используют в качестве источника информации базы данных, с которыми мы познакомились, когда создавали приложение c графическим пользовательским интерфейсом с использованием компонентов PyQt. На следующих нескольких уроках мы продолжим с ними работать. И рассмотрим очень мощный инструмент, который упростит разработку именно в части общения с базами данных.</p>
+</section></article></section>

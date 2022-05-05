@@ -1,0 +1,360 @@
+<section class="lesson-material__content"><article class="material"><h1>Рекурсия</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Факториал и число сочетаний</a></li>
+<li><a class="material__link" href="#2">Определение рекурсии, принцип работы</a></li>
+<li><a class="material__link" href="#3">Опасность использования рекурсивных алгоритмов или что может пойти не так</a></li>
+<li><a class="material__link" href="#4">Красота требует жертв?</a></li>
+<li><a class="material__link" href="#5">Несколько рекурсивных веток. Деревья</a></li>
+<li><a class="material__link" href="#6">Бонус. Решаем судоку</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы познакомимся с понятием рекурсии, покажем ее связь с уже известными нам конструкциями (циклами и функциями). Разберем наиболее часто встречающиеся ошибки и классические примеры.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Факториал и число сочетаний</h2>
+<p>Задача на сочетания — простейшая комбинаторная задача на сочетания без повторений: сколькими способами можно из данных n предметов выбрать некоторые k предметов, если порядок их выбора не важен?</p>
+<p>Ответом на эту задачу является величина:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/recurs/recurs-1.png" width="155"/></div>
+<p>называемая числом сочетаний из n элементов по k.</p>
+<p>Запись n! обозначает произведение 1 · 2 · 3 · ... · n, называемое факториалом числа n (мы уже неоднократно сталкивались с данным понятием), при этом считается, что 0! = 1. Приведем «красивое» математическое определение факториала:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/recurs/recurs-2.png" width="299"/></div>
+<p>Давайте напишем функцию, вычисляющую факториал числа n классическим способом, и проверим ее работу.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Вычисление факториала</span>
+<span class="token keyword">def</span> <span class="token function">factorial</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    result <span class="token operator">=</span> <span class="token number">1</span>
+    <span class="token keyword">for</span> index <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> number <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        result <span class="token operator">*=</span> index
+    <span class="token keyword">return</span> result
+
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> factorial<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание на красивый способ вычисления факториала в стиле языка Python:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> functools <span class="token keyword">import</span> <span class="token builtin">reduce</span>
+
+<span class="token keyword">def</span> <span class="token function">cool_factorial</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token builtin">reduce</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">,</span> y<span class="token punctuation">:</span> x <span class="token operator">*</span> y<span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> number <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> cool_factorial<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Определение рекурсии, принцип работы</h2>
+<p>Однако задачу вычисления факториала можно решить иначе. В математике очень часто для упрощения вычислений исходную задачу сводят к более простым.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Рекурсия</strong></p>
+<p>В итоге можно прийти к тому, что будет вызвана первоначальная задача, но в несколько упрощенной форме. Такой прием называется рекурсией (от лат. recurcio — «возвращение»).</p>
+<p>Итак, <strong>рекурсия</strong> в программировании — прием, когда функция может вызывать сама себя прямо либо косвенно (через другую функцию, при этом обе функции являются рекурсивными).</p>
+</section>
+<p>Давайте еще раз посмотрим на определение факториала и обратим внимание на выделенный жирным фрагмент:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/recurs/recurs-3.png" width="311"/></div>
+<p>Можно увидеть, что <strong>1 · 2 · 3 · ... · (n − 1)</strong>, не что иное, как факториал числа n − 1. Поэтому определение факториала можно записать в сокращенном виде:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/recurs/recurs-4.png" width="201"/></div>
+<p>Вернемся к нашей задаче и рассмотрим функцию вычисления факториала с несколько другой стороны, постараемся применить рекурсию. Известно, что 0! = 1, 1! = 1. А как вычислить величину n! для большого n? Если бы мы могли вычислить величину (n − 1)!, тогда мы легко вычислим n!, поскольку n! = n · (n − 1)!. Но как вычислить (n − 1)!? Если бы мы вычислили (n − 2)!, мы сможем вычислить и (n − 1)! = (n − 1) · (n − 2)!. А как вычислить (n − 2)!? Если бы... В конце концов, мы дойдем до величины 0!, которая равна 1. Таким образом, для вычисления факториала мы можем использовать значение факториала для меньшего числа.</p>
+<p>Давайте напишем соответствующую функцию:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Рекурсивное вычисление факториала</span>
+<span class="token keyword">def</span> <span class="token function">rec_factorial</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> number <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> number <span class="token operator">*</span> rec_factorial<span class="token punctuation">(</span>number <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Логическая сложность рекурсивных функций заключается в изменении параметров и особенностях получения промежуточных результатов при последовательном обращении подпрограммы к себе. Выполняется две серии шагов. Первая серия — шаги рекурсивного погружения подпрограмм в себя до тех пор, пока выбранный параметр не достигнет граничного значения (<strong>глубина рекурсии</strong>). Вторая серия — шаги рекурсивного выхода до тех пор, пока значение выбранного параметра не достигнет начального. Она, как правило, и обеспечивает получение промежуточных и конечных результатов.</p>
+<p>Вот так работает рекурсивная функция вычисления факториала:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/recurs/factorial%20-%20new.svg" width="680"/></div>
+<p>В общем случае рекурсия тяготеет к <a class="material__link" href="https://ru.wikipedia.org/wiki/Декларативное_программирование" rel="noopener noreferrer" target="_blank">декларативному</a> стилю программированию. Если в двух словах: когда мы пишем императивную функцию (как делали все время до этого), отвечаем на вопрос, <strong>как</strong> достигнуть необходимого результата, а когда создаем декларативную — на вопрос, <strong>что</strong> такое наш результат.</p>
+<p>Поэтому в <strong>любой</strong> рекурсивной функции должно быть как минимум <strong>две</strong> ветки развития «сюжета»:</p>
+<ol>
+<li>Основная.</li>
+<li>Точка выхода.</li>
+</ol>
+<p>Сама функция при этом получается <strong>декларативной</strong>: она повторяет практически один в один определение факториала.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Опасность использования рекурсивных алгоритмов или что может пойти не так</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Наиболее распространенной ошибкой при использовании рекурсии является бесконечная рекурсия, когда цепочка вызовов функций никогда не завершается и продолжается, пока не кончится свободная память в компьютере.</p>
+</section>
+<p>Определим две наиболее распространенные причины для бесконечной рекурсии на примере некорректно написанной функции нахождения факториала числа.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">rec_factorial</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> number <span class="token operator">*</span> rec_factorial<span class="token punctuation">(</span>number <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span>
+</code></pre>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">rec_factorial</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> number <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> number <span class="token operator">*</span> rec_factorial<span class="token punctuation">(</span>number<span class="token punctuation">)</span>
+</code></pre>
+<p>Итак, при разработке рекурсивной функции необходимо прежде всего оформлять условия завершения рекурсии и думать, почему рекурсия когда-либо завершит работу.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Еще одна проблема, связанная с использованием рекурсивных функций, — нетривиальность задачи оценки сложности и эффективности алгоритма. Сложность этих алгоритмов зависит не только от сложности внутренних циклов, но и от количества итераций рекурсии. Рекурсивная процедура может выглядеть достаточно простой, но она может серьезно усложнить программу, многократно вызывая себя.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="4">Красота требует жертв?</h2>
+<p>Напишем функцию перевода числа из десятичной системы счисления в двоичную (а на самом деле и в любую другую позиционную систему).</p>
+<p>Для начала вспомним базовый алгоритм перевода:</p>
+<p><strong>Шаг 1.</strong> Разделить число на основание системы счисления, в которую осуществляется перевод (в нашем случае — два). Записать остаток.</p>
+<p><strong>Шаг 2.</strong> Если результат деления больше двух или равен двум, продолжать делить его на два до тех пор, пока результат деления не станет равен единице.</p>
+<p><strong>Шаг 3.</strong> Выписать результат последнего деления и все остатки от деления в обратном порядке в одну строку.</p>
+<p>Рассмотрим на примере перевода числа 136 в двоичную систему счисления:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/recurs/Sistemy.svg" width="680"/></div>
+<p>136<sub>10</sub> = 10001000<sub>2</sub></p>
+<p>Декларативное описание этой функции звучит так:</p>
+<ol>
+<li>Если число <var>a</var> больше единицы, напечатаем перевод в двоичную систему числа, равного целой части от деления <var>a</var> на два.</li>
+<li>В противном случае напечатаем остаток от деления <var>a</var> на два.</li>
+</ol>
+<p>С помощью рекурсии реализовать этот алгоритм можно очень красивым и лаконичным кодом.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">bin</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  <span class="token keyword">if</span> a <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">:</span>
+    <span class="token builtin">bin</span><span class="token punctuation">(</span>a <span class="token operator">//</span> <span class="token number">2</span><span class="token punctuation">)</span>
+  <span class="token keyword">print</span><span class="token punctuation">(</span>a <span class="token operator">%</span> <span class="token number">2</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">""</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь напишем функцию, которая вычисляет НОД (наибольший общий делитель) пары чисел А и B.</p>
+<p>Определение:</p>
+<ol>
+<li>Если число <var>b</var> равно 0, вернем число <var>a</var>.</li>
+<li>В противном случае вернем значение функции (рекурсия) от числа <var>b</var> и остатка от деления числа <var>a</var> на число <var>b</var>.</li>
+</ol>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">gcd</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> b <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> a
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> gcd<span class="token punctuation">(</span>b<span class="token punctuation">,</span> a <span class="token operator">%</span> b<span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>gcd<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">24</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>И последний пример: функция, которая удаляет из строки <var>s</var> все вхождения символа <var>e</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">del_all_e</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> e<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> s<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> s
+    <span class="token keyword">elif</span> e <span class="token operator">==</span> s<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> del_all_e<span class="token punctuation">(</span>s<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> s<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> del_all_e<span class="token punctuation">(</span>s<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span>
+    
+    
+<span class="token keyword">print</span><span class="token punctuation">(</span>del_all_e<span class="token punctuation">(</span><span class="token string">"мама мыла раму"</span><span class="token punctuation">,</span> <span class="token string">"а"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Несколько рекурсивных веток. Деревья</h2>
+<p>Рассмотрим в качестве примера функцию, вычисляющую числа Фибоначчи.</p>
+<p>Числа Фибоначчи — ряд чисел: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89..., в котором два первых элемента равны 1, а каждый следующий — сумме двух предыдущих. Удивительно, что отношение двух соседних чисел Фибоначчи стремится к числу золотого сечения: 1,6180339887.</p>
+<p>Составим рекурсивное определение этих чисел и сразу запишем его в виде функции:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">rec_fib</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token number">0</span> <span class="token operator">&lt;</span> n <span class="token operator">&lt;=</span> <span class="token number">2</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> rec_fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> rec_fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Это удивительно, но программа почти слово в слово совпадает с определением чисел Фибоначчи!</p>
+<p>Однако в этом примере мы столкнулись с новым типом рекурсии, в котором функция порождает целых <strong>две</strong> рекурсивные ветки. Неявно во время выполнения программы мы обходим дерево в глубину. Проиллюстрируем это на примере <code>fib(6)</code>:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/recurs/fib6%20-%20new.svg" width="680"/></div>
+<p>Важно понимать, что экземпляры функции выполняются не параллельно, а в детерминированной (то есть определенной) последовательности: сначала левое поддерево, а потом все правое поддерево из любой вершины.</p>
+<p>Интересно и то, что дерево очень быстро разрастается при росте номера числа Фибоначчи, что влечет замедление программы и трату памяти.</p>
+<p>Кстати, следующее число Фибоначчи вычисляется ровно в золотое сечение раз медленнее, чем предыдущее. Таким образом, <code>fib(500)</code> будет получено уже после того, как исчезнет Солнечная система.</p>
+<p>Следующий пример демонстрирует этот факт. Запустите его и убедитесь:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> time <span class="token keyword">import</span> time
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">35</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    s <span class="token operator">=</span> time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> rec_fib<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"%.03f"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> s<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>А теперь запустите простой императивный вариант:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> time <span class="token keyword">import</span> time
+
+<span class="token keyword">def</span> <span class="token function">fib</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    a<span class="token punctuation">,</span> b <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span>
+    <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        a<span class="token punctuation">,</span> b <span class="token operator">=</span> b<span class="token punctuation">,</span> a <span class="token operator">+</span> b
+    <span class="token keyword">return</span> b
+
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">35</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    s <span class="token operator">=</span> time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> fib<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"%.03f"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> s<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Второй вариант работает существенно быстрее.</p>
+<p>А все потому, что в рекурсивном случае мы много раз вычисляем одно и то же число Фибоначчи. Никакого <strong>кеширования</strong> (запоминания предыдущих вычислений) не происходит. Кстати, оптимизации типа кеширования присутствуют по умолчанию в функциональных языках (LISP, Haskell). В Python включать такой функционал надо вручную.</p>
+<p>В следующем примере запоминаются последние 1000 вызовов функции <var>fib</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> time <span class="token keyword">import</span> time
+<span class="token keyword">from</span> functools <span class="token keyword">import</span> lru_cache
+
+
+@lru_cache<span class="token punctuation">(</span>maxsize<span class="token operator">=</span><span class="token number">1000</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">rec_fib</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token number">0</span> <span class="token operator">&lt;</span> n <span class="token operator">&lt;=</span> <span class="token number">2</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> rec_fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> rec_fib<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">35</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    s <span class="token operator">=</span> time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> rec_fib<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"%.03f"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> s<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Ну вот, теперь все работает быстро.</p>
+<p>Перейдем к главному выводу.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Рекурсивный метод обеспечивает удобный обход списка, дерева или графа, при этом контролируя перемещение по элементам и возвращение к предыдущим состояниям. Этим можно пользоваться во многих математических и прикладных задачах.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="6">Бонус. Решаем судоку</h2>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/sudoku.png" width="400"/></div>
+<p>Вы уже могли сталкиваться с этой задачей раньше. Вспомните, как мы ее решали? Попробуем теперь предложить иной способ.</p>
+<p>Предположим, что нам нужно сделать программу, которая разгадывает судоку. Пусть поле моделируется списком списков с целыми числами:</p>
+<pre class="language-python"><code class="language-python">field <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">6</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">7</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">9</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+<span class="token punctuation">]</span>
+</code></pre>
+<p>Сформулируем рекурсивный алгоритм решения судоку.</p>
+<ul>
+<li>Если на поле судоку нет пустых клеток, оно уже решено и надо просто вернуть поле в качестве решения</li>
+<li>Если есть пустые клетки, надо вычислить какую-либо пустую клетку, для которой количество возможных вариантов минимально. Попробовать по очереди проверять эти варианты, и, если будет найдено решение, вернуть его</li>
+</ul>
+<p>Сама функция будет не сильно больше данного описания:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> pprint <span class="token keyword">import</span> pprint
+<span class="token keyword">from</span> copy <span class="token keyword">import</span> deepcopy
+<span class="token keyword">from</span> random <span class="token keyword">import</span> shuffle
+<span class="token keyword">from</span> time <span class="token keyword">import</span> clock
+
+<span class="token triple-quoted-string string">"""
+Для всех клеток на основе ограничений 
+возвращает список возможных чисел, например:
+(0, 0, {2, 3, 4, 5, 6, 7, 8, 9})
+(0, 1, {2, 3, 5, 6, 8, 9})
+(0, 2, {2, 3, 4, 5, 6, 7, 8, 9})
+(0, 3, {1, 3, 4, 5, 6, 7, 8, 9})
+(0, 4, {1, 3, 4, 6, 7, 9})
+(0, 5, {1, 3, 4, 5, 6, 7, 8, 9})
+(0, 6, {1, 2, 4, 5, 6, 7, 8, 9})
+(0, 7, {1, 2, 4, 5, 7, 8})
+(0, 8, {1, 2, 4, 5, 6, 7, 8, 9})
+(1, 0, {4, 5, 6, 7, 8, 9})
+"""</span>
+
+
+<span class="token keyword">def</span> <span class="token function">get_variants</span><span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    variants <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i<span class="token punctuation">,</span> row <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> j<span class="token punctuation">,</span> value <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> value<span class="token punctuation">:</span>
+                <span class="token comment"># значения в строке</span>
+                row_values <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span>
+                <span class="token comment"># значения в столбце</span>
+                column_values <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">[</span>sudoku<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token keyword">for</span> k <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">9</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                <span class="token comment"># в каком квадрате 3x3 находится клетка? </span>
+                <span class="token comment"># Координаты этого квадрата</span>
+                sq_y <span class="token operator">=</span> i <span class="token operator">//</span> <span class="token number">3</span>
+                sq_x <span class="token operator">=</span> j <span class="token operator">//</span> <span class="token number">3</span>
+                square3x3_values <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">[</span>
+                    sudoku<span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span>
+                    <span class="token keyword">for</span> m <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>sq_y <span class="token operator">*</span> <span class="token number">3</span><span class="token punctuation">,</span> sq_y <span class="token operator">*</span> <span class="token number">3</span> <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">)</span>
+                    <span class="token keyword">for</span> n <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>sq_x <span class="token operator">*</span> <span class="token number">3</span><span class="token punctuation">,</span> sq_x <span class="token operator">*</span> <span class="token number">3</span> <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">)</span>
+                <span class="token punctuation">]</span><span class="token punctuation">)</span>
+                exists <span class="token operator">=</span> row_values <span class="token operator">|</span> column_values <span class="token operator">|</span> square3x3_values
+                <span class="token comment"># какие значения остались?</span>
+                values <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">-</span> exists
+                variants<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> variants
+
+
+<span class="token keyword">def</span> <span class="token function">solve</span><span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Если судоку заполнено, это ответ</span>
+    <span class="token keyword">if</span> <span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">[</span>k <span class="token keyword">for</span> row <span class="token keyword">in</span> sudoku <span class="token keyword">for</span> k <span class="token keyword">in</span> row<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> sudoku
+
+    <span class="token comment"># Иначе посмотрим все варианты</span>
+    variants <span class="token operator">=</span> get_variants<span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span>
+
+    <span class="token comment"># Выберем тот, у которого меньше всего возможностей.</span>
+    x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> values <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>variants<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># Попробуем все по очереди</span>
+    <span class="token keyword">for</span> v <span class="token keyword">in</span> values<span class="token punctuation">:</span>
+        <span class="token comment"># deepcopy создает полную копию списка с учетом всех вложенностей</span>
+        new_sudoku <span class="token operator">=</span> deepcopy<span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span>
+        new_sudoku<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> v
+        <span class="token comment"># Если оно решилось, возвратим ответ.</span>
+        s <span class="token operator">=</span> solve<span class="token punctuation">(</span>new_sudoku<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> s<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> s
+    <span class="token keyword">return</span> <span class="token boolean">None</span>
+
+
+s <span class="token operator">=</span> clock<span class="token punctuation">(</span><span class="token punctuation">)</span>
+pprint<span class="token punctuation">(</span>
+    solve<span class="token punctuation">(</span><span class="token punctuation">[</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Затраченное время:'</span><span class="token punctuation">,</span> clock<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> s<span class="token punctuation">,</span> <span class="token string">'сек'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>А вот еще один пример рекурсивного решения задачи. Он гораздо короче, но в нем есть <strong>питоновские</strong> штуки.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> random <span class="token keyword">import</span> shuffle
+<span class="token keyword">from</span> copy <span class="token keyword">import</span> deepcopy
+<span class="token keyword">from</span> pprint <span class="token keyword">import</span> pprint
+
+
+<span class="token keyword">def</span> <span class="token function">make_assumptions</span><span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i<span class="token punctuation">,</span> row <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> j<span class="token punctuation">,</span> value <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> value<span class="token punctuation">:</span>
+                values <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span> \
+                         <span class="token operator">|</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">[</span>sudoku<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token keyword">for</span> k <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">9</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span> \
+                         <span class="token operator">|</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">[</span>sudoku<span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span> <span class="token keyword">for</span> m <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token punctuation">(</span>i <span class="token operator">//</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>i <span class="token operator">//</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">3</span> <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">)</span>
+                                <span class="token keyword">for</span> n <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token punctuation">(</span>j <span class="token operator">//</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>j <span class="token operator">//</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">3</span> <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                <span class="token keyword">yield</span> i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">set</span><span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">-</span> values<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">solve</span><span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">[</span>k <span class="token keyword">for</span> row <span class="token keyword">in</span> sudoku <span class="token keyword">for</span> k <span class="token keyword">in</span> row<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> sudoku
+    assumptions <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span>make_assumptions<span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    shuffle<span class="token punctuation">(</span>assumptions<span class="token punctuation">)</span>
+
+    x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> values <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>assumptions<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">for</span> v <span class="token keyword">in</span> values<span class="token punctuation">:</span>
+        new_sudoku <span class="token operator">=</span> deepcopy<span class="token punctuation">(</span>sudoku<span class="token punctuation">)</span>
+        new_sudoku<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> v
+        s <span class="token operator">=</span> solve<span class="token punctuation">(</span>new_sudoku<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> s<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> s
+    <span class="token keyword">return</span> <span class="token boolean">None</span>
+
+
+pprint<span class="token punctuation">(</span>solve<span class="token punctuation">(</span>field<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Два предыдущих примера демонстрируют преимущество рекурсии — написание коротких и легко читаемых программ.</p>
+<p>Попробуйте сравнить эти программы с императивным вариантом (без использования рекурсии).</p>
+<p>С рекурсией вы еще встретитесь много раз. Помните: это <strong>не панацея</strong>, но позволяет элегантно и эффективно решать широкий круг задач.</p>
+<p>А пока — все, переходите к задачам!</p>
+</section></article></section>

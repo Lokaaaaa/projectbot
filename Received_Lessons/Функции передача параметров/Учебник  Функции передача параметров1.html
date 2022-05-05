@@ -1,0 +1,230 @@
+<section class="lesson-material__content"><article class="material"><h1>Функции. Передача параметров</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Функции (повторение)</a></li>
+<li><a class="material__link" href="#2">Отличие между переменной и значением</a></li>
+<li><a class="material__link" href="#3">Функции, изменяющие значение аргумента</a></li>
+<li><a class="material__link" href="#4">Объекты: одни и те же или одинаковые?</a></li>
+<li><a class="material__link" href="#5">Изменяемость и неизменяемость объектов</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Нам необходимо разобраться, чем отличаются понятия «переменная» и «значение», ведь при вызове функций одно постоянно превращается в другое. Мы обсудим, почему аргумент, переданный в функцию, нельзя перезаписать, но иногда можно изменить его содержимое. Обсудим, какие объекты изменить можно, а какие не получится. Разберемся, почему равенство объектов неэквивалентно их идентичности.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Функции (повторение)</h2>
+<p>На прошлых занятиях мы начали разбирать, как работают функции и как с их помощью структурировать код. Напомним, как определяется функция:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token operator">&lt;</span>имя функции<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">[</span>названия аргументов<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token operator">&lt;</span>тело функции<span class="token operator">&gt;</span>
+    <span class="token operator">&lt;</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token operator">&gt;</span>
+</code></pre>
+<p>И как она вызывается:</p>
+<pre class="language-python"><code class="language-python"><span class="token operator">&lt;</span>имя функции<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">[</span>значения аргументов<span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Мы успели рассмотреть неочевидный вопрос о том, какими переменными функция может оперировать, а какие переменные ей недоступны. Как вы уже знаете, для того чтобы провести эту границу, в языке Python существует понятие об областях видимости, которые делят переменные на внешние и локальные. Они позволяют переменным с одинаковыми именами не мешать друг другу, а главное — разделяют программу на независимые друг от друга блоки. Вы узнали, что внутренние переменные функции недоступны снаружи, а внешние переменные, наоборот, можно беспрепятственно читать.</p>
+<p>Когда вы внутри функции выполняете присваивание, появляется новая внутренняя (локальная) переменная и, если ее имя совпадает с именем внешней, она перекрывает переменную из внешней (глобальной) области видимости — и внешняя переменная остается неизменной, таким образом, внешние переменные защищены от случайной порчи. Если вы все же хотите изменить внешнюю переменную, вы должны описать переменную внутри функцию ключевым словом <var>global</var>. Но злоупотреблять этим не рекомендуется, поскольку отдельные части программы начинают зависеть друг от друга, что может привести ко множеству ошибок.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Отличие между переменной и значением</h2>
+<p>Хотя мы много времени уделили изучению работы переменных с функциями, это еще не все, что нужно знать о переменных. На этом занятии вы поймете, чем <strong>переменная</strong> отличается от <strong>значения переменной</strong>.</p>
+<p>Ранее мы рассмотрели такую программу:</p>
+<pre class="language-python"><code class="language-python">name <span class="token operator">=</span> <span class="token string">'Петя'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Привет,"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+
+
+greet<span class="token punctuation">(</span><span class="token string">'Вася'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>которая выдает «Привет, Вася».</p>
+<p>Как мы выяснили, аргумент функции <var>name</var> является локальной переменной и перекрывает переменную <var>name</var> из внешней области видимости.</p>
+<p>А теперь давайте разберем такую программу:</p>
+<pre class="language-python"><code class="language-python">name <span class="token operator">=</span> <span class="token string">'Петя'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Привет,"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+    name <span class="token operator">=</span> <span class="token string">'товарищ'</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Здравствуй,"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+
+
+greet<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Name:"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+</code></pre>
+<p>Чему, по вашему мнению, будет равно имя в конце программы и почему?</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Внешняя переменная <var>name</var>, конечно, не изменится. <strong>В функцию вообще не передается переменная!</strong> Туда передается значение, которое она хранила.</p>
+</section>
+<p>В языке Python имя переменной связывается со значением. В тот момент, когда мы присваиваем переменной новое значение, старое значение никуда не исчезает. Оно просто теряет связь с прежним именем. В нашем примере на старое значение все еще указывает имя внешней переменной. Это имя недоступно изнутри функции (поскольку внутренняя переменная называется так же, как внешняя), но, выйдя из функции, мы снова получаем возможность пользоваться этим именем.</p>
+<p>Имена локальных переменных и имена аргументов можно менять как угодно, это не влияет на работу программы. Например, приведенную выше программу совершенно безопасно можно было бы переписать так:</p>
+<pre class="language-python"><code class="language-python">name <span class="token operator">=</span> <span class="token string">'Петя'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>person<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Привет,"</span><span class="token punctuation">,</span> person<span class="token punctuation">)</span>
+    person <span class="token operator">=</span> <span class="token string">'товарищ'</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Здравствуй,"</span><span class="token punctuation">,</span> person<span class="token punctuation">)</span>
+
+
+greet<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Name:"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+</code></pre>
+<p>Схема ниже демонстрирует, как изменяется <strong>связь «имя переменной — значение»</strong> во время выполнения программы.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-21/21%20-%20Functions%20-%20var.svg" width="680"/></div>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Стоит отметить, что, <strong>прежде чем функция будет вызвана, все ее аргументы должны быть вычислены</strong>. Таким образом, сначала выполняются инструкции, которые вычисляют значение переменной (аргументы вычисляются всегда слева-направо), и лишь затем полученные значения передаются в функцию, только после этого начинает выполняться код функции.</p>
+</section>
+<p><strong>Задача.</strong> Вам даны функции <code>print_goodbye(arg)</code>, <code>print_cruel(arg)</code> и <code>print_world(arg)</code>, выводящие "Goodbye", "cruel" и "world". Каждая из этих функций просто игнорирует аргумент. Скомбинируйте эти три функции в одну команду так, чтобы она выводила "Goodbye cruel world".</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_goodbye</span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Goodbye'</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">' '</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_cruel</span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'cruel'</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">' '</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_world</span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'world'</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">' '</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Функции, изменяющие значение аргумента</h2>
+<p>Как же быть, если вам хочется изменить значение объекта? Один из способов — использовать глобальные переменные, но мы уже объяснили, чем он плох.</p>
+<p>Оказывается, есть еще несколько способов. Вариант, который мы рассмотрим сейчас, тоже неидеален, но все же гораздо лучше, чем использование глобальных переменных.</p>
+<p>Давайте напишем функцию, которая принимает список чисел и возводит каждое число в квадрат.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">convert_to_squares</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        array<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> array<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">**</span> <span class="token number">2</span>
+
+
+<span class="token builtin">list</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">]</span>
+convert_to_squares<span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Эта программа выведет список квадратов чисел от 1 до 9. Заметьте, мы не присваивали ничего переменной <var>array</var>, это все тот же объект, что был. Но его содержимое поменялось. Ключевой момент: объект тот же, а его наполнение другое.</p>
+<p><strong>Вопрос на понимание.</strong> Если мы напишем такую функцию:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">list_of_squares</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    new_array <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        new_array<span class="token punctuation">.</span>append<span class="token punctuation">(</span>array<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span>
+    array <span class="token operator">=</span> new_array
+
+
+<span class="token builtin">list</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">]</span>
+list_of_squares<span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">)</span>
+</code></pre>
+<p>она будет выводить на экран не квадраты чисел, а просто числа от одного до девяти. Объясните, почему это так.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Объекты: одни и те же или одинаковые?</h2>
+<p>Представьте теперь, что у вас есть задача заполнить холодильник едой. В первом случае вы покупаете еду и кладете ее в свой холодильник. Холодильник с едой — это тот же холодильник, что у вас был. Это ровно тот же объект.</p>
+<p>Другой способ решения проблемы — купить новый холодильник, уже заполненный едой. Но первый холодильник при этом так и остался незаполненным. Внешняя программа ничего не знает про новый холодильник, но знает, что старый вы не заполняли, и выводит вам пустое содержимое.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Итак, мы обнаружили, что есть два способа изменить значение переменной: присвоить переменной новый объект или оставить старый объект, но поменять его содержимое. Однако, оказывается, <strong>не у любого объекта можно поменять содержимое</strong>.</p>
+</section>
+<p>Когда вам кажется, что вы изменяете, например, число или строку, на самом деле вы создаете новое число или строку и связываете ее с переменной со старым именем.</p>
+<p>Это легко проверить.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Оператор is</strong></p>
+<p>Проверить, связаны ли две переменные с одним и тем же объектом, можно с помощью оператора <var>is</var>.</p>
+<p><code>a is b</code> возвращает True, когда объект <var>a</var> и объект <var>b</var> — один и тот же объект. Кроме того, в Python есть встроенная функция <var>id</var>, которая выдает уникальный номер объекта. У двух разных объектов id разный, а у одного и того же объекта — одинаковый.</p>
+</section>
+<p>Давайте посмотрим, что происходит с переменными при попытке их изменить.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Изменяемость и неизменяемость объектов</h2>
+<p>На самом деле в языке Python не так много встроенных объектов, которые можно поменять. Сейчас из <strong>изменяемых объектов</strong> вы знаете <strong>списки</strong>, <strong>множества</strong> и <strong>словари</strong>.</p>
+<p>А <strong>числа</strong>, <strong>булевы значения</strong>, <strong>строки</strong> и даже <strong>кортежи</strong> менять нельзя. Их содержимое всегда неизменно с момента создания. Такие объекты называются <strong>иммутабельными</strong>, то есть <strong>неизменяемыми</strong>.</p>
+<p><strong>Числа:</strong></p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token number">1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># id объекта "число 1"</span>
+a <span class="token operator">+=</span> <span class="token number">1</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># id изменился, a - это объект другого числа</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-21/21%20-%20Functions%20-%20int.svg" width="680"/></div>
+<p><strong>Строки:</strong></p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token string">'Hello'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># id строки "Hello"</span>
+s <span class="token operator">+=</span> <span class="token string">' world'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># id другого объекта - строки "Hello world"</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-21/21%20-%20Functions%20-%20str.svg" width="680"/></div>
+<p><strong>Списки:</strong></p>
+<pre class="language-python"><code class="language-python">s <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># id списка</span>
+s <span class="token operator">+=</span> <span class="token punctuation">[</span><span class="token number">9</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># тот же id для того же списка, но с измененным содержимым</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-21/21%20-%20Functions%20-%20list.svg" width="680"/></div>
+<p>Следует отметить еще один важный момент. Равенство объектов не означает, что это один и тот же объект (или, как еще говорят, объекты идентичны). Это особенно важно для изменяемых объектов-контейнеров, таких как списки. Но и с неизменяемыми кортежами, и со строками бывают ситуации, когда отличие между равенством и идентичностью оказывается важным.</p>
+<p>Вернемся к аналогии с холодильниками. Если у вас в холодильнике те же продукты, что у вашего друга, это не значит, что у вас с ним один и тот же холодильник. Если вы что-нибудь добавите в свой холодильник, холодильник вашего друга автоматически никак не изменится.</p>
+<pre class="language-python"><code class="language-python">my_fridge <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'молоко'</span><span class="token punctuation">,</span> <span class="token string">'яйца'</span><span class="token punctuation">,</span> <span class="token string">'овощи'</span><span class="token punctuation">]</span>
+my_friends_fridge <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'молоко'</span><span class="token punctuation">,</span> <span class="token string">'яйца'</span><span class="token punctuation">,</span> <span class="token string">'овощи'</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_fridge <span class="token operator">==</span> my_friends_fridge<span class="token punctuation">)</span> 
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>my_fridge<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">id</span><span class="token punctuation">(</span>my_friends_fridge<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Содержимое холодильников одинаковое, что показывает сравнение списков при помощи оператора <code>==</code>. Но их уникальные id разные.</p>
+<p>Совсем другая ситуация, когда у вас есть две переменные, ссылающиеся на один и тот же холодильник. Например, ваш холодильник является одновременно холодильником ваших родителей.</p>
+<pre class="language-python"><code class="language-python">my_fridge <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'молоко'</span><span class="token punctuation">,</span> <span class="token string">'яйца'</span><span class="token punctuation">,</span> <span class="token string">'овощи'</span><span class="token punctuation">]</span>
+my_parents_fridge <span class="token operator">=</span> my_fridge
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_fridge <span class="token operator">==</span> my_parents_fridge<span class="token punctuation">)</span> 
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">(</span>my_fridge<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">id</span><span class="token punctuation">(</span>my_parents_fridge<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Строка <code>my_parents_fridge = my_fridge</code> сделала холодильник ваших родителей не просто таким же как ваш, а ровно тем же. Их id равны.</p>
+<p>Теперь, если ваши родители положат что-то в свой холодильник, ваш холодильник тоже изменится, так как это тот же самый холодильник.</p>
+<pre class="language-python"><code class="language-python">my_parents_fridge <span class="token operator">+=</span> <span class="token punctuation">[</span><span class="token string">'мясо'</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_fridge<span class="token punctuation">)</span>
+</code></pre>
+<p>Если вы раньше программировали на Паскале или СИ, обратите особое внимание на этот пример. Хотя вы никак не меняли переменную <var>my_fridge</var>, она изменилась. Вернее, изменился объект, на который она ссылается.</p>
+<p>Бывают ситуации, когда такое поведение неудобно. Иногда нам хочется получить копию объекта, а не просто вторую ссылку на тот же объект. В общем случае это не так просто сделать, ведь объект (например, список) может содержать в себе другие объекты, которые тоже нужно скопировать. Если вы хотите узнать об этом подробно, вам лучше обратиться к <a class="material__link" href="https://docs.python.org/3/library/copy.html" rel="noopener noreferrer" target="_blank">документации</a>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Копирование одномерного списка</strong></p>
+<p>Мы же напомним о самом распространенном случае. Для того чтобы сделать копию <strong>одномерного списка</strong> <var>arr</var>, можно сделать срез, содержащий все элементы:</p>
+<pre class="language-python"><code class="language-python">arr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span>
+arrCopy <span class="token operator">=</span> arr<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">]</span>
+arrCopy<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">42</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span>     <span class="token comment"># =&gt; [1, 2, 3]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>arrCopy<span class="token punctuation">)</span> <span class="token comment"># =&gt; [42, 2, 3]</span>
+</code></pre>
+</section>
+<p>Но будьте аккуратны: ведь если список содержал вложенные списки, копия внешнего списка содержит те же самые вложенные списки, а не их копии. А значит, изменения одного списка отразятся на другом. Проще всего это увидеть на примере:</p>
+<pre class="language-python"><code class="language-python">arr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+arrCopy <span class="token operator">=</span> arr<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">]</span>
+arrCopy<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">42</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span>     <span class="token comment"># =&gt; [[1, 42], [2], [3]]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>arrCopy<span class="token punctuation">)</span> <span class="token comment"># =&gt; [[1, 42], [2], [3]]</span>
+</code></pre>
+<p>С кортежами дело обстоит аналогично.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Кортежи</strong></p>
+<p>Кортеж — объект неизменяемый. В него нельзя, например, добавить элемент или заменить существующий элемент новым объектом. Но его элементы вполне могут быть изменяемыми; если среди элементов кортежа есть изменяемые элементы, поменяв их содержимое, вы фактически измените содержимое кортежа.</p>
+</section>
+<p>По этой причине иногда бывает недостаточно следить за типом переменной. Всегда думайте заодно о типах содержимого контейнеров (контейнер — объект, содержащий другие объекты).</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Напомним также, что в случае списков оператор <code>a1 += a2</code> ведет себя не совсем как <code>a1 = a1 + a2</code>. В первом случае изменяется сам список <var>a1</var> (к его концу дописываются все элементы списка <var>a2</var>), во втором — создается новый. В случае чисел, строк и кортежей, которые изменяться не могут, две эти формы записи полностью эквивалентны.</p>
+</section>
+<p><strong>Вопрос для самопроверки 1:</strong> что выведет на экран следующая программа и почему?</p>
+<pre class="language-python"><code class="language-python">arr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">90</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>arr<span class="token punctuation">,</span> arr<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> arr<span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">'\n'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Напоминаем, что метод <var>sort</var> сортирует элементы в списке (и ничего не возвращает).</p>
+<p><strong>Вопрос для самопроверки 2:</strong> что выведет на экран следующая программа и почему?</p>
+<pre class="language-python"><code class="language-python">x <span class="token operator">=</span> <span class="token number">1</span>
+
+
+<span class="token keyword">def</span> <span class="token function">double_x</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> x
+    x <span class="token operator">*=</span> <span class="token number">2</span>
+
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> double_x<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> x<span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">'\n'</span><span class="token punctuation">)</span>
+</code></pre>
+<p><strong>Вопрос для самопроверки 3:</strong> можете ли вы придумать три различных примера, которые продемонстрируют, что список и его полный срез — различные объекты?</p>
+</section></article></section>

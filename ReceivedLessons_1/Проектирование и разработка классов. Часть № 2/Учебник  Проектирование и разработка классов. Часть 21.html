@@ -1,0 +1,279 @@
+<section class="lesson-material__content"><article class="material"><h1>Проектирование и разработка классов. Часть 2</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Ходы на доске с другими фигурами и взятие фигур. Варианты проектирования</a></li>
+<li><a class="material__link" href="#2">Реализация взятия фигур. Проверка того, что фигура не проходит сквозь другие</a></li>
+<li><a class="material__link" href="#3">Создание и использование своих модулей</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом уроке мы продолжим проектирование и реализацию шахмат, которые не закончили в прошлый раз. Попробуем реализовать движение фигур по доске, на которой есть другие фигуры. Например, ладья, как и другие фигуры (за исключением коня), не может двигаться сквозь другие фигуры.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Ходы на доске с другими фигурами и взятие фигур. Варианты проектирования</h2>
+<p>Естественнее всего реализовать проверку возможности хода в методе <var>can_move</var>, однако так не получится, поскольку в данный момент фигура знает только свои текущие координаты и координаты назначения. Информации о других фигурах на доске у нее нет! При проектировании мы приняли неудачное решение о том, как хранить информацию о положении фигуры на доске — в результате придется дорабатывать не только код метода <var>can_move</var>, но и тот метод класса <var>Board</var>, который вызывает <var>can_move</var>.</p>
+<p>Возможно несколько проектных решений по передаче информации о положении фигуры на доске. Давайте их рассмотрим.</p>
+<p><strong>1. Хранение информации о координатах фигуры и в экземпляре доски, и в экземпляре фигуры (сейчас мы выбрали этот вариант).</strong></p>
+<p>В экземпляре <var>Board</var> информация хранится в силу того, что для получения ссылки на фигуру <code>self.field[row][col]</code> нужно знать ее индексы <var>row</var> и <var>col</var>. В самой фигуре координаты хранятся как свойства. Их нужно передавать при инициализации и внимательно следить, чтобы при любом передвижении фигуры в <var>self.field</var> вызывался метод <var>set_position</var> для обновления координатных свойств внутри фигуры.</p>
+<p><strong>Достоинства:</strong> всегда просто узнать координаты фигуры.</p>
+<p><strong>Недостатки:</strong></p>
+<ul>
+<li>Нужно следить за актуальностью координатных свойств фигур</li>
+<li>У фигуры нет доступа ко всей доске</li>
+</ul>
+<p><strong>2. Хранить ссылку на доску внутри фигуры.</strong></p>
+<p><strong>Достоинства:</strong></p>
+<ul>
+<li>У фигуры есть информация о других фигурах</li>
+<li>Не нужно поддерживать актуальность двух представлений, координаты хранятся только в экземпляре <var>Board</var></li>
+</ul>
+<p><strong>Недостатки:</strong></p>
+<ul>
+<li>Чтобы фигура могла узнать свои координаты, ей придется искать себя на доске в циклах по <var>row</var> и <var>col</var></li>
+<li>Кольцевая ссылка (фигура ссылается на доску, доска на фигуру) в старых версиях Python (до 3.6) мешает работе сборщика мусора. Если не сделать специальный метод для разрыва кольцевых ссылок перед завершением работы с доской или забыть его вызвать, произойдет утечка памяти. Не во всех языках программирования сборщики мусора умеют корректно работать с кольцевыми ссылками</li>
+</ul>
+<p><strong>3. Передавать координаты фигуры в вызовы тех методов, которым они нужны.</strong></p>
+<p><strong>Достоинства:</strong></p>
+<ul>
+<li>Не нужно поддерживать соответствие двух наборов координат</li>
+</ul>
+<p><strong>Недостатки:</strong></p>
+<ul>
+<li>Сложнее вызывать методы</li>
+<li>Нет доступа ко всей доске</li>
+</ul>
+<p><strong>4. Передавать объект доски в вызовы методов фигур.</strong></p>
+<p><strong>Достоинства:</strong></p>
+<ul>
+<li>Не нужно поддерживать соответствие двух наборов координат</li>
+</ul>
+<p><strong>Недостатки:</strong></p>
+<ul>
+<li>Для получения координат нужно искать фигуру на доске</li>
+</ul>
+<p><strong>5. Передавать и координаты фигуры, и объект доски.</strong></p>
+<p><strong>Достоинства:</strong></p>
+<ul>
+<li>Не нужно поддерживать соответствие двух наборов координат</li>
+<li>Не нужно искать на доске фигуру — координаты уже есть</li>
+<li>Никаких кольцевых ссылок</li>
+</ul>
+<p><strong>Недостатки:</strong></p>
+<ul>
+<li>Более сложный вызов метода</li>
+</ul>
+<p>Вообще говоря, вариантов еще больше. Например, вместо двумерного поля, в ячейки которого записываются фигуры, можно использовать список фигур, каждая из которых хранит свои координаты. Для краткости мы не рассматриваем такое представление.</p>
+<p>Для удобства все рассмотренные варианты представлены в <a class="material__link" href="https://yastatic.net/s3/lyceum/content/image/classes_table.png" rel="noopener noreferrer" target="_blank">таблице</a>.</p>
+<p>Остановимся на передаче в метод <var>can_move</var> и текущих координат фигуры, и экземпляра доски (вариант 5).</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Реализация взятия фигур. Проверка того, что фигура не проходит сквозь другие</h2>
+<p>Код функций <var>main</var> и <var>print_board</var> оставляем без изменений. В классе <var>Board</var> изменим <var>__init__</var> так, чтобы она расставляла на доске полный набор фигур. Интересно, что классы фигур теперь спроектированы так, что фигура не хранит никаких свойств, кроме цвета. Таким образом, например, восемь ссылок на одну белую пешку могут работать не хуже, чем восемь различных белых пешек. Впрочем, такая особенность в нашем случае не принесет большой экономии памяти. К тому же она помешает реализации некоторых возможностей (рокировке, взятию на проходе), поэтому все ссылки будут указывать на различные объекты.</p>
+<p>Метод <var>move_piece</var> класса <var>Board</var> теперь будет смотреть, что расположено в поле назначения. Если поле пусто, он попытается сделать ход на эту клетку; если оно занято фигурой противника — попытаться съесть эту фигуру.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Board</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> WHITE
+        self<span class="token punctuation">.</span>field <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> row <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>field<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token boolean">None</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">8</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span>
+            Rook<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Knight<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Bishop<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Queen<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            King<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Bishop<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Knight<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Rook<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span>
+        <span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span>
+            Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>WHITE<span class="token punctuation">)</span>
+        <span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span>
+            Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Pawn<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span>
+        <span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span>
+            Rook<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Knight<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Bishop<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Queen<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            King<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Bishop<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Knight<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span><span class="token punctuation">,</span> Rook<span class="token punctuation">(</span>BLACK<span class="token punctuation">)</span>
+        <span class="token punctuation">]</span>
+ 
+    <span class="token comment"># ... методы current_player_color и cell без изменений ...</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">move_piece</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">'''Переместить фигуру из точки (row, col) в точку (row1, col1).
+        Если перемещение возможно, метод выполнит его и вернёт True.
+        Если нет --- вернёт False'''</span>
+ 
+        <span class="token keyword">if</span> <span class="token keyword">not</span> correct_coords<span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">not</span> correct_coords<span class="token punctuation">(</span>row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> row <span class="token operator">==</span> row1 <span class="token keyword">and</span> col <span class="token operator">==</span> col1<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>  <span class="token comment"># нельзя пойти в ту же клетку</span>
+        piece <span class="token operator">=</span> self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span>
+        <span class="token keyword">if</span> piece <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> piece<span class="token punctuation">.</span>get_color<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> self<span class="token punctuation">.</span>color<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row1<span class="token punctuation">]</span><span class="token punctuation">[</span>col1<span class="token punctuation">]</span> <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> piece<span class="token punctuation">.</span>can_move<span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">elif</span> self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row1<span class="token punctuation">]</span><span class="token punctuation">[</span>col1<span class="token punctuation">]</span><span class="token punctuation">.</span>get_color<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> opponent<span class="token punctuation">(</span>piece<span class="token punctuation">.</span>get_color<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> piece<span class="token punctuation">.</span>can_attack<span class="token punctuation">(</span>self<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span>  <span class="token comment"># Снять фигуру.</span>
+        self<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row1<span class="token punctuation">]</span><span class="token punctuation">[</span>col1<span class="token punctuation">]</span> <span class="token operator">=</span> piece  <span class="token comment"># Поставить на новое место.</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> opponent<span class="token punctuation">(</span>self<span class="token punctuation">.</span>color<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+</code></pre>
+<p>Теперь можно легко запрограммировать проверку того, что при движении пешка и ладья не могут проходить сквозь другие фигуры. Проверку на то, что в конечной клетке нет фигуры, делает сама доска, поэтому достаточно реализовать проверку промежуточных клеток. В классе ладьи для перебора клеток мы воспользуемся циклом следующего вида:</p>
+<pre class="language-python"><code class="language-python">step <span class="token operator">=</span> <span class="token number">1</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>b <span class="token operator">&gt;=</span> a<span class="token punctuation">)</span> <span class="token keyword">else</span> <span class="token operator">-</span><span class="token number">1</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>a <span class="token operator">+</span> step<span class="token punctuation">,</span> b<span class="token punctuation">,</span> step<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    do_something<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Этот цикл проходит от <var>a</var> (не включая) до <var>b</var> (не включая) как при <code>a &gt; b</code>, так и при <code>a &lt; b</code>. При <code>a == b</code> тело цикла не выполнится ни разу.</p>
+<p>Нужно также реализовать отдельный метод <var>can_attack</var> для проверки возможности съесть фигуру в клетке назначения. Так как у пешки траектория нападения отличается от траектории движения, приходится делать два отдельных метода. Для остальных фигур метод <var>can_attack</var> будет просто возвращать результат работы <var>can_move</var>.</p>
+<p>Сам код классов выглядит так, как показано ниже.</p>
+<p><strong>Класc «Ладья»</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Rook</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> color
+
+    <span class="token keyword">def</span> <span class="token function">get_color</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color
+
+    <span class="token keyword">def</span> <span class="token function">char</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">'R'</span>
+
+    <span class="token keyword">def</span> <span class="token function">can_move</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> board<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Невозможно сделать ход в клетку,</span>
+        <span class="token comment"># которая не лежит в том же ряду или столбце клеток.</span>
+        <span class="token keyword">if</span> row <span class="token operator">!=</span> row1 <span class="token keyword">and</span> col <span class="token operator">!=</span> col1<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+        step <span class="token operator">=</span> <span class="token number">1</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>row1 <span class="token operator">&gt;=</span> row<span class="token punctuation">)</span> <span class="token keyword">else</span> <span class="token operator">-</span><span class="token number">1</span>
+        <span class="token keyword">for</span> r <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>row <span class="token operator">+</span> step<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> step<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Если на пути по вертикали есть фигура</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token punctuation">(</span>board<span class="token punctuation">.</span>get_piece<span class="token punctuation">(</span>r<span class="token punctuation">,</span> col<span class="token punctuation">)</span> <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+        step <span class="token operator">=</span> <span class="token number">1</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>col1 <span class="token operator">&gt;=</span> col<span class="token punctuation">)</span> <span class="token keyword">else</span> <span class="token operator">-</span><span class="token number">1</span>
+        <span class="token keyword">for</span> c <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>col <span class="token operator">+</span> step<span class="token punctuation">,</span> col1<span class="token punctuation">,</span> step<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># Если на пути по горизонтали есть фигура</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token punctuation">(</span>board<span class="token punctuation">.</span>get_piece<span class="token punctuation">(</span>row<span class="token punctuation">,</span> c<span class="token punctuation">)</span> <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+    <span class="token keyword">def</span> <span class="token function">can_attack</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> board<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>can_move<span class="token punctuation">(</span>board<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span>
+</code></pre>
+<p>Как видно, нам еще нужно добавить в класс <var>Board</var> метод <var>get_piece</var>, чтобы получать фигуру по координатам, не нарушая инкапсуляции. Впрочем, классы фигур и доски связаны настолько сильно, что не предполагают использования друг без друга. В таких случаях инкапсуляцией иногда пренебрегают, но только между сильно связанными классами, при взаимодействии с остальными она должна присутствовать. Поскольку мы строго следовали сокрытию внутренних данных объектов с самого начала, поступим так же и здесь.</p>
+<p><strong>Класс «Пешка»</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Pawn</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> color<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>color <span class="token operator">=</span> color
+ 
+    <span class="token keyword">def</span> <span class="token function">get_color</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>color
+ 
+    <span class="token keyword">def</span> <span class="token function">char</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">'P'</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">can_move</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> board<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Пешка может ходить только по вертикали</span>
+        <span class="token comment"># "взятие на проходе" не реализовано</span>
+        <span class="token keyword">if</span> col <span class="token operator">!=</span> col1<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+ 
+        <span class="token comment"># Пешка может сделать из начального положения ход на 2 клетки</span>
+        <span class="token comment"># вперёд, поэтому поместим индекс начального ряда в start_row.</span>
+        <span class="token keyword">if</span> self<span class="token punctuation">.</span>color <span class="token operator">==</span> WHITE<span class="token punctuation">:</span>
+            direction <span class="token operator">=</span> <span class="token number">1</span>
+            start_row <span class="token operator">=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            direction <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
+            start_row <span class="token operator">=</span> <span class="token number">6</span>
+ 
+        <span class="token comment"># ход на 1 клетку</span>
+        <span class="token keyword">if</span> row <span class="token operator">+</span> direction <span class="token operator">==</span> row1<span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+ 
+        <span class="token comment"># ход на 2 клетки из начального положения</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>row <span class="token operator">==</span> start_row
+                <span class="token keyword">and</span> row <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">*</span> direction <span class="token operator">==</span> row1
+                <span class="token keyword">and</span> board<span class="token punctuation">.</span>field<span class="token punctuation">[</span>row <span class="token operator">+</span> direction<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+ 
+    <span class="token keyword">def</span> <span class="token function">can_attack</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> board<span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> row1<span class="token punctuation">,</span> col1<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        direction <span class="token operator">=</span> <span class="token number">1</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>color <span class="token operator">==</span> WHITE<span class="token punctuation">)</span> <span class="token keyword">else</span> <span class="token operator">-</span><span class="token number">1</span>
+        <span class="token keyword">return</span> <span class="token punctuation">(</span>row <span class="token operator">+</span> direction <span class="token operator">==</span> row1
+                <span class="token keyword">and</span> <span class="token punctuation">(</span>col <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">==</span> col1 <span class="token keyword">or</span> col <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">==</span> col1<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Подведем итоги: мы реализовали основу для шахмат. Используя написанный каркас и следуя принятым решениям об интерфейсах классов, можно реализовать классы остальных фигур. Для полноценной программы для двух игроков нужно еще реализовать рокировку, взятие на проходе и превращение пешки и запретить ходы, не уводящие короля из-под шаха или ставящие его под шах. К сожалению, объем и время урока ограничены. Возможно, вам будет интересно когда-нибудь сделать это самостоятельно.</p>
+<p>В выложенном коде программы <a class="material__link" href="https://yastatic.net/s3/lyceum/content/resources/chess_v2.py" rel="noopener noreferrer" target="_blank">chess_v2.py</a> определены все классы фигур, но классы коня, слона, ферзя и короля определены как «заглушки». Метод <var>can_move</var> в них просто всегда возвращает истину и позволяет фигуре ходить в любую клетку доски. Такие заглушки, которые частично реализуют функциональность, часто применяются при проектировании сверху вниз. Это позволяет писать и отлаживать программы постепенно, не реализуя сразу огромных объемов кода. Главное — не забыть заменить все заглушки на рабочий код в финальной версии программы. Спроектируйте свои классы с максимальным применением механизма наследования от базового класс <var>Figure</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Создание и использование своих модулей</h2>
+<p>Мы уже неоднократно импортировали дополнительные модули из стандартной библиотеки и внешние в свою программу. Но что, если нам хочется разделить исходный код своей программы на несколько частей? Например, потому что кода стало слишком много и в нем тяжело ориентироваться либо захотелось использовать уже готовую функцию или класс в другой своей программе.</p>
+<p>Тут все работает точно так же, как и с импортом любых других модулей. Давайте рассмотрим самую простую ситуацию: у нас есть есть файл с именем my_module с функция <var>print_hello</var>, доступ к которой мы хотим получить из другого нашего файла с кодом с именем main.py, и оба этих файла лежат в одной папке на компьютере. В этом случае код наших файлов будет выглядеть вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment">#  my_module.py</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_hello</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"hello!"</span><span class="token punctuation">)</span>
+</code></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment">#  main.py</span>
+
+
+<span class="token keyword">from</span> my_module <span class="token keyword">import</span> print_hello
+
+print_hello<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>main.py может выглядеть и вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment">#  main.py</span>
+
+
+<span class="token keyword">import</span> my_module
+
+my_module<span class="token punctuation">.</span>print_hello<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Не пугайтесь, если среда разработки будет подчеркивать строчки с импортом ваших модулей, это происходит потому, что мы их не оформили как пакеты, но все будет работать.</p>
+<p>Давайте немного усложним ситуацию. Пусть первоначально исходный код my_module выглядит так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_hello</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"hello!"</span><span class="token punctuation">)</span>
+    
+    
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Проверяем функцию print_hello"</span><span class="token punctuation">)</span>
+print_hello<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Тогда, если мы захотим импортировать модуль целиком и вызвать функцию, у нас возникнут некоторые проблемы:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> my_module
+
+my_module<span class="token punctuation">.</span>print_hello<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Проверяем функцию print_hello
+hello!
+hello!</samp></pre>
+<p>Это происходит из-за того, что при таком импорте (а такую запись используют очень часто) Python импортирует не только все функции и классы модуля, но и выполняет весь код, который находится на верхнем уровне.</p>
+<p>Библиотек, которые не содержат кода, не предназначенного для использования внешними потребителями, почти не бывает. Это может быть код, например для проверки каких-то функций модуля, а бывает и такое, что модуль может использоваться не только в составе других программ, но и сам по себе представляет полноценное приложение.</p>
+<p>Так как же отделить код для внешних потребителей от того, который нужен только непосредственно для самого модуля? Для этого в Python есть устоявшийся прием: весь код верхнего уровня помещается в функцию <var>main</var>, а на верхнем уровне добавляется одно условие. Давайте посмотрим на примере нашего модуля my_module (добавим в функцию <var>print_hello</var> вывод служебной переменной для демонстрации):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_hello</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"hello!"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Проверяем функцию print_hello"</span><span class="token punctuation">)</span>
+    print_hello<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Проверяем функцию print_hello
+__main__
+hello!</samp></pre>
+<p>При запуске на исполнение модуля my_module мы увидим, что переменная <var>__name__</var> равна <code>«__main__»</code>. Это верно для любого модуля, который мы запустили непосредственно, а не импортировали в другой модуль. Посмотрим, что произойдет при импорте, запустим модуль main без изменений:</p>
+<pre><samp>my_module
+hello!</samp></pre>
+<p>Когда мы импортируем модуль в другой, <var>__name__</var> импортируемого модуля будет равно названию этого модуля, а значит, условие, запускающее функцию <var>main</var>, не выполнится.</p>
+<p>Как мы уже упоминали, такое оформление своих программ является хорошим тоном, и мы настоятельно рекомендуем вам делать именно так.</p>
+</section></article></section>

@@ -1,0 +1,241 @@
+<section class="lesson-material__content"><article class="material"><h1>Библиотеки Python. Часть 2. Работа с графическими файлами</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Обработка изображений</a></li>
+<li><a class="material__link" href="#2">Растровые изображения</a></li>
+<li><a class="material__link" href="#3">PIL. Установка библиотек</a></li>
+<li><a class="material__link" href="#4">Модельный пример</a></li>
+<li><a class="material__link" href="#5">Создание изображений и рисование</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В первом уроке, посвященном модулям в Python, мы упоминали PyPI — кладезь библиотек для задач из разных областей. Обработка изображений — одна из таких областей, причем довольно обширная. С ней мы сегодня и познакомимся — у такого выбора есть целых три причины.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Обработка изображений</h2>
+<p>Во-первых, люди, увлекающиеся фотографией, едва ли не самое многочисленное полупрофессиональное сообщество в мире. Его популярности очень способствует распространение смартфонов и сервисов по работе с фотографиями, таких как Instagram и Pinterest.</p>
+<p>Во-вторых, работа с видео сводится к работе с отдельными изображениями. Это относится и к профессиональным техникам наложения фильтров, и даже к работе с <a class="material__link" href="https://ru.wikipedia.org/wiki/Хромакей" rel="noopener noreferrer" target="_blank">хромакеем</a>, без которой не обходится практически ни один современный фильм.</p>
+<p>В-третьих, модель представления изображения в памяти компьютера довольно проста. Почти всегда это многомерный массив целых чисел. Даже на начальном этапе изучения программирования эта область интересна как для обучения, так и для применения на практике.</p>
+<p>Пока мы оставим за кадром вопросы скорости обработки изображений. С ними можно поэкспериментировать самостоятельно, это позволит обсудить скорость выполнения компилируемого и интерпретируемого кода. Кстати, для замеров времени тоже есть модуль — <var>timeit</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Растровые изображения</h2>
+<p>Мы будем работать с растровыми изображениями, представляющими собой массив (таблицу) пикселей разных цветов.</p>
+<p>Давайте посмотрим вот на это изображение.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/owl.jpeg" width="680"/></div>
+<p>Если мы приблизим его, увидим пиксели — минимальные единицы изображения, для которых можно определить цвет. Давайте увеличим глаз совы (кстати, ее зовут Рианна).</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/pixels.jpeg" width="680"/></div>
+<p>Итак, изображение можно моделировать списком списков (двумерной таблицей, в которой лежат цвета). Осталось только подумать, как именно кодировать цвета.</p>
+<p>Опыт работы со строками, где каждому символу соответствует свой код, должен подсказывать вам, что и с изображениями должно быть так же. Мы можем пронумеровать некоторое количество цветов и указывать их номера в нашем списке списков. Совокупность выбранных цветов будет называться <strong>палитрой</strong>.</p>
+<p>В итоге нам нужен способ преобразования цветов в целые числа. Мы воспользуемся одной из самых популярных моделей представления цвета — RGB (Red, Green, Blue).</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Модель RGB</strong></p>
+<p>В модели RGB каждый из цветов представляется совокупностью трех компонентов: красного, синего и зеленого. Значение каждого компонента лежит в диапазоне от 0 (минимум) до 255 (максимум), занимая 1 байт в памяти.</p>
+</section>
+<p>На самом деле модели хранения этих байтов в памяти Python и файле с картинкой бывают очень сложными — например, со сжатием. Однако мы будем работать с исходными, «чистыми» данными.</p>
+<p>Итак, каждый цвет — совокупность трех целых чисел (в Python ее можно представить кортежем или списком). Кстати, сумма этих трех чисел говорит о яркости пикселя: чем сумма больше, тем пиксель кажется ярче. На самом деле и тут все сложнее, чем кажется: яркость каждого компонента для глаза не одинакова, однако примем это упрощение.</p>
+<p>Например, (0, 0, 0) — черный цвет. Его яркость минимальна, оттенков нет.</p>
+<ul>
+<li>(255, 255, 255) — белый, максимальная яркость</li>
+<li>(255, 0, 255) — очень насыщенный пурпурный (красный + синий)</li>
+<li>(255, 255, 0) — ярко-желтый (красный + зеленый)</li>
+<li>(100, 100, 100) — серый</li>
+</ul>
+<p>Красный, зеленый и синий выбраны в качестве основных цветов из-за особенностей цветовой чувствительности рецепторов нашего глаза. Кстати, если мы сильно увеличим матрицу смартфона или монитора, который светит чистым белым светом, увидим что-то вроде этого:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/image/rgb.jpeg" width="600"/></div>
+<p>Да-да, это (255, 255, 255).</p>
+<p>Итак, для нас изображение — список списков, элементами которого будут кортежи цвета.</p>
+<p>Кстати, легко заметить, что в нашей модели всего 256×256×256 = 16777216 разных цветов. Этого вполне достаточно, чтобы человеческий глаз не замечал дискретности (конечного числа оттенков) цветовой модели.</p>
+<p>У Яндекса есть специальный барабан, который позволяет знакомиться c оттенками цвета, подбирать их и узнать их коды:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/image/yandex.jpeg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="3">PIL. Установка библиотек</h2>
+<p>Для работы с изображениями мы будем использовать библиотеку PIL (Python image library), а точнее, ее модификацию под названием Pillow.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Установка пакетов</strong></p>
+<p>Для установки пакетов в Python служит специальная утилита командной строки <var>pip</var>, которая является еще и модулем.</p>
+<p>Чтобы установить пакет, нужно выполнить команду <code>pip install &lt;Имя модуля&gt;</code>. Пакет будет скачан с PyPI и установлен, вы увидите примерно следующее:</p>
+<pre><code>c:\Python34\Scripts&gt;pip install pillow
+Collecting pillow
+  Downloading Pillow-4.0.0-cp34-cp34m-win32.whl (1.2MB)
+    100% |################################| 1.2MB 485kB/s
+Collecting olefile (from pillow)
+  Downloading olefile-0.44.zip (74kB)
+    100% |################################| 81kB 1.7MB/s
+Installing collected packages: olefile, pillow
+  Running setup.py install for olefile ... done
+Successfully installed olefile-0.44 pillow-4.0.0
+ 
+c:\Python34\Scripts&gt;%%
+</code></pre>
+</section>
+<p>Кроме опции <var>install</var> в <var>pip</var>, доступны команды:</p>
+<pre><code>Usage:
+  pip <command/> [options]
+ 
+Commands:
+  install            Install packages.
+  download           Download packages.
+  uninstall          Uninstall packages.
+  freeze             Output installed packages in requirements format.
+  list               List installed packages.
+  show               Show information about installed packages.
+  check              Verify installed packages have compatible dependencies.
+  search             Search PyPI for packages.
+  wheel              Build wheels from your requirements.
+  hash               Compute hashes of package archives.
+  completion         A helper command used for command completion.
+  help               Show help for commands.
+</code></pre>
+<p>Pillow — не чисто питоновская библиотека, она написана частично на языке С. Поэтому для некоторых версий Python может потребоваться компиляция кода доступным в системе С-компилятором, потому что <var>pip</var> сможет скачать только исходные коды библиотеки. Если такого компилятора нет (такое обычно бывает в windows-системах), стоит поискать скомпилированные версии в Интернете (готовые к установке файлы имеют расширение <var>.whl</var>). Например, множество популярных библиотек можно найти на <a class="material__link" href="http://www.lfd.uci.edu/~gohlke/pythonlibs/" rel="noopener noreferrer" target="_blank">странице</a> сайта лаборатории флуоресцентной динамики Калифорнийского университета.</p>
+<p>Кроме того, чтобы не задумываться о сложностях при установке библиотек, можно установить дистрибутив <a class="material__link" href="https://www.anaconda.com/distribution/" rel="noopener noreferrer" target="_blank">Anaconda</a>. В нем есть все необходимые библиотеки Python. И не только они.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Модельный пример</h2>
+<p>Рассмотрим пример работы с изображением, в котором мы:</p>
+<ol>
+<li>Пройдем по каждому пикселю в изображении.</li>
+<li>Получим для него значение цвета в RGB-нотации.</li>
+<li>Присвоим этому пикселю новое значение цвета (поменяем составляющие).</li>
+<li>В конце сохраним получившееся изображение с новым именем.</li>
+</ol>
+<p>Начальное изображение в этом примере никак не меняется, но от него можно отталкиваться в дальнейшей работе.</p>
+<p>Итак, приступим.</p>
+<p>Для работы нам потребуется файл с изображением — Рианна.jpg, который нужно сохранить в тот же каталог, где будут лежать программы по его обработке.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+ 
+im <span class="token operator">=</span> Image<span class="token punctuation">.</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">"Рианна.jpg"</span><span class="token punctuation">)</span>
+pixels <span class="token operator">=</span> im<span class="token punctuation">.</span>load<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># список с пикселями</span>
+x<span class="token punctuation">,</span> y <span class="token operator">=</span> im<span class="token punctuation">.</span>size <span class="token comment"># ширина (x) и высота (y) изображения</span>
+ 
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>  
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b <span class="token operator">=</span> pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span>
+        pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span> <span class="token operator">=</span> g<span class="token punctuation">,</span> b<span class="token punctuation">,</span> r
+         
+im<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">"Рианна2.jpg"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для работы с изображением нам нужен объект <var>Image</var>, который находится в библиотеке PIL (пишется большими буквами).</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция open</strong></p>
+<p>Мы открываем изображение с диска функцией <var>open</var>. В функции <var>open</var> в скобках указывается или абсолютный путь к файлу, или просто имя файла, если файл размещен в том же каталоге, что и сама программа.</p>
+</section>
+<p>Потом получаем список пикселей этого изображения, используя функцию <var>load</var>. Ее применяем к объекту, загруженному в переменную <var>im</var>. После применения функции получаем двумерный список, где для каждого пикселя хранится кортеж — цвет пикселя в палитре RGB.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Обратите внимание: <var>pixels</var> устроен так, что индексация в нем идет кортежами, поэтому здесь запись <code>pixels[i, j]</code>, а не <code>pixels[i][j]</code>, что, возможно, было бы удобнее и привычнее. Это особенность библиотеки: создателям показалось, что так будет архитектурно уместнее.</p>
+</section>
+<p>С помощью атрибута <var>size</var> объекта <var>im</var> мы можем получить размер изображения, который хранится в виде кортежа: сначала ширину, потом высоту изображения в пикселях, что соответствует размерности <var>pixels</var>.</p>
+<p>Далее переберем все элементы <var>pixels</var> (двумя циклами <var>for</var>) и для каждого элемента получим значение трех компонентов цвета. Запишем в массив <var>pixels</var> эти значения, но изменив порядок значений.</p>
+<p>Для получения трех компонентов цвета каждого пикселя мы используем множественное присваивание, поэтому пишем</p>
+<pre class="language-python"><code class="language-python">r<span class="token punctuation">,</span> g<span class="token punctuation">,</span> b <span class="token operator">=</span> pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span>
+</code></pre>
+<p>вместо</p>
+<pre class="language-python"><code class="language-python">pixel <span class="token operator">=</span> pixels<span class="token punctuation">[</span>i<span class="token punctuation">,</span> j<span class="token punctuation">]</span>
+r <span class="token operator">=</span> pixel<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+g <span class="token operator">=</span> pixel<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+b <span class="token operator">=</span> pixel<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span>
+</code></pre>
+<p>Множественное присваивание позволяет писать более простой и лаконичный код. Именно так мы поступили и в случае с вычислением <var>x</var> и <var>у</var>.</p>
+<p>Затем при помощи функции <var>save</var> сохраняем измененный список пикселей в файл изображения с именем Рианна2.jpg.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>В данном случае появляется новая картинка в том же месте, где находилась начальная. Начальное изображение осталось без изменений, а новое получено из начального изменением значений цветовых компонентов для каждого пикселя.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="5">Создание изображений и рисование</h2>
+<p>С помощью библиотеки PIL мы можем не только изменять существующие изображения, но и создавать новые.</p>
+<p>Для этого используется функция <var>Image.new</var>, которая принимает тип палитры (мы договорились использовать RGB), кортеж с размером нового изображения и цвет, которым будет залито это изображение. В данном примере создается изображение 500 на 500 пикселей, залитое зеленым:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image
+
+im <span class="token operator">=</span> Image<span class="token punctuation">.</span>new<span class="token punctuation">(</span><span class="token string">"RGB"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">500</span><span class="token punctuation">,</span> <span class="token number">500</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>im<span class="token punctuation">.</span>size<span class="token punctuation">)</span>
+<span class="token comment"># Просто посмотрим, изображение какого размера у нас получилось</span>
+im<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">"5.jpg"</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-26/lesson-26-1.jpg" width="500"/></div>
+<p>Создавать однотонные изображения не особенно интересно, поэтому давайте посмотрим, какие возможности дает библиотека PIL, если нам хочется что-то нарисовать. Для этого нам надо обратить внимание на объект <var>Draw</var> из модуля <var>PIL.ImageDraw</var>. У этого объекта есть много инструментов для создания графических примитивов: прямых, кривых, точек, прямоугольников, дуг и т. д.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image<span class="token punctuation">,</span> ImageDraw
+
+<span class="token comment"># создание изображения  </span>
+new_image <span class="token operator">=</span> Image<span class="token punctuation">.</span>new<span class="token punctuation">(</span><span class="token string">"RGB"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  
+<span class="token comment"># на изображении создаем рисунок для рисования  </span>
+draw <span class="token operator">=</span> ImageDraw<span class="token punctuation">.</span>Draw<span class="token punctuation">(</span>new_image<span class="token punctuation">)</span>  
+<span class="token comment"># рисуем линию  </span>
+draw<span class="token punctuation">.</span>line<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fill<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> width<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>  
+<span class="token comment"># сохраним изображением в файл формата PNG  </span>
+new_image<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'6.png'</span><span class="token punctuation">,</span> <span class="token string">"PNG"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Этот пример создает новое черное изображение размером 100 на 200 и нарисует на нем линию красного цвета толщиной в 1 пиксель из левого верхнего в правый нижний угол. Вот получившееся изображение:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-26/lesson-26-2.png" width="100"/></div>
+<p>Для рисования нам надо передать наше открытое изображение в <var>ImageDraw.Draw</var>, а результат сохранить в переменную. Потом можно использовать у полученного объекта различные функции по рисованию примитивов, при этом результаты будут сразу применены к нашему открытому изображению.</p>
+<p>Функция <var>line</var> нужна для рисования линий. Она принимает кортеж с координатами начала и конца отрезка и дополнительные параметры — цвет заливки и толщину линий. Можно передавать более 2 точек, тогда точки будут соединены последовательно — и мы получим некоторую ломаную линию.</p>
+<p>Давайте рассмотрим еще один пример, который рисует вот такую картинку:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-26/lesson-26-3.jpg" width="680"/></div>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> PIL <span class="token keyword">import</span> Image<span class="token punctuation">,</span> ImageDraw
+
+
+<span class="token keyword">def</span> <span class="token function">picture</span><span class="token punctuation">(</span>file_name<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">,</span> sky_color<span class="token operator">=</span><span class="token string">'#75BBFD'</span><span class="token punctuation">,</span>
+            asphalt_color<span class="token operator">=</span><span class="token string">'#4E5452'</span><span class="token punctuation">,</span> car_color<span class="token operator">=</span><span class="token string">'#bF311A'</span><span class="token punctuation">,</span>
+            wheels_color<span class="token operator">=</span><span class="token string">'#000000'</span><span class="token punctuation">,</span> sun_color<span class="token operator">=</span><span class="token string">'#FFDB00'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    im <span class="token operator">=</span> Image<span class="token punctuation">.</span>new<span class="token punctuation">(</span><span class="token string">"RGB"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    drawer <span class="token operator">=</span> ImageDraw<span class="token punctuation">.</span>Draw<span class="token punctuation">(</span>im<span class="token punctuation">)</span>
+
+    drawer<span class="token punctuation">.</span>rectangle<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>width<span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.8</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> sky_color<span class="token punctuation">)</span>
+    drawer<span class="token punctuation">.</span>rectangle<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.8</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                     asphalt_color<span class="token punctuation">)</span>
+    drawer<span class="token punctuation">.</span>ellipse<span class="token punctuation">(</span><span class="token punctuation">(</span>
+     <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.8</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+     <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">1.2</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                   sun_color<span class="token punctuation">)</span>
+
+    drawer<span class="token punctuation">.</span>polygon<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.85</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.3</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.6</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.55</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.6</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.65</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.8</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.8</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.85</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                   car_color<span class="token punctuation">)</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        drawer<span class="token punctuation">.</span>ellipse<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.3</span> <span class="token operator">*</span> width<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.3</span> <span class="token operator">*</span> width<span class="token punctuation">)</span> <span class="token operator">*</span> i<span class="token punctuation">,</span>
+                         <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.8</span> <span class="token operator">*</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                        <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.4</span> <span class="token operator">*</span> width<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.3</span> <span class="token operator">*</span> width<span class="token punctuation">)</span> <span class="token operator">*</span> i<span class="token punctuation">,</span>
+                         <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.9</span> <span class="token operator">*</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                       wheels_color<span class="token punctuation">)</span>
+    im<span class="token punctuation">.</span>save<span class="token punctuation">(</span>file_name<span class="token punctuation">)</span>
+
+
+picture<span class="token punctuation">(</span><span class="token string">'test.jpg'</span><span class="token punctuation">,</span> <span class="token number">1000</span><span class="token punctuation">,</span> <span class="token number">1000</span><span class="token punctuation">)</span>
+</code></pre>
+<p>У нас есть функция <var>picture</var>, которая принимает на вход параметры картинки: ее размер и цвета. Такая организация кода удобна, если вам надо сделать несколько типовых изображений с небольшой разницей между друг другом. Обратите внимание: цвета можно задавать не только кортежем из 3 целых чисел, но и строкой с шестнадцатеричным представлением цвета. Коды цветов можно легко найти в Интернете по запросу «Барабан цветов».</p>
+<p>Сначала мы создаем изображение. Если не укажем цвет заливки, все пиксели получившегося изображения будут черными.</p>
+<pre class="language-python"><code class="language-python">im <span class="token operator">=</span> Image<span class="token punctuation">.</span>new<span class="token punctuation">(</span><span class="token string">"RGB"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>С помощью функции <var>rectangle</var>, которая рисует прямоугольники, нарисуем небо и дорогу. Функция принимает на вход координату левого верхнего угла прямоугольника и координату правого нижнего угла и цвет заливки.</p>
+<pre class="language-python"><code class="language-python">drawer<span class="token punctuation">.</span>rectangle<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>width<span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.8</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> sky_color<span class="token punctuation">)</span>
+drawer<span class="token punctuation">.</span>rectangle<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.8</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> asphalt_color<span class="token punctuation">)</span>
+</code></pre>
+<p>С помощью функции <var>ellipse</var> рисуем солнце. Функция принимает на вход координаты верхнего левого и правого нижнего угла прямоугольника, внутри которого будет вписан эллипс и цвет заливки. Для получения круга описанный прямоугольник должен быть квадратом. Обратите внимание: часть солнца находится за пределами изображения. При этом при рисовании никакой ошибки не возникнет — часть рисунка за пределами изображения просто пропадет.</p>
+<pre class="language-python"><code class="language-python">drawer<span class="token punctuation">.</span>ellipse<span class="token punctuation">(</span><span class="token punctuation">(</span>
+     <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.8</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+     <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">1.2</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> height<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                   sun_color<span class="token punctuation">)</span>
+</code></pre>
+<p>При рисовании корпуса автомобиля у нас появляется многоугольный элемент. Отдельной функции для рисования объекта именно такой формы в PIL, конечно, нет. Но можно использовать функцию <var>polygon</var>, которая принимает на вход неограниченное количество координат точек, которые соединяет между собой. Последняя точка соединяется с первой, а получившееся замкнутое пространство заливается цветом. С помощью нее можно рисовать любые многоугольники.</p>
+<pre class="language-python"><code class="language-python">drawer<span class="token punctuation">.</span>polygon<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.85</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.2</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.3</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.6</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.55</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.6</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.65</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.8</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.7</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token number">0.8</span> <span class="token operator">*</span> width<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>height <span class="token operator">*</span> <span class="token number">0.85</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                   car_color<span class="token punctuation">)</span>
+</code></pre>
+<p>Затем с помощью уже известной нам функции <var>ellipse</var> дорисовываем колеса.</p>
+<p>После сохраняем изображение. Обратите внимание: в функции <var>save</var> есть дополнительный опциональный аргумент, который указывает формат сохранения файла. Если формат не указан, PIL делает предположение исходя из расширения имени файла, который указан первым аргументом.</p>
+<p>В модуле <var>ImageDraw</var> есть еще ряд функций для рисования, а у рассмотренных функций есть интересные дополнительные параметры. Почитайте о них подробнее в <a class="material__link" href="https://pillow.readthedocs.io/en/stable/" rel="noopener noreferrer" target="_blank">документации</a>. Вообще, документация — основной источник знаний. Если вы хотите использовать стороннюю библиотеку, старайтесь заглядывать туда почаще.</p>
+</section></article></section>

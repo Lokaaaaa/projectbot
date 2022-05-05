@@ -1,0 +1,15 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import argparse
+
+values_dict = {'day': 1, 'month': 30, 'year': 360}
+
+parser = argparse.ArgumentParser()
+for i in ['--per-day', '--per-week', '--per-month', '--per-year']:
+    parser.add_argument(i, type=int, default=0)
+parser.add_argument('--get-by', choices=['day', 'month', 'year'], default="day")
+args = parser.parse_args()
+period = values_dict[args.get_by]
+summa = (period * args.per_day) + period * (args.per_week / 7) + period \
+    * (args.per_month / 30) + period * (args.per_year / 360)
+print(int(summa))

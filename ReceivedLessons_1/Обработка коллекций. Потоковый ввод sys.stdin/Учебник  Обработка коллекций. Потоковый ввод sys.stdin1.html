@@ -1,0 +1,178 @@
+<section class="lesson-material__content"><article class="material"><h1>Обработка коллекций. Потоковый ввод sys.stdin</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Итерируемые объекты. Почему filter и map возвращают не список</a></li>
+<li><a class="material__link" href="#2">Функции max/min/sorted и использование ключа сортировки</a></li>
+<li><a class="material__link" href="#3">Проверка коллекций: all, any</a></li>
+<li><a class="material__link" href="#4">Потоковый ввод stdin</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В Python встроено множество функций, которые помогают перебирать и комбинировать данные любыми способами. На прошлом уроке мы познакомились с функциями высшего порядка и даже попробовали их комбинировать. В Python нередко можно сложное вычисление свести к одной строке, если правильно подобрать порядок преобразования данных. В этом уроке мы будем изучать арсенал имеющихся инструментов и учиться их использовать.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Итерируемые объекты. Почему filter и map возвращают не список</h2>
+<p>Прежде чем обсуждать новые функции, нужно немного поговорить об уже изученных функциях <var>map</var> и <var>filter</var>. Вы, возможно, помните, что эти функции принимают любую коллекцию (список, кортеж, строку символов и т. д.). Возвращают эти функции уже не список, а специальный объект, который можно затем передать в список, в цикл <var>for</var> и в некоторые другие функции. Давайте разберемся, как это работает и почему так сделано.</p>
+<p>Для начала поймем, почему эти функции возвращают не список. Представьте, что вы работаете с очень большим списком. Например, списком из миллиарда чисел (он занимает не меньше 4 гигабайтов памяти). Если вам требуется как-то обработать набор квадратов этих чисел, есть несколько вариантов.</p>
+<p>Первый — перебирать элементы обычным циклом <var>for</var> и отказаться от комбинирования операций, которое вы научились делать при помощи <var>map</var> и <var>filter</var>. Этот вариант, наверное, самый простой, но не слишком удобный. Особенно учитывая, что, помимо <var>map</var> и <var>filter</var>, вы познакомитесь со множеством других удобных функций, работающих аналогично.</p>
+<p>Второй вариант — сделать список квадратов, затем работать уже с ним. Это удобно, но придется потратить еще несколько гигабайтов оперативной памяти. Даже если чисел меньше миллиарда, вы вряд ли захотите, чтобы программа тратила лишнюю память.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Итерируемые объекты</strong></p>
+<p>Функция <var>map</var> использует гибридный метод. Ее результат позволяет перебирать не числа, а их квадраты — как мы и хотели. При этом квадраты чисел нигде не хранятся и не занимают память! Объекты, которые возвращают функции <var>map</var>, <var>filter</var> и подобные, называются <strong>итерируемыми объектами</strong>. Это означает, что они позволяют перебирать значения по очереди и последовательно.</p>
+</section>
+<p>В нашем примере функция <var>map</var> в любой момент времени хранит только то единственное число, с которым работает, а не весь миллиард квадратов исходных чисел. Вы не создаете огромный промежуточный список и не тратите лишнюю память.</p>
+<p>Эффект легко увидеть своими глазами. Откройте диспетчер задач и следите за потреблением памяти интерпретатором Python при запуске двух разных команд:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Версия, создающая промежуточный список.</span>
+<span class="token comment"># Осторожно: при запуске этой команды, Python сначала </span>
+<span class="token comment"># занимает несколько сотен мегабайт оперативной памяти,</span>
+<span class="token comment"># а затем, когда список становится не нужен - освобождает память.</span>
+
+<span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token punctuation">[</span>x <span class="token operator">**</span> <span class="token number">2</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">50</span> <span class="token operator">*</span> <span class="token number">1000</span> <span class="token operator">*</span> <span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 41666665416666675000000</span>
+
+<span class="token comment"># Версия, работающая при помощи итератора, который</span>
+<span class="token comment"># не хранит промежуточный список.</span>
+<span class="token comment"># Она занимает минимум дополнительной памяти.</span>
+
+<span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">50</span> <span class="token operator">*</span> <span class="token number">1000</span> <span class="token operator">*</span> <span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; 41666665416666675000000</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Упрощенно говоря, есть два типа итерируемых объектов:</p>
+<ul>
+<li>Итераторы, которые позволяют перебирать элементы. Они не хранят все значения элементов, им нужно помнить только начало промежутка, его конец и текущий элемент</li>
+<li>Коллекции (списки, строки, словари и т. д.), которые позволяют создать итератор по своим элементам</li>
+</ul>
+<p>Подробнее об итераторах и их отличиях от коллекций вы можете прочитать в дополнительном уроке «Итераторы и коллекции».</p>
+</section>
+<p>Большинство функций Python, которые работают с итераторами, умеют работать и с коллекциями. Поэтому слова «итерируемый объект» и «итератор» мы будем использовать как синонимы. Кроме того, за неимением лучшего названия, мы часто будем называть итераторами функции, которые возвращают итератор (такие как <var>range</var>, <var>map</var>, <var>filter</var> и мн. др.).</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Функции max/min/sorted и использование ключа сортировки</h2>
+<p>Рассмотрим еще один полезный специальный синтаксис в Python, позволяющий избавиться от промежуточных итераторов, которые исходно нам не даны и не нужны в итоговом результате. Так мы сможем сократить число неуклюжих конструкций, в которых сначала создается сложная структура, а потом эта структура упрощается обратно.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Параметр key</strong></p>
+<p>У функций вроде <code>min/max/sorted</code> есть опциональный (необязательный) параметр <var>key</var>. Параметр <var>key</var> принимает функцию, по значению которой будут сравниваться элементы.</p>
+</section>
+<p>Например, пусть у нас есть набор слов, который мы хотим отсортировать:</p>
+<pre class="language-python"><code class="language-python">words <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'мир'</span><span class="token punctuation">,</span> <span class="token string">'и'</span><span class="token punctuation">,</span> <span class="token string">'война'</span><span class="token punctuation">]</span>
+</code></pre>
+<p>Отсортировать слова можно различными способами. Если мы применим функцию <var>sorted</var> без аргумента <var>key</var>, слова будут отсортированы как в словаре (это называется <strong>лексикографически</strong>):</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">sorted</span><span class="token punctuation">(</span>words<span class="token punctuation">)</span>   <span class="token comment"># =&gt; ['война', 'и', 'мир']</span>
+</code></pre>
+<p>Теперь давайте вызовем функцию <var>sorted</var> следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">sorted</span><span class="token punctuation">(</span>words<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> s<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; ['и', 'мир', 'война']</span>
+</code></pre>
+<p>Мы указали, что в качестве ключа для сортировки должны использоваться не сами строки (встроенное в Python сравнение строк — лексикографическое), а их длины. Таким образом, мы получаем список, отсортированный по возрастанию длины слова.</p>
+<p>Очень удобно использовать ключ сортировки, если нам надо отсортировать список упорядоченных коллекций (списков, кортежей, строк). Например, у нас есть список, элементами которого тоже являются списки, которые содержат название фильма, его возрастное ограничение и рейтинг по отзывам критиков. И мы хотим отсортировать его сначала по возрастному ограничению, затем по оценке критиков (по убыванию) и только в конце по названию. В этом случае нам поможет вот такой код:</p>
+<pre class="language-python"><code class="language-python">li <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">[</span><span class="token string">'Crawl'</span><span class="token punctuation">,</span> <span class="token string">'R'</span><span class="token punctuation">,</span> <span class="token number">61</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Stuber'</span><span class="token punctuation">,</span> <span class="token string">'R'</span><span class="token punctuation">,</span> <span class="token number">42</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Midsommar'</span><span class="token punctuation">,</span> <span class="token string">'R'</span><span class="token punctuation">,</span> <span class="token number">73</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Yesterday'</span><span class="token punctuation">,</span> <span class="token string">'PG-13'</span><span class="token punctuation">,</span> <span class="token number">56</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Annabelle Comes Home'</span><span class="token punctuation">,</span> <span class="token string">'R'</span><span class="token punctuation">,</span> <span class="token number">53</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">"Child's Play"</span><span class="token punctuation">,</span> <span class="token string">'R'</span><span class="token punctuation">,</span> <span class="token number">48</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Anna'</span><span class="token punctuation">,</span> <span class="token string">'R'</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Toy Story 4'</span><span class="token punctuation">,</span> <span class="token string">'G'</span><span class="token punctuation">,</span> <span class="token number">84</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Shaft'</span><span class="token punctuation">,</span> <span class="token string">'R'</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span><span class="token string">'Men in Black: International'</span><span class="token punctuation">,</span> <span class="token string">'PG-13'</span><span class="token punctuation">,</span> <span class="token number">38</span><span class="token punctuation">]</span>
+<span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token builtin">sorted</span><span class="token punctuation">(</span>li<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token punctuation">(</span>x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">-</span>x<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> x<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">'\n'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['Toy Story 4', 'G', 84]
+['Yesterday', 'PG-13', 56]
+['Men in Black: International', 'PG-13', 38]
+['Midsommar', 'R', 73]
+['Crawl', 'R', 61]
+['Annabelle Comes Home', 'R', 53]
+["Child's Play", 'R', 48]
+['Stuber', 'R', 42]
+['Anna', 'R', 40]
+['Shaft', 'R', 40]</samp></pre>
+<p>Помимо функции <var>sorted</var>, параметр <var>key</var> принимают функции <var>max</var> и <var>min</var>. Вызов <code>max(values, key)</code> позволяет найти значение из набора <var>values</var>, наибольшее по ключу <var>key</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Проверка коллекций: all, any</h2>
+<p>При работе с коллекциями часто приходится определять, выполняется ли некоторое условие одновременно для всех элементов коллекции или хотя бы для одного.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>all и any</strong></p>
+<p>Для этих целей существуют две встроенные функции: <var>all</var> и <var>any</var>. Первая проверяет, что все элементы переданного ей итерируемого набора значений истинны (приводятся к True). Вторая проверяет, что есть хотя бы один такой элемент. В терминах математической логики эти функции — кванторы общности и существования.</p>
+</section>
+<p>В качестве единственного аргумента <var>all</var> и <var>any</var> принимают что-нибудь перечисляемое — например, список, кортеж или итератор.</p>
+<p>Итак, <var>all</var> вернет True в том случае, если все элементы аргумента True или приводятся к True (или если коллекция пустая):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># True - так как все элементы ненулевые</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># False - есть ноль</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># False - есть пустые вложенные коллекции</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># True</span>
+</code></pre>
+<p>Функция <var>any</var> вернет True, если истинен хотя бы один элемент аргумента. <var>any</var> возвращает False для пустых коллекций:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">any</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># True - есть True среди элементов</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">any</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># True - непустой список приводится к True</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">any</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token boolean">False</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># False - все элементы приводятся к False</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">any</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># False</span>
+</code></pre>
+<p>Функции <var>all</var> и <var>any</var> могут быть особенно полезны в комбинации с функцией <var>map</var>, которая для каждого элемента коллекции проверит некоторое условие и вернет итератор, в котором будут перечисляться результаты этих проверок. Так, например, можно проверить, все ли числа в списке четные:</p>
+<pre class="language-python"><code class="language-python">data <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">all</span><span class="token punctuation">(</span>x <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> data<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>False</samp></pre>
+<p>А так — узнать, есть ли среди слов хотя бы одно, длиной 5 букв или более:</p>
+<pre class="language-python"><code class="language-python">words <span class="token operator">=</span> <span class="token string">"Ехал грека через реку"</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">any</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> w<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>w<span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">5</span><span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>True</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Потоковый ввод stdin</h2>
+<p>В Python есть очень полезный встроенный итерируемый объект: <var>sys.stdin</var>. Это — итератор так называемого потока ввода.</p>
+<p>Поток ввода (stdin) — специальный объект в программе, куда попадает весь текст, который ввел пользователь. Потоком его называют потому, что данные хранятся там до тех пор, пока программа их не считала. Данные поступают в программу и временно «складируются» в потоке ввода, а программа может «забрать» их оттуда, например, при помощи функции <code>input()</code>. В момент прочтения они пропадают из потока ввода: он хранит данные «до востребования».</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>sys.stdin</strong></p>
+<p><var>sys.stdin</var> — пример итератора, который невозможно перезапустить. Как и любой итератор, он может двигаться только вперед. Но если для списка можно сделать второй итератор, который начнет чтение с начала списка, то с потоком ввода такое не пройдет. Как только данные прочитаны, они удаляются из потока ввода безвозвратно.</p>
+</section>
+<p>Элементы, которые выдает этот итератор, — строки, введенные пользователем. Если пользовательский ввод закончен, итератор тоже прекращает работу. Пока пользователь не ввел последнюю строку, мы не знаем, сколько элементов в итераторе.</p>
+<p>Хочется обратить ваше внимание на один интересный факт: допустим, вы написали программу, которая дважды вызывает функцию <code>input()</code>, и отправили ее на проверку в тестовую систему. Но тестовая система передает лишь одну строку. В этом случае выполнение программы завершится с ошибкой, поскольку функция <code>input()</code> не смогла ничего прочитать.</p>
+<p>Поэтому, если вы не знаете, в какой момент надо прекратить ввод, воспользоваться функцией <code>input()</code> не удастся. В таких случаях остается только работать с <var>sys.stdin</var>.</p>
+<p>Чтобы работать с <var>sys.stdin</var>, прежде всего необходимо подключить модуль <var>sys</var> командой <code>import sys</code>. Напишем небольшую программу, которая печатает каждую введенную пользователем строку:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+<span class="token keyword">for</span> line <span class="token keyword">in</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">:</span>
+    <span class="token comment"># rstrip('\n') "отрезает" от строки line идущий справа символ</span>
+    <span class="token comment"># перевода строки, ведь print сам переводит строку</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span>rstrip<span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Что происходит?</p>
+<p>Пока есть данные в потоке <var>sys.stdin</var> (то есть пока пользователь их вводит), программа будет получать вводимые строки в переменную <var>line</var>, убирать справа символы перевода строки и выводить их на печать.</p>
+<p>Но если вы запустите эту программу, она будет работать вечно. Чтобы показать, что ввод закончен, пользователю недостаточно нажать Enter — компьютер не знает, завершил пользователь работу или будет еще что-то вводить (при этом Enter превратится в пустую строку). Вместо этого вы должны нажать Ctrl + D (если работаете в консоли Linux или IDE PyCharm) либо Ctrl + Z, затем Enter (если работаете в консоли Windows).</p>
+<p>Если вы работаете в IDE Wing, кликните правой кнопкой мыши и выберите Send EOF, затем нажмите Enter. Это запишет в поток ввода специальный символ EOF (end of file), который отмечает конец ввода.</p>
+<p>Мы обещали показать, что функция <var>input</var> выдает ошибку, если не получает ввод. Напишите простую программу:</p>
+<pre class="language-python"><code class="language-python">x<span class="token punctuation">,</span> y <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Запустите программу и введите одну строку (не забудьте нажать Enter). Вместо второй строки введите EOF тем способом, которым это делается в вашей системе. Вы увидите ошибку EOFError — это означает, что <var>input</var> пытается считать данные из потока, который закончился.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Ввод в одну строку</strong></p>
+<p>С помощью <var>sys.stdin</var> можно в одну строку прочитать весь ввод (о количестве строк которого мы ничего не знаем) в список. Реализуется это, например, так:</p>
+<pre class="language-python"><code class="language-python">data <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">.</span>strip<span class="token punctuation">,</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Кроме того, можно считать все строки (с сохранением символов перевода строки) в список вот таким образом:</p>
+<pre class="language-python"><code class="language-python">data <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readlines<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>А считать многострочный текст из стандартного потока ввода в текстовую переменную можно вот так:</p>
+<pre class="language-python"><code class="language-python">str_data <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section></article></section>

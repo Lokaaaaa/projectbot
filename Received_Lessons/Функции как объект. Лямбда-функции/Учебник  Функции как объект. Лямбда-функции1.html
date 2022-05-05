@@ -1,0 +1,259 @@
+<section class="lesson-material__content"><article class="material"><h1>Функции как объект. Лямбда-функции</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Функция как объект</a></li>
+<li><a class="material__link" href="#2">Функции высшего порядка. Функция filter</a></li>
+<li><a class="material__link" href="#3">Лямбда-функции</a></li>
+<li><a class="material__link" href="#4">Функция map</a></li>
+<li><a class="material__link" href="#5">Еще немного о списочных выражениях</a></li>
+<li><a class="material__link" href="#6">Комбинирование функций</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В языке Python все является объектом. Даже функция. Вы узнаете, как получить и использовать соответствующий объект. Кроме того, вы научитесь создавать и использовать крошечные, буквально в полстроки функции и передавать их в качестве аргумента другой функции. Вы узнаете о двух важных функциях: <var>filter</var> и <var>map</var>, которые позволяют проводить множество преобразований над коллекциями и другими наборами объектов. Заодно мы вспомним списочные выражения и расширим знания о них.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Функция как объект</h2>
+<p>До сих пор мы рассматривали функции как совершенно отдельный элемент языка со своим синтаксисом и механизмами работы. Но, оказывается, функция — что-то вроде особого типа объектов. Бывают числа, бывают строки, бывают списки. А бывают — функции. У каждого из этих типов есть свои операции, свой синтаксис, но все они являются объектами. Например, есть объект, который умеет печатать текст на экране. У него есть имя <var>print</var>. Можно считать, что <var>print</var> — это что-то вроде имени переменной, которая хранит объект функции. Давайте посмотрим, насколько далеко идет эта аналогия.</p>
+<p>Первым делом, давайте получим объект функции. Для этого достаточно написать имя функции без скобок. Это аналогично тому, что происходит со списками или строками: если вы пишете после имени списка квадратные скобки c индексом — выполняется операция взятия элемента, не пишете скобки — получаете сам список. Пишете после функции круглые скобки с аргументами — она вызывается, не пишете — получаете саму функцию как объект.</p>
+<p><var>input</var> — объект функции чтения из стандартного ввода. Давайте мы этот объект напечатаем:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Python выдает нам текстовое представление этой функции: строку <code>built-in function input</code>, которая поясняет, что <var>input</var> — встроенная функция языка.</p>
+<p><strong>Вопросы для самопроверки:</strong></p>
+<ul>
+<li>Что сделает <code>print(input())</code> и почему это отличается от <code>print(input)</code>?</li>
+<li>Как вывести на экран функцию печати?</li>
+</ul>
+<p>Раз мы можем получить какой-то объект, мы его можем записать в переменную. Давайте попробуем!</p>
+<pre class="language-python"><code class="language-python">vyvod <span class="token operator">=</span> <span class="token keyword">print</span>
+</code></pre>
+<p>Это сработало. Теперь у функции <var>print</var> есть псевдоним на транслите. Эту новую переменную можно вызвать, как и обычную функцию, посредством круглых скобок:</p>
+<pre class="language-python"><code class="language-python">vyvod<span class="token punctuation">(</span><span class="token string">'Privet mir!'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Возможность записать функцию в переменную позволяет нам гибко управлять тем, какую функциональность мы хотим использовать. В одну и ту же переменную мы можем записать разные варианты поведения и менять их при необходимости. При этом нам не только не нужно будет менять код по всей программе, но не придется даже изменять код функций. Достаточно переменной присвоить вместо одной функции — другую.</p>
+<p>Напишем программу, которая печатает списки либо просто через запятую, либо в «коробочках», в зависимости от значения переменной <var>formatting</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_boxed</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    arr_stringified <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span> <span class="token keyword">for</span> element <span class="token keyword">in</span> arr<span class="token punctuation">]</span>
+    mid <span class="token operator">=</span> <span class="token string">' | '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>arr_stringified<span class="token punctuation">)</span>
+    bar <span class="token operator">=</span> <span class="token string">'-'</span> <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token number">2</span> <span class="token operator">+</span> <span class="token builtin">len</span><span class="token punctuation">(</span>mid<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">' '</span> <span class="token operator">+</span> bar <span class="token operator">+</span> <span class="token string">' '</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'| '</span> <span class="token operator">+</span> mid <span class="token operator">+</span> <span class="token string">' |'</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">' '</span> <span class="token operator">+</span> bar <span class="token operator">+</span> <span class="token string">' '</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_simple</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    arr_stringified <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span> <span class="token keyword">for</span> element <span class="token keyword">in</span> arr<span class="token punctuation">]</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">', '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>arr_stringified<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+formatting <span class="token operator">=</span> <span class="token string">'boxed'</span>
+<span class="token keyword">if</span> formatting <span class="token operator">==</span> <span class="token string">'boxed'</span><span class="token punctuation">:</span>
+    print_formatted <span class="token operator">=</span> print_boxed
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    print_formatted <span class="token operator">=</span> print_simple
+
+<span class="token comment"># Дальше в программе можно использовать print_formatted повсюду</span>
+print_formatted<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">,</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token number">13</span><span class="token punctuation">,</span><span class="token number">21</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+print_formatted<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">,</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token number">16</span><span class="token punctuation">,</span><span class="token number">32</span><span class="token punctuation">,</span><span class="token number">64</span><span class="token punctuation">,</span><span class="token number">128</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+print_formatted<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'abc'</span><span class="token punctuation">,</span> <span class="token string">'def'</span><span class="token punctuation">,</span> <span class="token string">'ghi'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Вывод программы:</p>
+<pre><samp>--------------------------------- 
+| 1 | 1 | 2 | 3 | 5 | 8 | 13 | 21 |
+ --------------------------------- 
+ ------------------------------------ 
+| 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 |
+ ------------------------------------ 
+ ----------------- 
+| abc | def | ghi |
+ -----------------</samp></pre>
+<p>Мы один раз проверили условие и указали, как должна вести себя функция <var>print_formatted</var> во всей программе.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Функции высшего порядка. Функция filter</h2>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функции высшего порядка</strong></p>
+<p>Объект функции можно не только записать в переменную, но и передать в качестве аргумента в другую функцию и даже вернуть из функции.</p>
+<p>Функции, которые принимают или возвращают другие функции, называются <strong>функциями высшего порядка</strong>.</p>
+</section>
+<p>Часто функции высшего порядка используются для обработки наборов данных. Например, из раза в раз встречается такая задача: взять список элементов и оставить среди них только небольшую часть, согласно какому-то критерию.</p>
+<p>Эту задачу можно встретить в самых разных формах. В списке товаров найти только дешевые. Отобрать все слова, в которых ровно три слога, для генератора рифм. Найти среди кораблей в игре «Морской бой» все подбитые.</p>
+<p>Это разные списки и разные критерии, а задача одна и та же — отфильтровать элементы списка. В языке Python для этой цели есть встроенная функция <var>filter</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция filter</strong></p>
+<p>Функция <var>filter</var> принимает критерий отбора элементов, а затем сам список элементов. Возвращает она список из элементов, удовлетворяющих критерию.</p>
+</section>
+<p>Чтобы этой функцией воспользоваться, нужно сообщить функции <var>filter</var> критерий, который говорит, брать элемент в результирующий список или нет. Давайте напишем простую функцию, которая проверяет, что слово длиннее шести букв, и затем отберем с ее помощью длинные слова.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">is_word_long</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">6</span>
+
+
+words <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'В'</span><span class="token punctuation">,</span> <span class="token string">'новом'</span><span class="token punctuation">,</span> <span class="token string">'списке'</span><span class="token punctuation">,</span> <span class="token string">'останутся'</span><span class="token punctuation">,</span> <span class="token string">'только'</span><span class="token punctuation">,</span> <span class="token string">'длинные'</span><span class="token punctuation">,</span> <span class="token string">'слова'</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> word <span class="token keyword">in</span> <span class="token builtin">filter</span><span class="token punctuation">(</span>is_word_long<span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span>
+<span class="token comment"># =&gt; останутся</span>
+<span class="token comment"># =&gt; длинные</span>
+</code></pre>
+<p>С методом <var>filter</var> вам не нужно вручную создавать и заполнять список, достаточно указать условие отбора.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Итераторы</strong></p>
+<p>Если вы попробуете распечатать результат функции <var>filter</var> при помощи функции <var>print</var> (а не перебирая элементы по одному в цикле <var>for</var>), удивитесь: будет выведен не список, а специальный объект <code>"&lt;filter object at 0x...&gt;"</code>.</p>
+<p>Он похож на список тем, что его можно перебирать циклом <var>for</var>, т. е. итерировать. Такие объекты называют <strong>итераторами</strong>.</p>
+</section>
+<p>Чтобы получить из итератора список, можно воспользоваться функцией <var>list</var>:</p>
+<pre class="language-python"><code class="language-python">long_words <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">filter</span><span class="token punctuation">(</span>isWordLong<span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Описанный способ отфильтровать список пока далек от удобного, поскольку нам приходится заводить функцию для каждой проверки, что занимает две лишних строки кода. Для каждой такой маленькой функции приходится придумывать имя (и загромождать пространство имен).</p>
+<p>Для того чтобы создавать такие короткие функции, «на один раз», в языке Python есть специальный синтаксис.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Лямбда-функции</h2>
+<p>Часто в качестве аргумента для функций высшего порядка мы хотим использовать совсем простую функцию. Причем нередко такая функция нужна в программе только в одном месте, поэтому ей необязательно даже иметь имя.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Лямбда-функции</strong></p>
+<p>Такие короткие безымянные (анонимные) функции можно создавать инструкцией <code>lambda &lt;аргументы&gt;: &lt;выражение&gt;</code>.</p>
+<p>Такая инструкция создаст функцию, принимающую указанный список аргументов и возвращающую результат вычисления выражения.</p>
+<p>В языке Python тело лямбда-функции имеет ровно одно выражение. Инструкция <var>return</var> подразумевается, писать ее не требуется, да и нельзя. Скобки вокруг аргументов не пишутся, аргументы от выражения отделяет двоеточие.</p>
+</section>
+<p>Теперь мы можем записать функцию, проверяющую длину слова, следующим образом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">lambda</span> word<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">6</span>
+</code></pre>
+<p>И список длинных слов теперь извлечь очень просто:</p>
+<pre class="language-python"><code class="language-python">long_words <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> word<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">6</span><span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Лямбда-функция — полноценная функция. Ее можно использовать в составе любых конструкций. Например, если вы хотите использовать ее несколько раз, но не хотите определять функцию с помощью <var>def</var>, вы можете присвоить созданную лямбда-функцию какой-либо переменной.</p>
+<pre class="language-python"><code class="language-python">add <span class="token operator">=</span> <span class="token keyword">lambda</span> x<span class="token punctuation">,</span> y<span class="token punctuation">:</span> x <span class="token operator">+</span> y
+add<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; 8</span>
+add<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> add<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># =&gt; 6</span>
+</code></pre>
+<p>А теперь рассмотрим вариант, что вам нужно взять все элементы списка, но в программе уже стоит <var>filter</var> и вам не хочется его удалять. В этой ситуации вам поможет функция с особенно простым выражением:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token boolean">True</span>
+</code></pre>
+<p>Покажем:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_some_primes</span><span class="token punctuation">(</span>criterion<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    primes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">13</span><span class="token punctuation">,</span> <span class="token number">17</span><span class="token punctuation">,</span> <span class="token number">19</span><span class="token punctuation">,</span> <span class="token number">23</span><span class="token punctuation">,</span> <span class="token number">29</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> number <span class="token keyword">in</span> <span class="token builtin">filter</span><span class="token punctuation">(</span>criterion<span class="token punctuation">,</span> primes<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span>
+
+
+print_some_primes<span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token boolean">True</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Лямбда-функция принимает аргумент, хотя и не использует его. Функция <var>filter</var> всегда передает в критерий элемент, который проверяет. Если бы мы написали лямбда-функцию без аргументов <code>lambda: True</code>, функция <var>filter</var> вызвала бы ошибку, потому что передала бы аргумент в функцию, которая аргументов не принимает.</p>
+</section>
+<p>Чтобы функция <var>filter</var> не казалась магической, напишем свой упрощенный аналог. Наша функция <var>simple_filter</var> будет принимать критерий и список и возвращать новый список.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">simple_filter</span><span class="token punctuation">(</span>criterion<span class="token punctuation">,</span> arr<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> element <span class="token keyword">in</span> arr<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> criterion<span class="token punctuation">(</span>element<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            result<span class="token punctuation">.</span>append<span class="token punctuation">(</span>element<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> result
+</code></pre>
+<p>Мы передали критерий как функцию, а потому можем его вызвать, что мы и сделали в условном операторе. Так как для перечисления элементов мы использовали конструкцию <var>for</var>, мы можем вместо списка в функцию передать любой итерируемый объект. Например, строку (элементами будут отдельные символы) или интервал <var>range</var>.</p>
+<p>Например, найдем все числа от 1 до 99, которые при делении на 12 дают 7 в остатке.</p>
+<pre class="language-python"><code class="language-python">simple_filter<span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x <span class="token operator">%</span> <span class="token number">12</span> <span class="token operator">==</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [7, 19, 31, 43, 55, 67, 79, 91]</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Функция map</h2>
+<p>Другая популярная функция высшего порядка называется <var>map</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Функция map</strong></p>
+<p>Функция <var>map</var> преобразует каждый элемент списка по некоторому общему правилу и в результате создает список (вернее, как и <var>filter</var>, специальный итерируемый объект, похожий на список) из преобразованных значений.</p>
+</section>
+<p>Функция, которую <var>map</var> принимает, — преобразование одного элемента. Зная, как преобразуется один элемент, <var>map</var> выполняет превращение целых списков.</p>
+<p>Например, возьмем набор из чисел от 1 до 10 и применим к ним функцию возведения в квадрат.</p>
+<pre class="language-python"><code class="language-python"><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [1, 4, 9, 16, 25, 36, 49, 64, 81]</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Еще немного о списочных выражениях</h2>
+<p>В уроке, посвященном списочным выражениям, вы разбирали конструкции, которые очень похожи на действие функции <var>map</var>. Например, список квадратов цифр можно посчитать так:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">[</span>x <span class="token operator">**</span> <span class="token number">2</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token comment"># =&gt; [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Оказывается, для фильтрации списка тоже есть специальный вид списочного выражения: достаточно приписать <code>if &lt;условие&gt;</code> в конце выражения. Такая конструкция отберет только те элементы, которые удовлетворяют условию.</p>
+</section>
+<p>Например, сгенерируем список четных цифр, не делящихся на 3:</p>
+<pre class="language-python"><code class="language-python"><span class="token punctuation">[</span>x <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span> <span class="token keyword">if</span> x <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">and</span> x <span class="token operator">%</span> <span class="token number">3</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token comment"># =&gt; [2, 4, 8]</span>
+</code></pre>
+<p>Списочное выражение можно рассматривать как комбинацию фильтрации и трансформации: сначала выполняется фильтрация, затем — трансформирование. Давайте, например, возьмем список слов, оставим только длинные слова и преобразуем их в слова, написанные большими буквами:</p>
+<pre class="language-python"><code class="language-python">words <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'В'</span><span class="token punctuation">,</span> <span class="token string">'новом'</span><span class="token punctuation">,</span> <span class="token string">'списке'</span><span class="token punctuation">,</span> <span class="token string">'останутся'</span><span class="token punctuation">,</span> <span class="token string">'только'</span><span class="token punctuation">,</span> <span class="token string">'длинные'</span><span class="token punctuation">,</span> <span class="token string">'слова'</span><span class="token punctuation">]</span>
+long_words <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> word<span class="token punctuation">:</span> word<span class="token punctuation">.</span>upper<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                      <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> word<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">6</span><span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; ['ОСТАНУТСЯ', 'ДЛИННЫЕ']</span>
+<span class="token comment"># или</span>
+long_words <span class="token operator">=</span> <span class="token punctuation">[</span>word<span class="token punctuation">.</span>upper<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> word <span class="token keyword">in</span> words <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">6</span><span class="token punctuation">]</span>
+<span class="token comment"># =&gt; ['ОСТАНУТСЯ', 'ДЛИННЫЕ']</span>
+</code></pre>
+<p>Как видите, оба способа позволяют добиться результата, но списочные выражения выглядят немного проще. В зависимости от ситуации, бывает удобно использовать либо одну форму, либо другую.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Комбинирование функций</h2>
+<p>Посмотрим, как функции высшего порядка комбинируются для решения более сложных задач. Разберем, как можно было бы при помощи этих функций решить задачу «Длинношеее» из дополнительных задач к уроку по теме «Функции».</p>
+<p>Напомним, что нам нужно найти слова, имеющие четыре слога и более. Мы можем разбить эту задачу на такие этапы: выделить список слов, посчитать число гласных букв и в зависимости от их числа взять слово или отбросить. Перед тем как выделять слова мы еще дополнительно отбросим пунктуацию. Каждый этап обернем в одну небольшую функцию.</p>
+<pre class="language-python"><code class="language-python">ENGLISH_ALPHABET <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">chr</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token keyword">for</span> c <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">ord</span><span class="token punctuation">(</span><span class="token string">'a'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">ord</span><span class="token punctuation">(</span><span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+RUSSIAN_ALPHABET <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">chr</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token keyword">for</span> c <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">ord</span><span class="token punctuation">(</span><span class="token string">'а'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">ord</span><span class="token punctuation">(</span><span class="token string">'я'</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span> 
+                       <span class="token operator">+</span> <span class="token punctuation">[</span><span class="token string">'ё'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+ALPHABET <span class="token operator">=</span> ENGLISH_ALPHABET <span class="token operator">^</span> RUSSIAN_ALPHABET
+
+ENGLISH_VOWELS <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'e'</span><span class="token punctuation">,</span> <span class="token string">'i'</span><span class="token punctuation">,</span> <span class="token string">'o'</span><span class="token punctuation">,</span> <span class="token string">'u'</span><span class="token punctuation">}</span>
+RUSSIAN_VOWELS <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'а'</span><span class="token punctuation">,</span> <span class="token string">'о'</span><span class="token punctuation">,</span> <span class="token string">'э'</span><span class="token punctuation">,</span> <span class="token string">'и'</span><span class="token punctuation">,</span> <span class="token string">'у'</span><span class="token punctuation">,</span> <span class="token string">'ы'</span><span class="token punctuation">,</span> <span class="token string">'е'</span><span class="token punctuation">,</span> <span class="token string">'ё'</span><span class="token punctuation">,</span> <span class="token string">'ю'</span><span class="token punctuation">,</span> <span class="token string">'я'</span><span class="token punctuation">}</span>
+VOWELS <span class="token operator">=</span> ENGLISH_VOWELS <span class="token operator">^</span> RUSSIAN_VOWELS
+
+
+<span class="token keyword">def</span> <span class="token function">remove_punctuation</span><span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> c<span class="token punctuation">:</span> c <span class="token keyword">in</span> ALPHABET <span class="token operator">^</span> <span class="token punctuation">{</span><span class="token string">' '</span><span class="token punctuation">}</span><span class="token punctuation">,</span> text<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">get_words</span><span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> remove_punctuation<span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">number_of_vowels</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> c<span class="token punctuation">:</span> c <span class="token keyword">in</span> VOWELS<span class="token punctuation">,</span> word<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">long_words</span><span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token builtin">filter</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> word<span class="token punctuation">:</span> number_of_vowels<span class="token punctuation">(</span>word<span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">4</span><span class="token punctuation">,</span> get_words<span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_long_words</span><span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> word <span class="token keyword">in</span> long_words<span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>word<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Функцию <var>filter</var> мы используем трижды:</p>
+<ul>
+<li>Чтобы оставить только буквы и пробелы</li>
+<li>Чтобы выделить в строке только гласные</li>
+<li>Чтобы из всех слов отобрать только нужные</li>
+</ul>
+<p>Функции получились не очень сложные и (что важно) их легко комбинировать друг с другом.</p>
+<p>Обратите внимание: не всегда требуется создавать лямбда-функцию при вызове, поскольку иногда нужная функция уже существует. Например, если мы хотим преобразовать список слов в список длин слов, мы можем использовать любой из двух вариантов (но, конечно, удобнее использовать более короткий):</p>
+<pre class="language-python"><code class="language-python">words <span class="token operator">=</span> <span class="token string">'the quick brown fox jumps over the lazy dog'</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> word<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span><span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [3, 5, 5, 3, 5, 4, 3, 4, 3]</span>
+<span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; [3, 5, 5, 3, 5, 4, 3, 4, 3]</span>
+</code></pre>
+<p>Еще один пример — считывание списка чисел с клавиатуры:</p>
+<pre class="language-python"><code class="language-python">numbers <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">float</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Аналогично можно использовать в качестве передаваемой функции методы объектов. Но при этом нужно указать не только название метода, но и название типа объекта, к которому эта функция относится. То есть для метода строк это будет <var>str</var>, для списков — <var>list</var> и т. д. Про методы и типы вы еще будете много говорить на будущих уроках, пока что только простой пример — преобразовать каждое слово в списке к верхнему регистру:</p>
+<pre class="language-python"><code class="language-python">words <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'list'</span><span class="token punctuation">,</span> <span class="token string">'of'</span><span class="token punctuation">,</span> <span class="token string">'several'</span><span class="token punctuation">,</span> <span class="token string">'words'</span><span class="token punctuation">]</span>
+<span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> word<span class="token punctuation">:</span> word<span class="token punctuation">.</span>upper<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; ['LIST', 'OF', 'SEVERAL', 'WORDS']</span>
+<span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">.</span>upper<span class="token punctuation">,</span> words<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># =&gt; ['LIST', 'OF', 'SEVERAL', 'WORDS']</span>
+</code></pre>
+<p>Существует еще множество полезных функций, которые принимают функцию в качестве аргумента. Оказывается, что даже давно известные вам функции <var>min</var>, <var>max</var>, <var>sort</var> могут принимать функцию одним из аргументов, что изменяет их поведение.</p>
+</section></article></section>

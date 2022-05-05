@@ -1,0 +1,241 @@
+<section class="lesson-material__content"><article class="material"><h1>REST-API. Понятие. Делаем простое REST-API</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">REST API на flask. Микросервисы</a></li>
+<li><a class="material__link" href="#2">REST</a></li>
+<li><a class="material__link" href="#3">Blueprint</a></li>
+<li><a class="material__link" href="#4">Сериализация в json</a></li>
+<li><a class="material__link" href="#5">Создание и тестирование сервисов</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом занятии мы научимся создавать собственное API для наших веб-приложений.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">REST API на flask. Микросервисы</h2>
+<p>На прошлых уроках вы изучили базовые возможности фреймворка Flask и уже можете создавать полноценные веб-приложения, которые могут взаимодействовать с пользователем и работать с базой данных. На этом уроке мы предлагаем подняться на уровень выше и рассмотреть архитектуру веб-приложения: по каким правилам будут взаимодействовать компоненты вашего приложения и как организовать код, чтобы в дальнейшем его было легче поддерживать и проще добавлять новые функции.</p>
+<p>Можно выделить два основных подхода к организации архитектуры веб-приложений:</p>
+<ul>
+<li>Монолитная архитектура (Monolithic Style)</li>
+<li>Сервис-ориентированная архитектура (SOA, Service-oriented Architecture)</li>
+</ul>
+<p>При монолитном подходе приложение строится как единое целое. Как правило, монолитное веб-приложение включает три части: веб-сервер, который содержит всю логику приложения, базу данных и пользовательский интерфейс в виде HTML-страниц. Любые изменения в логике сервера, даже самые небольшие, приводят к выпуску новой версии всего приложения. А с учетом того, что все больше приложений развертываются на облачных серверах, после внесенных изменений нужно заново развертывать в облаке монолитное приложение целиком. Монолитный подход является самым старым, именно с него началась разработка всего программного обеспечения. Тем не менее, монолитные приложения живы и по сей день, и в некоторых проектах такой подход является оправданным.</p>
+<p>Недостатки монолитной архитектуры привели к появлению сначала <strong>модульной</strong>, а потом и сервис-ориентированной архитектуры. <strong>Сервис-ориентированная архитектура</strong> (SOA) основана на использовании отдельных полностью самодостаточных модулей, называемых <strong>сервисами</strong>. Разработка сервисов происходит отдельно друг от друга, а потому изменения в коде одного сервиса будут влиять только на него.</p>
+<p>Около 10 лет назад (сам термин устоялся только в 2012 году) появился еще один подход, «современный взгляд» на проектирование распределенных приложений — <strong>архитектура микросервисов</strong> (MSA, Micro Service Architecture). Можно сказать, что MSA является разновидностью, частным случаем SOA. Такая архитектура подразумевает, что ваше приложение представляет собой много небольших сервисов, которые взаимодействуют между собой путем обмена сообщениями, как правило, по протоколу HTTP (или разные сервисы взаимодействуют по разным протоколам). MSA предполагает, что каждый микросервис — это полностью независимое приложение, содержащее всего несколько сотен строк кода. Согласно MSA, микросервисы могут располагаться даже на различных серверах. Интересно, что при таком подходе разные микросервисы в рамках одного приложения могут быть написаны на разных языках программирования и с применением разных технологий.</p>
+<p>Рекомендуем прочитать подробную статью про микросервисную архитектуру на <a class="material__link" href="https://habr.com/company/dataart/blog/280083/" rel="noopener noreferrer" target="_blank">Хабре</a>.</p>
+<p>Можно сказать, что микросервисы — это теория, а на практике она может выражаться по-разному. Мы рассмотрим архитектурный стиль, основанный на идеологии микросервисов, который на настоящее время становится стандартом при разработке веб-приложений — <strong>архитектурный стиль REST</strong> (REpresentational State Transfer).</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">REST</h2>
+<p>REST — архитектурный стиль программного обеспечения, который определяет правила управления информационными потоками и правила взаимодействия компонентов распределенного приложения. Другими словами, REST — это набор ограничений и принципов взаимодействия сервера и клиента в сети, который использует существующие стандарты: протокол HTTP, стандарт построения URL, форматы данных JSON и XML.</p>
+<p>Ключевым понятием в архитектуре REST является URL. Каждая единица информации имеет уникальный идентификатор — URL, который строится по строго заданному формату. Например, вторая книга с книжной полки будет иметь URL /book/2, а 50-я страница в этой книге — /book/2/page/50.</p>
+<p>То, каким образом происходит управление этой информацией, определяет протокол передачи данных. REST использует протокол HTTP, соответственно, управление информацией происходит с помощью HTTP-запросов: GET (получить), PUT (заменить), POST (добавить), DELETE (удалить). Для каждой единицы информации определяется пять операций:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<thead>
+<tr>
+<th>№</th>
+<th>Операция</th>
+<th>Запрос</th>
+<th>Пример URL</th>
+<th>Примечание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Получить список всех объектов</td>
+<td>GET</td>
+<td>/book/</td>
+<td>Получить список всех книг на полке</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Получить информацию об объекте</td>
+<td>GET</td>
+<td>/book/2</td>
+<td>Получить информацию о книге № 2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Создать новый объект</td>
+<td>POST</td>
+<td>/book/</td>
+<td>Добавить новую книгу на основе информации, переданной с запросом</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Изменить существующий объект</td>
+<td>PUT</td>
+<td>/book/1</td>
+<td>Изменить книгу № 1 на основе информации, переданной с запросом</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Удалить существующий объект</td>
+<td>DELETE</td>
+<td>/book/2</td>
+<td>Удалить книгу № 2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Данные для изменения и добавления (PUT- и POST-запросы) передаются в теле запроса в формате JSON или XML. Глядя на запрос, можно сразу определить, для чего он служит (к сожалению, в некоторых других архитектурных стилях — SOAP, XML-RPC — это не так).</p>
+<p>Приложения, поддерживающие архитектуру REST, называются <strong>RESTful-приложениями</strong>. Давайте создадим наш первый RESTful веб-сервис.</p>
+<p>Перед написанием кода нужно продумать, с какой информацией мы будем работать и на основе каких правил будут строиться URL. Давайте вернемся к нашему приложению по работе с новостями из прошлого урока и построим его по принципам REST. Для получения списка всех новостей можно использовать такой URL:</p>
+<pre><code>http://127.0.0.1:5000/api/news
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Blueprint</h2>
+<p>Чтобы не смешивать код обработчиков API для новостей с кодом основного приложения, мы воспользуемся механизмом разделения приложения Flask на независимые модули или Blueprint. Как правило, blueprint — логически выделяемый набор обработчиков адресов, который можно вынести в отдельный файл или модуль. Blueprint работает аналогично объекту приложения Flask, но в действительности он не является приложением. Обычно это лишь эскиз для сборки или расширения приложения.</p>
+<p>Давайте создадим файл news_api.py и добавим в него следующий код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> flask
+
+<span class="token keyword">from</span> <span class="token punctuation">.</span> <span class="token keyword">import</span> db_session
+<span class="token keyword">from</span> <span class="token punctuation">.</span>news <span class="token keyword">import</span> News
+
+blueprint <span class="token operator">=</span> flask<span class="token punctuation">.</span>Blueprint<span class="token punctuation">(</span>
+    <span class="token string">'news_api'</span><span class="token punctuation">,</span>
+    __name__<span class="token punctuation">,</span>
+    template_folder<span class="token operator">=</span><span class="token string">'templates'</span>
+<span class="token punctuation">)</span>
+
+
+@blueprint<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/api/news'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">get_news</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">"Обработчик в news_api"</span>
+</code></pre>
+<p>Мы создали схему, в которую добавили обработчик. Обратите внимание: мы воспользовались не декоратором <code>app.route</code>, а аналогичным для схемы — <code>blueprint.route</code>. Теперь нужно, чтобы о нашей схеме узнало основное приложение, для чего в main.py перед запуском добавим регистрацию схемы:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> data <span class="token keyword">import</span> db_session<span class="token punctuation">,</span> news_api
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    db_session<span class="token punctuation">.</span>global_init<span class="token punctuation">(</span><span class="token string">"db/blogs.db"</span><span class="token punctuation">)</span>
+    app<span class="token punctuation">.</span>register_blueprint<span class="token punctuation">(</span>news_api<span class="token punctuation">.</span>blueprint<span class="token punctuation">)</span>
+    app<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Перейдем по адресу http://127.0.0.1:5000/api/news и проверим, что у нас получилось.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/web/web-rest-1.png" width="272"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="4">Сериализация в json</h2>
+<p>Обычно REST-сервисы обмениваются информацией в формате json. Поэтому надо научить объекты наших моделей превращаться в словарь, для чего надо добавить каждой из моделей метод <var>to_dict</var>. Это достаточно просто сделать руками, но мы воспользуемся возможностями модуля SQLAlchemy-serializer. Установим его:</p>
+<pre><code>pip install SQLAlchemy-serializer
+</code></pre>
+<p>Теперь мы снова сможем воспользоваться множественным наследованием и добавить к каждой из наших моделей еще один класс-примесь <var>SerializerMixin</var>, добавляющий метод <var>to_dict</var>.</p>
+<p>Заголовок класса <var>Users</var> теперь у нас выглядит так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">User</span><span class="token punctuation">(</span>SqlAlchemyBase<span class="token punctuation">,</span> UserMixin<span class="token punctuation">,</span> SerializerMixin<span class="token punctuation">)</span><span class="token punctuation">:</span>
+</code></pre>
+<p>Не забудьте добавить <var>SerializerMixin</var> и в остальные модели.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Создание и тестирование сервисов</h2>
+<p>Теперь допишем в функцию <code>get_news()</code> код для получения всех новостей. Давайте пока опустим проверку авторизации пользователя.</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@blueprint<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/api/news'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">get_news</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">all</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">'news'</span><span class="token punctuation">:</span>
+                <span class="token punctuation">[</span>item<span class="token punctuation">.</span>to_dict<span class="token punctuation">(</span>only<span class="token operator">=</span><span class="token punctuation">(</span><span class="token string">'title'</span><span class="token punctuation">,</span> <span class="token string">'content'</span><span class="token punctuation">,</span> <span class="token string">'user.name'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+                 <span class="token keyword">for</span> item <span class="token keyword">in</span> news<span class="token punctuation">]</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">)</span>
+</code></pre>
+<p>Как видите, мы можем явно указать, какие поля хотим оставить в получившемся словаре.</p>
+<p>Согласно архитектуре REST, обмен данными между клиентом и сервером осуществляется в формате JSON (реже — XML). Поэтому мы изменили формат ответа сервера flask с помощью метода <var>jsonify</var>, который преобразует наши данные в JSON.</p>
+<p>Посмотреть, что вернул сервер, можно и не открывая браузер. По сути, браузер — это средство для отправки запросов на сервер и отображения ответа. Отправить запрос на сервер можно и другими способами (например, консольная утилита curl или GUI-программа Postman), но как программисты на Python, мы воспользуемся его средствами, а именно — модулем requests. Мы уже неплохо знакомы с этим модулем и помним, что он позволяет отправлять на сервер разные типы запросов, передавать данные вместе с POST- и PUT-запросами. Для этого используются специальные функции, их имена совпадают с именем HTTP-запроса. Для тестирования нашего RESTful-сервиса создадим файл test.py со следующим содержимым:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> requests <span class="token keyword">import</span> get
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>get<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Запустим файл (не забудьте запустить сервер) и увидим, что на наш GET-запрос пришел ответ от сервера со всеми новостями из базы данных.</p>
+<p>Согласно REST, далее нужно реализовать получение информации об одной новости. Фактически, мы уже получили из списка всю информацию о каждой новости. При проектировании приложений по архитектуре REST обычно поступают таким образом: когда возвращается список объектов, он содержит только краткую информацию (например, только id и заголовок), а полную информацию (текст и автора) можно посмотреть с помощью запроса, который мы обработаем далее.</p>
+<p>Напишем функцию <var>get_one_news</var> для получения информации о новости по ее идентификатору. Как нам говорит REST, идентификатор объекта содержится в URL, по которому мы обращаемся. Как же передать этот идентификатор, если он различный у всех новостей, а в декораторе функции-обработчика мы указываем статический адрес? Flask позволяет решить эту проблему с помощью параметров адреса: мы можем передать параметр в URL, в декораторе заключив его в угловые скобки и указав тип и имя (например, <code>&lt;int:news_id&gt;</code>), и он будет передан функции-обработчику как аргумент. Обратите внимание: теперь наша функция принимает аргумент <var>news_id</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@blueprint<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/api/news/&lt;int:news_id&gt;'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'GET'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">get_one_news</span><span class="token punctuation">(</span>news_id<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>news_id<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> news<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'error'</span><span class="token punctuation">:</span> <span class="token string">'Not found'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">'news'</span><span class="token punctuation">:</span> news<span class="token punctuation">.</span>to_dict<span class="token punctuation">(</span>only<span class="token operator">=</span><span class="token punctuation">(</span>
+                <span class="token string">'title'</span><span class="token punctuation">,</span> <span class="token string">'content'</span><span class="token punctuation">,</span> <span class="token string">'user_id'</span><span class="token punctuation">,</span> <span class="token string">'is_private'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">)</span>
+</code></pre>
+<p>Посмотрим ответ сервера с корректным <var>id</var> и с ошибочным, добавив еще два запроса в файл test.py:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>get<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news/1'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>get<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news/999'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># новости с id = 999 нет в базе</span>
+</code></pre>
+<p>Как видим, в первом случае нам вернулась одна новость, во втором — сообщение об ошибке. В типе параметра URL мы указали <var>int</var>. Что же будет, если мы передадим не число? Давайте проверим.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>get<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news/q'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Файл test.py завершится с ошибкой. Так как параметр не типа <var>int</var>, в функцию <var>get_one_news</var> мы даже не попадем — нет полного совпадения декоратора. На такой запрос сервер вернет ответ со статусом 404 (страница не найдена), но не в формате JSON. Поэтому при попытке преобразовать ответ с помощью метода <code>json()</code> программа завершается с ошибкой, так как клиентское приложение, в нашем случае, ожидает от сервера ответ в формате JSON. Уберите приведение ответа к JSON и посмотрите, что вернул сервер.</p>
+<p>Чтобы такой ошибки не возникало, воспользуемся модулем make_response. Импортируем модуль и добавим функцию с декоратором 404 ошибки:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> flask <span class="token keyword">import</span> make_response
+
+@app<span class="token punctuation">.</span>errorhandler<span class="token punctuation">(</span><span class="token number">404</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">not_found</span><span class="token punctuation">(</span>error<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> make_response<span class="token punctuation">(</span>jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'error'</span><span class="token punctuation">:</span> <span class="token string">'Not found'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">404</span><span class="token punctuation">)</span>
+</code></pre>
+<p>После этого даже при передаче неправильного параметра ответ от сервера будет приходить в формате JSON, и клиентское приложение не будет падать. Верните метод <code>json()</code> и проверьте результат.</p>
+<p>Следующая операция, которую нам нужно реализовать — добавление новой новости с помощью POST-запроса. Как уже было сказано, данные для создаваемой новости будут переданы в теле запроса. Чтобы добраться до тела запроса, нам понадобиться модуль request из flask (не путайте с модулем requests).</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@blueprint<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/api/news'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'POST'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">create_news</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> request<span class="token punctuation">.</span>json<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'error'</span><span class="token punctuation">:</span> <span class="token string">'Empty request'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+    <span class="token keyword">elif</span> <span class="token keyword">not</span> <span class="token builtin">all</span><span class="token punctuation">(</span>key <span class="token keyword">in</span> request<span class="token punctuation">.</span>json <span class="token keyword">for</span> key <span class="token keyword">in</span>
+                 <span class="token punctuation">[</span><span class="token string">'title'</span><span class="token punctuation">,</span> <span class="token string">'content'</span><span class="token punctuation">,</span> <span class="token string">'user_id'</span><span class="token punctuation">,</span> <span class="token string">'is_private'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'error'</span><span class="token punctuation">:</span> <span class="token string">'Bad request'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+    db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    news <span class="token operator">=</span> News<span class="token punctuation">(</span>
+        title<span class="token operator">=</span>request<span class="token punctuation">.</span>json<span class="token punctuation">[</span><span class="token string">'title'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        content<span class="token operator">=</span>request<span class="token punctuation">.</span>json<span class="token punctuation">[</span><span class="token string">'content'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        user_id<span class="token operator">=</span>request<span class="token punctuation">.</span>json<span class="token punctuation">[</span><span class="token string">'user_id'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        is_private<span class="token operator">=</span>request<span class="token punctuation">.</span>json<span class="token punctuation">[</span><span class="token string">'is_private'</span><span class="token punctuation">]</span>
+    <span class="token punctuation">)</span>
+    db_sess<span class="token punctuation">.</span>add<span class="token punctuation">(</span>news<span class="token punctuation">)</span>
+    db_sess<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'success'</span><span class="token punctuation">:</span> <span class="token string">'OK'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Проверив, что запрос содержит все требуемые поля, мы заносим новую запись в базу данных. <var>request.json</var> содержит тело запроса, с ним можно работать, как со словарем. В нашем случае все ключи заранее известны и все поля обязательны. В противном случае для работы со словарем <var>request.json</var> нужно использовать метод словарей <var>get</var>. Вспомните, в чем его особенность.</p>
+<p>При тестировании проверим пустой запрос, передачу только заголовка новости и корректный запрос. Все данные передаются в параметре json:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>post<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>post<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news'</span><span class="token punctuation">,</span>
+           json<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'title'</span><span class="token punctuation">:</span> <span class="token string">'Заголовок'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>post<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news'</span><span class="token punctuation">,</span>
+           json<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">'title'</span><span class="token punctuation">:</span> <span class="token string">'Заголовок'</span><span class="token punctuation">,</span>
+                 <span class="token string">'content'</span><span class="token punctuation">:</span> <span class="token string">'Текст новости'</span><span class="token punctuation">,</span>
+                 <span class="token string">'user_id'</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+                 <span class="token string">'is_private'</span><span class="token punctuation">:</span> <span class="token boolean">False</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Проверьте, что в каждом случае от сервера приходит нужное сообщение. Также давайте отправим запрос на получение всех новостей и убедимся, что новость добавлена.</p>
+<p>Добавим функцию удаления новости:</p>
+<pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@blueprint<span class="token punctuation">.</span>route</span><span class="token punctuation">(</span><span class="token string">'/api/news/&lt;int:news_id&gt;'</span><span class="token punctuation">,</span> methods<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'DELETE'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">delete_news</span><span class="token punctuation">(</span>news_id<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    db_sess <span class="token operator">=</span> db_session<span class="token punctuation">.</span>create_session<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    news <span class="token operator">=</span> db_sess<span class="token punctuation">.</span>query<span class="token punctuation">(</span>News<span class="token punctuation">)</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>news_id<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> news<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'error'</span><span class="token punctuation">:</span> <span class="token string">'Not found'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+    db_sess<span class="token punctuation">.</span>delete<span class="token punctuation">(</span>news<span class="token punctuation">)</span>
+    db_sess<span class="token punctuation">.</span>commit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> jsonify<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'success'</span><span class="token punctuation">:</span> <span class="token string">'OK'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<p>И протестируем ее:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>delete<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news/999'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># новости с id = 999 нет в базе</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>delete<span class="token punctuation">(</span><span class="token string">'http://localhost:5000/api/news/1'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Такой «ручной» способ создания RESTful-сервисов достаточно объемный и трудоемкий. Нужно держать в голове все URL и методы, создавать много функций-обработчиков с декораторами для каждого типа запросов (эти функции как раз и являются микросервисами). Программисты на Python не были бы программистами на Python, если бы не стремились упростить объемный код и сделать его более лаконичным. Так и появился легкий способ создавать RESTful-сервисы на flask — модуль Flask-RESTful, который мы рассмотрим уже на следующем уроке.</p>
+<p>Еще один важный вопрос не был рассмотрен в этом уроке — вопрос авторизации. Сейчас удалять, добавлять и просматривать новости с помощью нашего API может любой пользователь, а точнее любая программа, которая будет использовать этот API. В настоящих API для выполнения таких действий пользователь должен представиться. Эта тема раскрыта в видео к уроку.</p>
+</section></article></section>

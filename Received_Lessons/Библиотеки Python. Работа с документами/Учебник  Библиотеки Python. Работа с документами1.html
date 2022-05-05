@@ -1,0 +1,222 @@
+<section class="lesson-material__content"><article class="material"><h1>Библиотеки Python. Часть 5. Документы</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Работа с документами</a></li>
+<li><a class="material__link" href="#2">Создание текстового документа</a></li>
+<li><a class="material__link" href="#3">Работа с документом как с шаблоном</a></li>
+<li><a class="material__link" href="#4">Создание презентаций</a></li>
+<li><a class="material__link" href="#5">Создание таблиц Excel</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы поговорим о библиотеках по работе с документами (текстами, презентациями, таблицами). Эти библиотеки можно использовать для автоматизации документооборота. Например, можно формировать документы: макеты презентаций, налоговую отчетность, открытки с поздравлениями.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Работа с документами</h2>
+<p>Довольно часто при разработке возникает необходимость программно создать какой-то документ или внести изменения в уже существующий. Работая с текстами разной направленности из кода, нужно принять во внимание, что тексты иногда хранятся в более сложных форматах, чем .txt. Они могут содержать встроенное форматирование, быть разделенными на страницы, перемежаться медиаконтентом (графиками, рисунками).</p>
+<p>Python умеет работать со многими такими документами. Давайте посмотрим, что можно сделать, чтобы создавать документы в формате Word, Excel или PowerPoint прямо из Python.</p>
+<p>Стоит отметить, что форматы .docx, .xlsx и .pptx открытые, что позволяет разработчикам довольно просто писать библиотеки для работы с ними. Для каждого офисного формата есть несколько библиотек с разным функционалом, и мы рассмотрим лишь некоторые из них.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-29/17.svg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="2">Создание текстового документа</h2>
+<p>Давайте воспользуемся модулем python-docx для создания docx-документа. Он, как и остальные приведенные в данном уроке библиотеки, не входит в состав стандартной библиотеки и требует отдельной установки через pip.</p>
+<pre><code>pip install python-docx
+</code></pre>
+<p>После установки давайте рассмотрим вот такой пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> docx <span class="token keyword">import</span> Document
+<span class="token keyword">from</span> docx<span class="token punctuation">.</span>shared <span class="token keyword">import</span> Inches
+
+document <span class="token operator">=</span> Document<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+document<span class="token punctuation">.</span>add_heading<span class="token punctuation">(</span><span class="token string">'Заголовок документа'</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+document<span class="token punctuation">.</span>add_paragraph<span class="token punctuation">(</span><span class="token string">'Абзац без форматирования'</span><span class="token punctuation">)</span>
+
+<span class="token comment"># тут у нас будет более сложный абзац</span>
+p <span class="token operator">=</span> document<span class="token punctuation">.</span>add_paragraph<span class="token punctuation">(</span><span class="token string">'Часть абзаца обычным текстом, '</span><span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>add_run<span class="token punctuation">(</span><span class="token string">'часть жирным шрифтом, '</span><span class="token punctuation">)</span><span class="token punctuation">.</span>bold <span class="token operator">=</span> <span class="token boolean">True</span>
+p<span class="token punctuation">.</span>add_run<span class="token punctuation">(</span><span class="token string">' а часть '</span><span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>add_run<span class="token punctuation">(</span><span class="token string">'курсивом.'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>italic <span class="token operator">=</span> <span class="token boolean">True</span>
+
+document<span class="token punctuation">.</span>add_heading<span class="token punctuation">(</span><span class="token string">'Заголовок первого уровня'</span><span class="token punctuation">,</span> level<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+document<span class="token punctuation">.</span>add_paragraph<span class="token punctuation">(</span><span class="token string">'Некоторая цитата'</span><span class="token punctuation">,</span> style<span class="token operator">=</span><span class="token string">'Intense Quote'</span><span class="token punctuation">)</span>
+
+document<span class="token punctuation">.</span>add_paragraph<span class="token punctuation">(</span><span class="token string">'Элемент ненумерованного списка'</span><span class="token punctuation">,</span> 
+                       style<span class="token operator">=</span><span class="token string">'List Bullet'</span><span class="token punctuation">)</span>
+document<span class="token punctuation">.</span>add_paragraph<span class="token punctuation">(</span><span class="token string">'Элемент нумерованного списка'</span><span class="token punctuation">,</span> 
+                       style<span class="token operator">=</span><span class="token string">'List Number'</span><span class="token punctuation">)</span>
+
+table <span class="token operator">=</span> document<span class="token punctuation">.</span>add_table<span class="token punctuation">(</span>rows<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> cols<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span>
+hdr_cells <span class="token operator">=</span> table<span class="token punctuation">.</span>rows<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>cells
+hdr_cells<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>text <span class="token operator">=</span> <span class="token string">'Номер'</span>
+hdr_cells<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>text <span class="token operator">=</span> <span class="token string">'Название'</span>
+hdr_cells<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span>text <span class="token operator">=</span> <span class="token string">'Количество'</span>
+
+document<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'test.docx'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Ключевой элемент этой библиотеки — объект <var>Document</var>. Для создания нового документа формата .docx надо записать результат вызова <var>Document</var> в переменную. Этого достаточно для создания абсолютно пустого документа в памяти. Чтобы наполнить его содержимым, необходимо вызывать у получившегося объекта различные методы, например:</p>
+<ul>
+<li><var>add_heading</var> — для создания заголовков разного уровня. При этом уровень 0 — заголовок документа</li>
+<li><var>add_paragraph</var> — для создания абзацев. С помощью параметра <var>style</var> можно управлять стилем абзаца и превращать его элемент маркированного или нумерованного списка</li>
+</ul>
+<p>Метод <var>add_paragraph</var> объекта-документа возвращает новый абзац, у которого есть свои методы вроде <var>add_run</var>, который дописывает текст с форматированием или без него в конец абзаца.</p>
+<p>Метод <var>add_table</var> создает в документе таблицу размером <var>col</var> столбцов и <var>row</var> строк. Если мы присвоим результат вызова этой функции переменной, сможем заполнить такую таблицу данными.</p>
+<p>Метод <var>save</var> сохраняет документ под указанным именем.</p>
+<p>Выполните приведенный код. Затем откройте созданный файл test.docx. Вы должны увидеть что-то такое:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-29/lesson-29-docx-1.png" width="680"/></div>
+<p>С помощью python-docx можно не только создавать новые документы, но и открывать уже существующие. Для этого при создании документа надо в качестве параметра передать путь к файлу или просто его имя, если он находится в каталоге с программой.</p>
+<p>Таким образом, мы можем получить абзацы или другие элементы документа, пройтись по ним и получить либо изменить какую-то информацию:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> docx <span class="token keyword">import</span> Document
+
+document <span class="token operator">=</span> Document<span class="token punctuation">(</span><span class="token string">'test.docx'</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> par <span class="token keyword">in</span> document<span class="token punctuation">.</span>paragraphs<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>par<span class="token punctuation">.</span>text<span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> table <span class="token keyword">in</span> document<span class="token punctuation">.</span>tables<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>table<span class="token punctuation">.</span>rows<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>cells<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>text<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Заголовок документа
+Абзац без форматирования
+Часть абзаца обычным текстом, часть жирным шрифтом,  а часть курсивом.
+Заголовок первого уровня
+Некоторая цитата
+Элемент ненумерованного списка
+Элемент нумерованного списка
+Номер</samp></pre>
+<p>Как мы увидим дальше, работа с подобными модулями примерно одинакова. Все элементы управления и форматирования:</p>
+<ul>
+<li>Списки</li>
+<li>Абзацы</li>
+<li>Таблицы</li>
+<li>Ячейки</li>
+</ul>
+<p>есть в наличии в том или ином виде, их можно изменять и комбинировать.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Работа с документом как с шаблоном</h2>
+<p>Очень распространенным вариантом использования является не создание документа с нуля, а заполнение данными уже готового шаблона. Для этого можно использовать библиотеку docxtpl.</p>
+<pre><code>pip install docxtpl
+</code></pre>
+<p>Например, у нас есть вот такой шаблон приглашения на мероприятие:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-29/lesson-29-docx-2.png" width="680"/></div>
+<p>C помощью двойных фигурных скобок выделены места в документе, куда мы можем подставить свои данные по имени. Кроме того, шаблоны поддерживают специальный синтаксис для циклов, условий и других конструкций. Внутри docxtpl лежит мощный и простой в использовании движок шаблонов jinja2. Вы с ним еще встретитесь на втором году обучения, когда мы будем говорить о веб-программировании.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> docxtpl <span class="token keyword">import</span> DocxTemplate
+<span class="token keyword">import</span> datetime <span class="token keyword">as</span> dt
+
+doc <span class="token operator">=</span> DocxTemplate<span class="token punctuation">(</span><span class="token string">"tpl.docx"</span><span class="token punctuation">)</span>
+context <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">'name'</span><span class="token punctuation">:</span> <span class="token string">'Иван Иванович'</span><span class="token punctuation">,</span>
+    <span class="token string">'event_name'</span><span class="token punctuation">:</span> <span class="token string">"танцевально-увеселительное мероприятие по случаю 45-летия независимости Кабо-Верде"</span><span class="token punctuation">,</span>
+    <span class="token string">'place'</span><span class="token punctuation">:</span> <span class="token string">"любой точке Кабо-Верде"</span><span class="token punctuation">,</span>
+    <span class="token string">'date'</span><span class="token punctuation">:</span> dt<span class="token punctuation">.</span>date<span class="token punctuation">.</span>today<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">'time'</span><span class="token punctuation">:</span> dt<span class="token punctuation">.</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">"%H:%M"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token string">'items'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">"картину"</span><span class="token punctuation">,</span>
+              <span class="token string">'корзину'</span><span class="token punctuation">,</span>
+              <span class="token string">"картонку"</span><span class="token punctuation">,</span>
+              <span class="token string">"маленькую собачонку"</span><span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+doc<span class="token punctuation">.</span>render<span class="token punctuation">(</span>context<span class="token punctuation">)</span>
+doc<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">"res.docx"</span><span class="token punctuation">)</span>
+</code></pre>
+<p>При работе с этой библиотекой нам надо воспользоваться классом <var>DocxTemplate</var>, при создании экземпляра которого необходимо передать имя нашего документа, который содержит шаблон. После чего нужно создать словарь и заполнить его информацией для вставки в документ. Значения из нашего словаря будут подставляться в шаблон по ключу. Метод <var>render</var> как раз и отвечает за такое заполнение. Метод <var>save</var> сохраняет документ под переданным именем.</p>
+<p>В итоге у нас получится вот такой документ:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-29/lesson-29-docx-3.png" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="4">Создание презентаций</h2>
+<p>Для работы с презентациями формата .pptx в Python есть библиотека python-pptx.</p>
+<pre><code>pip install python-pptx
+</code></pre>
+<p>Принцип ее работы во многом схож с библиотекой python-docx, но здесь ключевым элементом, с которым идет работа, выступает не <var>Document</var>, а <var>Presentation</var>.</p>
+<p>Напишем следующий код:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> pptx <span class="token keyword">import</span> Presentation
+<span class="token comment"># создаем новую презентацию</span>
+prs <span class="token operator">=</span> Presentation<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># получаем схему расположения элементов для заголовочного слайда</span>
+title_slide_layout <span class="token operator">=</span> prs<span class="token punctuation">.</span>slide_layouts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token comment"># создаем заголовочный слайд</span>
+slide <span class="token operator">=</span> prs<span class="token punctuation">.</span>slides<span class="token punctuation">.</span>add_slide<span class="token punctuation">(</span>title_slide_layout<span class="token punctuation">)</span>
+<span class="token comment"># создаем у слайда заголовок и текст</span>
+title <span class="token operator">=</span> slide<span class="token punctuation">.</span>shapes<span class="token punctuation">.</span>title
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Контейнер для текста:"</span><span class="token punctuation">,</span> slide<span class="token punctuation">.</span>placeholders<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+subtitle <span class="token operator">=</span> slide<span class="token punctuation">.</span>placeholders<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+title<span class="token punctuation">.</span>text <span class="token operator">=</span> <span class="token string">"Тестовый заголовок"</span>
+subtitle<span class="token punctuation">.</span>text <span class="token operator">=</span> <span class="token string">"Тестовый текст"</span>
+<span class="token comment"># создаем новый слайд со схемой для добавления изображений</span>
+slide <span class="token operator">=</span> prs<span class="token punctuation">.</span>slides<span class="token punctuation">.</span>add_slide<span class="token punctuation">(</span>prs<span class="token punctuation">.</span>slide_layouts<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+slide<span class="token punctuation">.</span>shapes<span class="token punctuation">.</span>title<span class="token punctuation">.</span>text <span class="token operator">=</span> <span class="token string">"А теперь с картинкой"</span>
+<span class="token comment"># добавляем изображение</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Контейнер для изображения:"</span><span class="token punctuation">,</span> slide<span class="token punctuation">.</span>placeholders<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+placeholder <span class="token operator">=</span> slide<span class="token punctuation">.</span>placeholders<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+placeholder<span class="token punctuation">.</span>insert_picture<span class="token punctuation">(</span><span class="token string">'1jpg.jpg'</span><span class="token punctuation">)</span>
+<span class="token comment"># сохраняем презентацию</span>
+prs<span class="token punctuation">.</span>save<span class="token punctuation">(</span><span class="token string">'test.pptx'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Контейнер для текста: &lt;pptx.shapes.placeholder.SlidePlaceholder object at 0x05DCF3B0&gt;
+Контейнер для изображения: &lt;pptx.shapes.placeholder.PicturePlaceholder object at 0x014324D0&gt;</samp></pre>
+<p>Обратиться к слайдам презентации можно через атрибут <var>slides</var> презентации. В свою очередь у <var>slides</var> есть метод <var>add_slide</var>, который добавляет новый слайд в презентацию. Данный метод принимает на вход схему нового слайда. Подробнее о схемах слайдов смотрите в документации. Но, например, нулевая схема предназначена для создания заголовочного слайда, а восьмая — для слайда с изображением.</p>
+<p>На слайде, в зависимости от схемы, по которой он создан, могут быть разные контейнеры для содержимого, которые называются <var>placeholders</var>. Бывают контейнеры для текста, изображения, таблицы или графика. У текстового контейнера <var>SlidePlaceholder</var> есть свойство <var>text</var>, которое задает текст.</p>
+<p>У контейнера для изображения <var>PicturePlaceholder</var> есть метод <var>insert_picture</var>, который добавляет переданное изображение на слайд.</p>
+<p>Метод <var>save</var> презентации сохраняет презентацию под переданным именем.</p>
+<p>Вот такая презентация у нас получится в итоге:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-29/lesson-29-pptx.png" width="404"/></div>
+<p>Как и в случае с документами, мы можем открыть уже существующую презентацию и получить или изменить какие-либо данные.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> pptx <span class="token keyword">import</span> Presentation
+
+prs <span class="token operator">=</span> Presentation<span class="token punctuation">(</span><span class="token string">'test.pptx'</span><span class="token punctuation">)</span>
+
+slide <span class="token operator">=</span> prs<span class="token punctuation">.</span>slides<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>slide<span class="token punctuation">.</span>placeholders<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>text<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Тестовый заголовок</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="5">Создание таблиц Excel</h2>
+<p>Для работы с файлами формата .xlsx есть несколько библиотек, одна из них — xlsxwriter, предназначенная только для создания xlsx-файлов.</p>
+<pre><code>pip install xlsxwriter
+</code></pre>
+<p>Принцип работы с этой библиотекой очень схож с рассмотренными ранее, но с небольшими оговоркамии. Уже при создании документа нам необходимо передавать имя, под которым этот документ будет сохранен в конце.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> xlsxwriter
+  
+workbook <span class="token operator">=</span> xlsxwriter<span class="token punctuation">.</span>Workbook<span class="token punctuation">(</span><span class="token string">'Суммы.xlsx'</span><span class="token punctuation">)</span>
+worksheet <span class="token operator">=</span> workbook<span class="token punctuation">.</span>add_worksheet<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ 
+data <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token string">'Развлечения'</span><span class="token punctuation">,</span> <span class="token number">6800</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token string">'Продукты'</span><span class="token punctuation">,</span> <span class="token number">25670</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token string">'Транспорт'</span><span class="token punctuation">,</span> <span class="token number">3450</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token punctuation">]</span>
+  
+<span class="token keyword">for</span> row<span class="token punctuation">,</span> <span class="token punctuation">(</span>item<span class="token punctuation">,</span> price<span class="token punctuation">)</span> <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    worksheet<span class="token punctuation">.</span>write<span class="token punctuation">(</span>row<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> item<span class="token punctuation">)</span>
+    worksheet<span class="token punctuation">.</span>write<span class="token punctuation">(</span>row<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> price<span class="token punctuation">)</span>
+ 
+row <span class="token operator">+=</span> <span class="token number">1</span>
+worksheet<span class="token punctuation">.</span>write<span class="token punctuation">(</span>row<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">'Всего'</span><span class="token punctuation">)</span>
+worksheet<span class="token punctuation">.</span>write<span class="token punctuation">(</span>row<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'=SUM(B1:B3)'</span><span class="token punctuation">)</span>
+ 
+workbook<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Потом с помощью метода <var>add_worksheet</var> надо добавить страницу в документ. У добавленной страницы можно вызывать метод <var>write</var>, который записывает в определенную строку и колонку переданные данные.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-29/lesson-29-xlsx-1.png" width="637"/></div>
+<p>С помощью метода <var>add_chart</var> можно создать диаграмму, указав ее тип и данные для построения. После чего построенную диаграмму можно добавить на страницу с помощью метода <var>insert_chart</var> с указанием ячейки вставки и самой диаграммы.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> xlsxwriter
+ 
+workbook <span class="token operator">=</span> xlsxwriter<span class="token punctuation">.</span>Workbook<span class="token punctuation">(</span><span class="token string">'диаграммы.xlsx'</span><span class="token punctuation">)</span>
+worksheet <span class="token operator">=</span> workbook<span class="token punctuation">.</span>add_worksheet<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ 
+<span class="token comment"># Данные</span>
+data <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">]</span>
+worksheet<span class="token punctuation">.</span>write_column<span class="token punctuation">(</span><span class="token string">'A1'</span><span class="token punctuation">,</span> data<span class="token punctuation">)</span>
+ 
+<span class="token comment"># Тип диаграммы</span>
+chart <span class="token operator">=</span> workbook<span class="token punctuation">.</span>add_chart<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'type'</span><span class="token punctuation">:</span> <span class="token string">'line'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+ 
+<span class="token comment"># Строим по нашим данным</span>
+chart<span class="token punctuation">.</span>add_series<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">'values'</span><span class="token punctuation">:</span> <span class="token string">'=Sheet1!A1:A7'</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+ 
+worksheet<span class="token punctuation">.</span>insert_chart<span class="token punctuation">(</span><span class="token string">'C1'</span><span class="token punctuation">,</span> chart<span class="token punctuation">)</span>
+workbook<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-29/lesson-29-xlsx-2.png" width="680"/></div>
+<p>С помощью библиотеки openpyxl можно как создавать, так и читать и редактировать файлы формата .xlsx. Рассмотрите примеры использования этой библиотеки самостоятельно.</p>
+</section></article></section>

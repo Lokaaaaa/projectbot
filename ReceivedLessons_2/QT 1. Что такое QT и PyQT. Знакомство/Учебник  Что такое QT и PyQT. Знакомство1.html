@@ -1,0 +1,412 @@
+<section class="lesson-material__content"><article class="material"><h1>Что такое QT и PyQT. Знакомство</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Графический интерфейс</a></li>
+<li><a class="material__link" href="#2">Установка и настройка</a></li>
+<li><a class="material__link" href="#3">Первые шаги в PyQT</a></li>
+<li><a class="material__link" href="#4">Кто отправил сигнал</a></li>
+<li><a class="material__link" href="#5">Открытие других форм</a></li>
+<li><a class="material__link" href="#6">Итоги</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В уроке рассказывается о графическом интерфейсе и разных способах его реализации, а также начинается знакомство с библиотекой PyQT5.</p>
+<p>Разбирается настройка окружения и примеры работы с основными элементами интерфейса.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Графический интерфейс</h2>
+<p>Раньше большинство ваших программ запускались и выполнялись из консоли, то есть и ввод, и вывод осуществлялся с использованием интерфейса командной строки (CLI — Command Line Interface), без создания привычного пользовательского интерфейса (вы немного могли «поиграть» с графическим интерфейсом на дополнительном уроке по библиотеке <var>tkinter</var>).</p>
+<p>Для программ, которые не предполагают того, что их будет использовать неподготовленный к работе с командной строкой пользователь, текстового интерфейса хватает. Существует большое количество консольных утилит, предназначенных для программистов или системных администраторов, но часто в жизни разработчика наступает момент, когда разработанную программу надо передать незнакомому с консолью пользователю. Графический интерфейс (GUI — Graphical User Interface) более «дружелюбный» к пользователям, а если в программе необходимо отображать не только текст, но и графическую или мультимедийную информацию, его использование становится необходимостью.</p>
+<p>Рассмотрим основные понятия концепции GUI. Допустим, есть знакомый нам текстовый редактор. Когда мы нажимаем клавишу Х, возникает событие «Нажата клавиша Х». В то же время внутри программы запускается <strong>обработчик</strong>, который проверяет, какая клавиша нажата, какая раскладка выбрана и так далее. Затем он выполняет <strong>действие</strong>: выводит нужный символ на экран. Общий принцип работы можно представить в виде такой несложной схемы:.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-1-1.svg" width="680"/></div>
+<p>Для языка программирования Python есть много способов создания приложений с графическим интерфейсом, в частности, уже знакомая вам библиотека tkinter. Она используется в большом числе кроссплатформенных приложений, написанных на Python. Мы абсолютно ничего не имеем против tkinter, но в этом разделе курса будем рассматривать библиотеку PyQT, так как ее возможности значительно богаче. Разобраться с другими библиотеками для построения графических интерфейсов вы можете самостоятельно, так как они имеют похожий принцип работы. Кроме того, на схеме Событие → Обработчик → Действие в том или ином виде построены почти все современные библиотеки, предназначенные для взаимодействия с пользователем. В этом вы сможете убедиться самостоятельно в следующих разделах курса.</p>
+<p>Что же такое PyQT? Для начала разберемся, что такое QT. Это написанная на C++ библиотека с классами для создания графического интерфейса. Библиотека получилась настолько удачной, начала собирать вокруг себя большое сообщество программистов, которые разрабатывали приложения не только на C++, но и на других языках программирования. Это привело к тому, что и для других языков программирования стали появляться свои библиотеки-«обертки» для QT. Для Python это <strong>PyQT</strong>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Установка и настройка</h2>
+<p>PyQt устанавливается так же, как и любая другая библиотека в Python:</p>
+<pre><code>pip install PyQT5
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Первые шаги в PyQT</h2>
+<p>В терминологии PyQT (и достаточно большого числа других библиотек создания GUI) все графические приложения состоят из виджетов.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Виджет</strong></p>
+<p>Виджет — минимальный элемент графического интерфейса пользователя.</p>
+</section>
+<p>В библиотеке PyQT5 существует множество модулей, но чаще других используется <strong>QtWidgets</strong>. Именно в нем находятся классы, соответствующие различным элементам интерфейса.</p>
+<p>Напишем простейшую программу с использованием библиотеки PyQT5:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># Импортируем из PyQt5.QtWidgets классы для создания приложения и виджета</span>
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget
+
+
+<span class="token comment"># Унаследуем наш класс от простейшего графического примитива QWidget</span>
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Надо не забыть вызвать инициализатор базового класса</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token comment"># В метод initUI() будем выносить всю настройку интерфейса,</span>
+        <span class="token comment"># чтобы не перегружать инициализатор</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Зададим размер и положение нашего виджета,</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        <span class="token comment"># А также его заголовок</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Первая программа'</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    <span class="token comment"># Создадим класс приложения PyQT</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    <span class="token comment"># А теперь создадим и покажем пользователю экземпляр</span>
+    <span class="token comment"># нашего виджета класса Example</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># Будем ждать, пока пользователь не завершил исполнение QApplication,</span>
+    <span class="token comment"># а потом завершим и нашу программу</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если мы запустим эту программу, увидим такое окно:</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-res-1-1.png" width="302"/></div>
+<p>Давайте разберемся, что происходит в этой программе. Обратите внимание на наш класс — <var>Example</var>. Он наследуется от базового класса <var>QWidget</var>, который определяет простейшее окно. От него наследуется много встроенных виджетов.</p>
+<p>Первое, что можно увидеть в классе, — перегруженный конструктор.</p>
+<p><code>super().__init__()</code> — эта строка вызывает конструктор родительского класса. Потом вызывается метод класса с названием <var>initUI</var>.</p>
+<p>Разумеется, инициализацию интерфейса можно реализовать и в инициализаторе класса, но хорошей практикой считается вынос этой функциональности в отдельный метод класса с названием <var>initUI</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>PEP 8</strong></p>
+<p>Обратите внимание: метод <var>initUI</var> называется с нарушением правил PEP 8. Как мы говорили ранее, такое отступление возможно для сохранения совместимости с используемой библиотекой, а так как библиотека QT изначально написана на C++ с именованием методов в стиле camelCase, то <var>initUI</var> — допустимое название метода в классе, который унаследован от <var>QWidget</var>.</p>
+</section>
+<p>В <var>initUI</var> мы определяем положение и размеры нашего окна методом <var>setGeometry</var>. Первые два параметра — X и У — координаты левого верхнего угла формы относительно левого верхнего угла нашего монитора. Оставшиеся — ширина и высота виджета. Методом <var>setWindowTitle</var> задаем заголовок нашего окна.</p>
+<p>Мы создали класс, но пока его не используем. Чтобы начать с ним работать, необходимо куда-то разместить наш виджет.</p>
+<p>Для этого нужно создать приложение — объект класса <var>QApplication</var>, строка <code>app =
+        QApplication(sys.argv)</code> как раз отвечает за это. Несмотря на то, что после инициализации переменная <var>app</var> используется только один раз, она необходима. Все скрытое от пользователя и разработчика взаимодействие программы с операционной системой возможно только благодаря этому классу. Передавать значение <var>sys.argv</var> в конструктор <var>QApplication</var> не обязательно, можно передать любой список, даже пустой. Но приведенная запись является хорошим тоном создания PyQT-приложений, так как она позволит корректно обрабатывать запуск приложения с параметрами командной строки (о них мы поговорим позднее).</p>
+<p>Затем мы создаем экземпляр нашего класса: <code>ex = Example()</code>. Все готово, можно запускать. Метод <code>show()</code> отображает наш виджет в приложение. Но отобразить недостаточно, надо запустить цикл обработки событий. Для этого вызываем метод <code>app.exec()</code>.</p>
+<p>В последней строке программы этот вызов «обернут» в <code>sys.exit</code>. Это сделано для корректного завершения программы.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-1-2.svg" width="680"/></div>
+<p>Но просто пустое окно — это скучно, начнем добавлять туда виджеты. Первый на очереди — знакомая нам кнопка. Класс, который необходим для работы с ней, называется <var>QPushButton</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QPushButton
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Вторая программа'</span><span class="token punctuation">)</span>
+        <span class="token comment"># Создаем кнопку.</span>
+        <span class="token comment"># Передаем 2 параметра:</span>
+        <span class="token comment"># надпись и виджет, на котором будет размещена кнопка</span>
+        btn <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span><span class="token string">'Кнопка'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        <span class="token comment"># Изменяем размер кнопки. Теперь он 100 на 100 пикселей</span>
+        btn<span class="token punctuation">.</span>resize<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+        <span class="token comment"># Размещаем кнопку на родительском виджете</span>
+        <span class="token comment"># по координатам (100, 100)</span>
+        btn<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+</code></pre>
+<p>Вспомним картинку выше: у любого виджета, кроме базового, должен быть «родитель». Когда мы добавляем кнопку, «родителем» выступает наш виджет окна. Поэтому при объявлении кнопки мы указываем не только текст, но и экземпляр класса <var>QWidget</var> (или, как в нашем случае, его наследника).</p>
+<p>Метод <var>resize</var> позволяет изменить размеры кнопки. А с помощью метода <var>move</var> мы указываем расположение нашей кнопки в виджете-«родителе». Запустим программу и убедимся, что кнопка появилась.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-res-1-2.png" width="302"/></div>
+<p>На кнопку можно даже понажимать, но пока безрезультатно. Сделаем ее полезной — добавим функциональность. В уже рассмотренных нами терминах — добавим обработчик события «нажатие на кнопку».</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QPushButton
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Третья программа'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>btn <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span><span class="token string">'Кнопка'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>resize<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+        <span class="token comment"># присоединим к событию нажатия на кнопку обработчик self.hello()</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>hello<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">hello</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># метод setText() используется для задания надписи на кпопке</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">'Привет'</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Что изменилось по сравнению с предыдущей программой? Во-первых, теперь <var>btn</var> — это поле класса, а не просто локальная переменная метода, как было в прошлый раз. Поэтому добраться до кнопки мы теперь можем не только из метода <var>initUI</var>, а из любого места внутри класса нашей формы (и даже из любого кода, который имеет доступ к объекту нашей формы). А во-вторых, добавилась функциональность: при нажатии на кнопку надпись на ней изменяется на строку «Привет».</p>
+<p><code>self.btn.clicked.connect(self.hello)</code> — что значит эта фраза в переводе на человеческий язык? «Если получишь <strong>событие clicked</strong> от <strong>объекта self.btn</strong>, вызови <strong>обработчик self.hello()</strong>». В нем с помощью метода <var>setText</var> мы меняем текст на кнопке.</p>
+<p>Но эта кнопка фактически «одноразовая», поскольку текст на кнопке изменится только после первого нажатия. При последующих нажатиях он, конечно же, тоже меняется, ведь метод <code>hello()</code> вызывается, но мы, как пользователи, этого не видим.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-res-1-3.png" width="302"/></div>
+<p>Если говорить про библиотеку QT, в ней концепция «Событие → Обработчик → Действие» реализована с некоторыми особенностями, поэтому введена своя терминология — <strong>сигналы и слоты</strong> (хотя если вы будете использовать более общие названия, вас все равно поймут).</p>
+<p><strong>Сигнал</strong> вырабатывается, когда происходит определенное событие. <strong>Слот</strong> — это функция, которая <strong>ловит</strong> определенный сигнал. Все классы, наследуемые от <var>QObject</var> или его дочерних классов (например, уже знакомые нам <var>QWidget</var> и <var>QPushButton</var>) могут содержать сигналы и слоты. Сигналы вырабатываются объектами, когда они изменяют свое состояние так, что это может заинтересовать другие объекты. При этом сами объекты не знают и не заботятся о том, что у его сигнала может не быть получателя. Только класс, который определяет сигнал, (или его дочерние классы) могут вырабатывать сигнал.</p>
+<p><strong>Слоты</strong> — обычные функции (или методы класса), которые могут быть использованы для получения сигналов (хотя никто не запрещает вам вызывать эти функции и просто так). Точно так же, как объект не знает ничего о получателях своих сигналов, функция-слот ничего не знает о сигналах, которые к ней подключены.</p>
+<p>Мы можем подключать к одному слоту сколько угодно сигналов, а один слот может быть подключен к неограниченному количеству сигналов (даже несколько раз к одному и тому же сигналу, тогда при появлении сигнала функция-слот выполнится столько раз, сколько была подключена). Кроме того, возможно подключать сигнал к другому сигналу, что вызовет выработку второго сигнала немедленно после появления первого.</p>
+<p>В качестве аналогии можно привести радиотрансляцию с радиостанции. Сигнал — это такая трансляция, и радиостанции неизвестно, сколько радиоприемников-слотов будут настроены на волну, когда будет трансляция. Но все настроенные на нужную волну приемники получат сигнал.</p>
+<p>Но довольно теории, давайте выводить на кнопке не один и тот же текст каждый раз, а, например, количество нажатий на нее. Никаких дополнительных атрибутов в нашем классе нам не понадобится — хранить информацию будем прямо в «кнопке».</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QPushButton
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Четвёртая программа'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>btn <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span><span class="token string">'0'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>resize<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+        <span class="token comment"># Подпишем функцию-слот self.count() на сигнал clicked кнопки btn</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>count<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">count</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># Не забываем, что надпись на кнопке - это текст.</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span><span class="token builtin">int</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Метод <code>text()</code> возвращает строку — текущую надпись на кнопке.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-res-1-4.png" width="302"/></div>
+<p>Для отображения данных в PyQT есть и более подходящие виджеты. Для текстовых данных лучше использовать <var>QLabel</var>, а для цифр есть красивый виджет <var>QLCDNumber</var>, который имитирует дисплей калькулятора.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QPushButton
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QLCDNumber<span class="token punctuation">,</span> QLabel
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">400</span><span class="token punctuation">,</span> <span class="token number">400</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Пятая программа'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>btn <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span><span class="token string">'Кнопка'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        <span class="token comment"># Подстроим размер кнопки под надпись на ней</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>resize<span class="token punctuation">(</span>self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>sizeHint<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">)</span>
+        <span class="token comment"># Обратите внимание: функцию не надо вызывать :)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>inc_click<span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>label <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        <span class="token comment"># Текст задается также, как и для кнопки</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Количество нажатий на кнопку"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">80</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>LCD_count <span class="token operator">=</span> QLCDNumber<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>LCD_count<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">110</span><span class="token punctuation">,</span> <span class="token number">80</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>count <span class="token operator">=</span> <span class="token number">0</span>
+
+    <span class="token keyword">def</span> <span class="token function">inc_click</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>count <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token comment"># В QLCDNumber для отображения данных используется метод display()</span>
+        self<span class="token punctuation">.</span>LCD_count<span class="token punctuation">.</span>display<span class="token punctuation">(</span>self<span class="token punctuation">.</span>count<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Теперь для хранения будем использовать отдельное поле — <var>count</var>. Для задания значения у <var>QLCDNumber</var> используется метод <var>display</var>, а для <var>QLabel</var> — <var>setText</var>, как и у <var>QPushButton</var>.</p>
+<p>Код <code>self.btn.resize(self.btn.sizeHint())</code> подстраивает размеры кнопки под размер надписи на ней, чтобы не возникла ситуация, что часть надписи заходила за границу этого виджета.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-res-1-5.png" width="302"/></div>
+<p><var>QLCDNumber</var>, кроме чисел, умеет показывать следующие символы: O (нулем), S (с помощью 5), g (с помощью 9), минус, точку, A, B, C, D, E, F, h, H, L, o, P, r, u, U, Y, кавычку, пробел. То есть вполне возможно написать на <var>QLCDNumber</var> какое-либо сообщение, например Error. Те символы, которые <var>QLCDNumber</var> отобразить не может, он просто заменяет на пробелы.</p>
+<p>Как вы понимаете, отображать данные пользователю нашей программы — это только половина дела, не менее важно получать от него данные. Для этого существуют несколько виджетов. Если пользователь должен ввести одну строку, то для получения ее получения прекрасно подойдет <var>QLineEdit</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QPushButton
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QLabel<span class="token punctuation">,</span> QLineEdit
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">400</span><span class="token punctuation">,</span> <span class="token number">400</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Шестая программа'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>btn <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span><span class="token string">'Кнопка'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>resize<span class="token punctuation">(</span>self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>sizeHint<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>hello<span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>label <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Привет, неопознанный лев"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">40</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>name_label <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>name_label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Введите имя: "</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>name_label<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">40</span><span class="token punctuation">,</span> <span class="token number">90</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>name_input <span class="token operator">=</span> QLineEdit<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>name_input<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">90</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">hello</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        name <span class="token operator">=</span> self<span class="token punctuation">.</span>name_input<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># Получим текст из поля ввода</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Привет, </span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+</code></pre>
+<p>Метод <code>text()</code> виджета <var>QLineEdit</var> позволяет получить введенную пользователем строчку.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-res-1-6.png" width="302"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="4">Кто отправил сигнал</h2>
+<p>Давайте рассмотрим более детально, как происходит взаимодействие между виджетами. Когда пользователь нажимает на кнопку, возникает <strong>сигнал</strong>, который обрабатывается некоторой функцией-слотом. Но если у нас одна функция-обработчик для нескольких кнопок, как понять, на какую из них нажал пользователь?</p>
+<p>Чтобы определить, кто является источником сигнала, у виджета есть метод <code>.sender()</code>.</p>
+<p>Рассмотрим пример такой программы.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QWidget<span class="token punctuation">,</span> QApplication<span class="token punctuation">,</span> QPushButton<span class="token punctuation">,</span> QLabel
+
+
+<span class="token keyword">class</span> <span class="token class-name">Example</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Кто отправил сигнал'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>button_1 <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>button_1<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">90</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>button_1<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Кнопка 1"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>button_1<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>run<span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>button_2 <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>button_2<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">90</span><span class="token punctuation">,</span> <span class="token number">80</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>button_2<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Кнопка 2"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>button_2<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>run<span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>label <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span><span class="token string">"Пока никто не отправлял"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">120</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">run</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>label<span class="token punctuation">.</span>setText<span class="token punctuation">(</span>self<span class="token punctuation">.</span>sender<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>sender<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> Example<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/images/second-year/pyqt-1/qt-res-1-7.png" width="299"/></div>
+<p>В этой программе слот <code>run()</code> привязан к сигналам от двух кнопок. Независимо от того, кто его вызвал, метод печатает в консоль текст нажатой кнопки, которую мы получаем с помощью <code>sender()</code>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Открытие других форм</h2>
+<p>Разумеется, далеко не всегда приложение ограничивается одной формой. В <strong>настоящих</strong> программах, как минимум, есть еще одна — «О программе», а также формы с настройками, диалоги открытия и сохранения файлов и так далее. Конечно, PyQT дает возможность в нашем приложении создавать формы из других форм. Обычно (но далеко не всегда) для главной формы приложения выбирают класс <var>QMainWindow</var>, а для дочерних форм — класс <var>QWidget</var>. Чтобы создать форму из другой формы, достаточно сделать объект нужного нам класса и вызвать у него метод <var>show</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QApplication<span class="token punctuation">,</span> QWidget<span class="token punctuation">,</span> QPushButton
+<span class="token keyword">from</span> PyQt5<span class="token punctuation">.</span>QtWidgets <span class="token keyword">import</span> QMainWindow<span class="token punctuation">,</span> QLabel
+
+
+<span class="token keyword">class</span> <span class="token class-name">FirstForm</span><span class="token punctuation">(</span>QMainWindow<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Главная форма'</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>btn <span class="token operator">=</span> QPushButton<span class="token punctuation">(</span><span class="token string">'Другая форма'</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>resize<span class="token punctuation">(</span>self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>sizeHint<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>move<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+
+        self<span class="token punctuation">.</span>btn<span class="token punctuation">.</span>clicked<span class="token punctuation">.</span>connect<span class="token punctuation">(</span>self<span class="token punctuation">.</span>open_second_form<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">open_second_form</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>second_form <span class="token operator">=</span> SecondForm<span class="token punctuation">(</span>self<span class="token punctuation">,</span> <span class="token string">"Данные для второй формы"</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>second_form<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">SecondForm</span><span class="token punctuation">(</span>QWidget<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>initUI<span class="token punctuation">(</span>args<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">initUI</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> args<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>setGeometry<span class="token punctuation">(</span><span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>setWindowTitle<span class="token punctuation">(</span><span class="token string">'Вторая форма'</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>lbl <span class="token operator">=</span> QLabel<span class="token punctuation">(</span>args<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> self<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>lbl<span class="token punctuation">.</span>adjustSize<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app <span class="token operator">=</span> QApplication<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">)</span>
+    ex <span class="token operator">=</span> FirstForm<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    ex<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span>app<span class="token punctuation">.</span><span class="token keyword">exec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+</code></pre>
+<p>Обратите внимание на два момента:</p>
+<ol>
+<li>Мы сохраняем созданную форму в атрибут нашей родительской формы для того, чтобы иметь возможность управлять ею из других методов. И для того, чтобы сборщик мусора Python не удалил ее случайно как объект, на который нет ссылок.</li>
+<li>В инициализаторе дочерней формы, помимо <var>self</var>, есть еще <code>*args</code>, куда мы можем помещать информацию, которую хотим передать из родительской формы в дочернюю. Тут мы передаем ссылку на объект-родитель (его обычно передают первым) и сообщение, которое мы будет отображать на второй форме в <var>QLabel</var>.</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="6">Итоги</h2>
+<p>На этом уроке мы изучили работу с основными виджетами:</p>
+<ul>
+<li>QWidget</li>
+<li>QPushButton</li>
+<li>QLCDNumber</li>
+<li>QLabel</li>
+<li>QLineEdit</li>
+</ul>
+<p>Но мы рассмотрели далеко не все доступные методы. Информацию о других методах можно посмотреть на <a class="material__link" href="https://doc.qt.io/qt-5/qtwidgets-module.html" rel="noopener noreferrer" target="_blank">официальном сайте QT</a>. Обратите внимание: документация написана для языка C++, так что нужно обращать внимание лишь на названия методов и параметры, но не на синтаксис примеров.</p>
+</section></article></section>

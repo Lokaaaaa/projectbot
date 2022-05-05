@@ -1,0 +1,239 @@
+<section class="lesson-material__content"><article class="material"><h1>Цели и подходы к тестированию. Создание «самодельных» тестов (без библиотек)</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Когда и зачем нужно тестирование?</a></li>
+<li><a class="material__link" href="#2">Пример написания тестов</a></li>
+<li><a class="material__link" href="#3">Обсуждение: почему неудобно писать тесты самостоятельно</a></li>
+<li><a class="material__link" href="#4">Резюме</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Мы узнаем, что такое тестирование и зачем оно нужно. Напишем несколько простых тестов и подготовимся к использованию более продвинутых инструментов (библиотек) для тестирования в Python.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Когда и зачем нужно тестирование?</h2>
+<p>Мы уже изучили несколько полезных практик, которые помогают в написании больших сложных программ. Пришло время поговорить об еще одной важной практике — тестировании.</p>
+<p>Чтобы лучше усвоить, когда и зачем нужно тестирование, давайте разберем некоторые отличия между маленькими учебными программами (с которыми мы имели дело на уроках, контрольных и в домашних заданиях) и большими «промышленными» программами:</p>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%;">
+<thead>
+<tr>
+<th>В чем различие</th>
+<th>Учебные программы</th>
+<th>Промышленные программы</th>
+<th>Следствия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Размер</td>
+<td>Несколько десятков строк</td>
+<td>Сотни тысяч строк</td>
+<td>Промышленную программу невозможно удерживать в голове целиком. Следовательно, нельзя полностью предсказать результаты изменений в коде</td>
+</tr>
+<tr>
+<td>Изменяемость</td>
+<td>Не изменяются, т. к. условие задачи не меняется</td>
+<td>Постоянно меняются, т. к. меняются требования</td>
+<td>Есть риски допустить ошибку при изменении программы (см. также предыдущий пункт)</td>
+</tr>
+<tr>
+<td>Командная работа</td>
+<td>Пишутся в одиночку (если вы, конечно, не списываете)</td>
+<td>Пишутся несколькими разработчиками</td>
+<td>Каждый разработчик может отвечать только за свои части кода и не знать, как устроен остальной код</td>
+</tr>
+<tr>
+<td>Время жизни</td>
+<td>Обычно — один урок</td>
+<td>Месяцы и годы</td>
+<td>В каждый момент времени нужна уверенность, что программа работает правильно</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Мы выяснили, что промышленные программы, с одной стороны, гораздо сложнее учебных, а с другой — должны работать правильно на протяжении гораздо более длительного времени, при этом постоянно меняясь.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Тестирование</strong></p>
+<p>Тестирование — это проверка корректности работы программы путем сравнения результата ее работы с ожидаемым при заданных входных данных.</p>
+</section>
+<p>Тестирование нужно для того, чтобы снизить вероятность ошибок в программе при ее создании или изменении.</p>
+<p>Один из способов тестирования программы — это <strong>юнит-тестирование</strong>, т. е. проверка правильности работы <strong>отдельных независимых компонентов</strong> программы (функций или методов). Юнит-тестирование полезно на всех этапах написания каждого из компонентов программы:</p>
+<ul>
+<li>Даже если компонент еще не реализован, вы уже можете написать тесты, проверяющие его функциональность. Такой подход называется test-driven development или TDD (Подробнее про это можно почитать <a class="material__link" href="https://ru.wikipedia.org/wiki/Разработка_через_тестирование" rel="noopener noreferrer" target="_blank">тут</a>)</li>
+<li>Если вы меняете уже написанный компонент (например, добавляете новую функциональность или исправляете найденную ошибку), то вы предварительно можете написать тесты, которые проверяют, что новая функциональность работает правильно, или что ошибка больше не повторяется. А если до этого уже были написаны тесты, то вы заодно сможете проверить, что ваши изменения не приводят к поломкам старой функциональности</li>
+</ul>
+</section>
+<section class="material__chapter">
+<h2 id="2">Пример написания тестов</h2>
+<p>Разберем совсем простой пример. Пусть нам нужно написать функцию, которая принимает на вход строку и «разворачивает» ее в обратном порядке. Сперва напишем тесты к ней, а саму функцию пока не будем реализовывать:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Пока что наша функция ничего не делает</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+<p>Как написать тесты?</p>
+<p>Общая рекомендация такая — всегда проверяйте как минимум три случая:</p>
+<ul>
+<li>Неправильные входные данные. В нашем случае функция принимает на вход только строки, все остальные типы считаются ошибочными</li>
+<li>Граничные случаи. Например, пустые строки и массивы, или границы диапазона входных значений</li>
+<li>Обычные случаи. Например, случайные корректные входные данные</li>
+</ul>
+<p>Мы подробнее разберем приемы написания тестов на следующем уроке, после знакомства с инструментами для тестирования (библиотеки unittest и pytest).</p>
+<p>А пока напишем тесты сами в виде функции <code>test_reverse()</code>. Она будет запускать функцию <code>reverse()</code> на разных входных данных и сравнивать полученный результат с ожидаемым. Если все такие сравнения успешны (т.е., если «тесты пройдены»), функция <code>test_reverse()</code> вернет True, в противном случае — False.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">test_reverse</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Список тестов</span>
+    <span class="token comment"># Каждый тест — это пара (входное значение, ожидаемое выходное значение)</span>
+    test_data <span class="token operator">=</span> <span class="token punctuation">(</span>
+        <span class="token comment"># неправильный тип входного аргумента, ни с чем не будем сравнивать</span>
+        <span class="token punctuation">(</span><span class="token number">42</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token comment"># тоже неправильный входной аргумент, но он "похож" на строку</span>
+        <span class="token comment"># (можно итерироваться и брать срезы)</span>
+        <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token comment"># "граничный" случай — пустая строка</span>
+        <span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token comment"># "особый" случай — строка, которая не меняется при разворачивании</span>
+        <span class="token punctuation">(</span><span class="token string">'aba'</span><span class="token punctuation">,</span> <span class="token string">'aba'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token comment"># ещё один "особый" и почти "граничный" случай</span>
+        <span class="token punctuation">(</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'a'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token comment"># "обычный" случай</span>
+        <span class="token punctuation">(</span><span class="token string">'abc'</span><span class="token punctuation">,</span> <span class="token string">'cba'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>  
+    <span class="token punctuation">)</span>
+
+    <span class="token keyword">for</span> input_s<span class="token punctuation">,</span> correct_output_s <span class="token keyword">in</span> test_data<span class="token punctuation">:</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            <span class="token comment"># Вычисляем результат на входных данных</span>
+            <span class="token comment"># Есть вариант, что наша функция выбросит исключение,</span>
+            <span class="token comment"># поэтому делаем это в блоке try</span>
+            output_s <span class="token operator">=</span> reverse<span class="token punctuation">(</span>input_s<span class="token punctuation">)</span>
+        <span class="token keyword">except</span> TypeError <span class="token keyword">as</span> E<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> correct_output_s <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+                <span class="token comment"># это исключение и ожидалось, продолжаем тестирование</span>
+                <span class="token keyword">continue</span>
+            <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>input_s<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+                <span class="token comment"># вход корректный, но выброшено исключение TypeError — это ошибка</span>
+                <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'Ошибка! Не удалось вычислить reverse("</span><span class="token interpolation"><span class="token punctuation">{</span>input_s<span class="token punctuation">}</span></span><span class="token string">"). Ошибка: </span><span class="token interpolation"><span class="token punctuation">{</span>E<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">except</span> Exception <span class="token keyword">as</span> E<span class="token punctuation">:</span>
+            <span class="token comment"># Выброшено неожиданное исключение — это ошибка</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'Ошибка! Не удалось вычислить reverse("</span><span class="token interpolation"><span class="token punctuation">{</span>input_s<span class="token punctuation">}</span></span><span class="token string">"). Ошибка: </span><span class="token interpolation"><span class="token punctuation">{</span>E<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> output_s <span class="token operator">!=</span> correct_output_s<span class="token punctuation">:</span>
+                <span class="token comment"># если ответ не совпал с ожидаемым, завершаем тестирование и возвращаем False</span>
+                <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'Ошибка! reverse(</span><span class="token interpolation"><span class="token punctuation">{</span>input_s<span class="token punctuation">}</span></span><span class="token string">) равно </span><span class="token interpolation"><span class="token punctuation">{</span>output_s<span class="token punctuation">}</span></span><span class="token string"> вместо "</span><span class="token interpolation"><span class="token punctuation">{</span>correct_output_s<span class="token punctuation">}</span></span><span class="token string">"'</span></span><span class="token punctuation">)</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+    <span class="token comment"># тестирование успешно пройдено</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Все тесты пройдены успешно'</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token boolean">True</span></code></pre>
+<p>Пока что функция <code>reverse()</code> не реализована, и тесты не проходят</p>
+<pre class="language-python"><code class="language-python">test_reverse<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Ошибка! reverse() равно None вместо ""</samp></pre>
+<p>Попробуем следующую реализацию <var>reverse</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    r <span class="token operator">=</span> <span class="token string">''</span>
+    <span class="token keyword">for</span> c <span class="token keyword">in</span> s<span class="token punctuation">:</span>
+        r <span class="token operator">=</span> c <span class="token operator">+</span> r
+    <span class="token keyword">return</span> r
+ 
+ 
+<span class="token comment"># проверим, что теперь тесты проходят</span>
+test_reverse<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Ошибка! reverse(['a', 'b', 'c']) равно cba вместо "None"</samp></pre>
+<p>Точно, мы забыли проверить входное значение на корректность. Исправляем...</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    r <span class="token operator">=</span> <span class="token string">''</span>
+    <span class="token keyword">for</span> c <span class="token keyword">in</span> s<span class="token punctuation">:</span>
+        r <span class="token operator">=</span> c <span class="token operator">+</span> r
+    <span class="token keyword">return</span> r
+
+
+<span class="token comment"># проверим, что теперь тесты проходят</span>
+test_reverse<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Все тесты пройдены успешно.</samp></pre>
+<p>Давайте поупражняемся еще немного на <strong>рекурсивной</strong> функции.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># если строка состоит из одного символа, то разворачивать ее не нужно</span>
+    <span class="token comment"># кажется, логично...</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> s
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> reverse<span class="token punctuation">(</span>s<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+
+test_reverse<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Ошибка! Не удалось вычислить reverse(""). Ошибка: string index out of range</samp></pre>
+<p>Что не так? Конечно! Мы забыли про граничный случай — пустую строку.</p>
+<p>При написании рекурсивных функций очень легко ошибиться именно в граничных случаях. Давайте исправим.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># если строка пустая или состоит из одного символа,</span>
+    <span class="token comment"># то разворачивать её не нужно</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> s
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> reverse<span class="token punctuation">(</span>s<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+
+test_reverse<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Все тесты пройдены успешно.</samp></pre>
+<p>Кажется, нашу функцию можно сильно упростить.</p>
+<p>Тесты помогают проконтролировать, что после изменений ничего не сломалось.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+
+test_reverse<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Все тесты пройдены успешно.</samp></pre>
+<p>Ну и давайте проверим, что наша <var>test_reverse</var> корректно отрабатывает исключительные ситуации в функции <var>reverse</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># пишем заведомо ошибочный код</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token operator">/</span><span class="token number">0</span>
+
+
+test_reverse<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Ошибка! Не удалось вычислить reverse("42"). Ошибка: division by zero</samp></pre>
+<p>Кажется, нам все удалось. Давайте решать задачи!</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Обсуждение: почему неудобно писать тесты самостоятельно</h2>
+<p>В чем недостатки нашей тестовой функции <code>test_reverse()</code>?</p>
+<ul>
+<li>Код теста получился сложнее, чем код тестируемой функции! Конечно, отчасти это из-за того, что мы выбрали очень простую функцию <code>reverse()</code> в качестве примера. Но все равно хотелось бы, чтобы по тесту было легко понять, что он делает. На самом деле, тесты — это еще и неявный способ документирования, поэтому <strong>писать и читать тесты должно быть просто</strong></li>
+</ul>
+<p>В частности, сложно <strong>обрабатываются исключения</strong>. Есть шанс допустить ошибку в тестирующей функции, а этого ни в коем случае не должно быть. Представьте, что у нас не одна функция <code>reverse()</code>, а, скажем, сто разных.</p>
+<ul>
+<li>К каждой из них придется писать свою тестирующую функцию. Если каждая будет такой же сложной, то на тестирование станет уходить слишком много времени</li>
+<li>При каждом изменении какой-то из функций нужно найти соответствующую ей тестовую функцию, запустить ее и убедиться, что тесты по-прежнему проходят</li>
+</ul>
+<p>Иными словами, нет <strong>автоматизации тестирования</strong>.</p>
+<p><strong>Отчет об ошибках</strong> тоже не очень удобен. Где именно произошла ошибка — при обработке неправильного входа, в граничном случае или в «обычном» случае?</p>
+<p>Конечно, все указанные нами недостатки можно исправить самостоятельно. Но в этом нет необходимости, поскольку в языке Python есть удобные инструменты для тестирования, с которыми мы познакомимся на следующем уроке по тестированию.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Резюме</h2>
+<ul>
+<li>Мы узнали, что такое тестирование (проверка корректности путем сравнения выходных данных с ожидаемыми) и зачем оно нужно (чтобы защититься от ошибок при изменениях в больших программах)</li>
+<li>Мы познакомились с понятием юнит-тестирования (тестирование независимых компонент программы)</li>
+<li>Мы написали тесты для простой функции, с их помощью нашли ошибки и проверили корректность программы после внесения в нее изменений</li>
+<li>Мы убедились, что для полноценного тестирования необходимы более удобные инструменты — о них мы узнаем на следующем уроке по тестированию</li>
+<li>Ваша практическая работа будет построена по следующему принципу:
+<ol>
+<li>Сначала вам надо будет для уже созданной функции написать тесты</li>
+<li>А потом попытаться самостоятельно воссоздать исходную функцию</li>
+</ol>
+</li>
+</ul>
+</section></article></section>

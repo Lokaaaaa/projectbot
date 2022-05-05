@@ -1,0 +1,316 @@
+<section class="lesson-material__content"><article class="material"><h1>Библиотека argparse. Задачи на создание скриптов с ее помощью</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Повторение</a></li>
+<li><a class="material__link" href="#2">Библиотека argparse</a></li>
+<li><a class="material__link" href="#3">Модули, импорт модулей из скриптов</a></li>
+<li><a class="material__link" href="#4">Заключение</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы продолжим работать с командной строкой и разберем возможности библиотеки argparse.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Повторение</h2>
+<p>На предыдущем занятии мы рассмотрели простой способ работы с данными, которые поступают в программу (скрипт) через параметры командной строки. Однако такой способ не дает нужной гибкости, и в сложных случаях его применять не стоит.</p>
+<p>Рассмотрим пример реализации программы, которая ожидает получить в параметрах список чисел в системе счисления с основанием, переданном в параметре <var>base</var> (если он не указан, то подразумевается <em>двоичная</em> система счисления) и переводит их в десятичную. Преобразованный список чисел выводится на экран.</p>
+<p>В двоичной системе счисления есть только две цифры — 0 и 1, и запись чисел в ней получается существенно длиннее, чем в десятичной.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+
+
+<span class="token keyword">def</span> <span class="token function">print_help</span><span class="token punctuation">(</span>msg<span class="token operator">=</span><span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Usage: </span><span class="token interpolation"><span class="token punctuation">{</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string"> [-h] [--log LOG] [--base BASE] int [int ...]\n</span><span class="token interpolation"><span class="token punctuation">{</span>msg<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>args<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    integers <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    log_file <span class="token operator">=</span> <span class="token string">''</span>
+    base <span class="token operator">=</span> <span class="token number">2</span>
+
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>args<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        arg <span class="token operator">=</span> args<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> arg <span class="token operator">==</span> <span class="token string">'-h'</span><span class="token punctuation">:</span>
+            print_help<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">None</span>
+        <span class="token keyword">elif</span> arg <span class="token operator">==</span> <span class="token string">'--base'</span><span class="token punctuation">:</span>
+            <span class="token keyword">try</span><span class="token punctuation">:</span>
+                base <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>args<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">except</span> ValueError<span class="token punctuation">:</span>
+                print_help<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"invalid base value: </span><span class="token interpolation"><span class="token punctuation">{</span>arg<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+                <span class="token keyword">return</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">None</span>
+        <span class="token keyword">elif</span> arg <span class="token operator">==</span> <span class="token string">'--log'</span><span class="token punctuation">:</span>
+            log_file <span class="token operator">=</span> args<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            integers<span class="token punctuation">.</span>append<span class="token punctuation">(</span>arg<span class="token punctuation">)</span>
+
+    <span class="token keyword">if</span> <span class="token keyword">not</span> integers<span class="token punctuation">:</span>
+        print_help<span class="token punctuation">(</span><span class="token string">'No int args'</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">try</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> base<span class="token punctuation">)</span><span class="token punctuation">,</span> integers<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> log_file
+    <span class="token keyword">except</span> ValueError <span class="token keyword">as</span> e<span class="token punctuation">:</span>
+        print_help<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"invalid value: </span><span class="token interpolation"><span class="token punctuation">{</span>e<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">None</span>
+
+
+numbers<span class="token punctuation">,</span> log_file <span class="token operator">=</span> main<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> log_file <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+<span class="token keyword">elif</span> log_file <span class="token operator">==</span> <span class="token string">""</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>numbers<span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>log_file<span class="token punctuation">,</span> <span class="token string">"wt"</span><span class="token punctuation">)</span> <span class="token keyword">as</span> output<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">*</span>numbers<span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token operator">=</span>output<span class="token punctuation">)</span>
+</code></pre>
+<p>Несколько слов о тексте выше. В функции мы последовательно читаем список переданных параметров, и если получаем служебное значение (<code>-h, --log, --base</code>), то анализируем следующий за ним параметр. Если же мы получаем число, сохраняем его в списке. Когда список заполнен, его преобразуют <var>lambda</var>-функции.</p>
+<p>Посмотрим на то, что у нас получилось.</p>
+<p>Вызов без параметров:</p>
+<pre><samp>python3 files/ex1.py
+
+Usage: files/ex1.py [-h] [--log LOG] [--base BASE] int [int ...]
+No int args</samp></pre>
+<p>Вызов с правильными параметрами, но без указания основания системы счисления:</p>
+<pre><samp>python3 files/ex1.py 110 1 1010
+
+6 1 10</samp></pre>
+<p>Вызов с ошибочными параметрами и указанием системы счисления:</p>
+<pre><samp>python3 files/ex1.py 147 22 3 --base 3
+
+Usage: files/ex1.py [-h] [--log LOG] [--base BASE] int [int ...]
+invalid value: invalid literal for int() with base 3: '147'</samp></pre>
+<p>Вызов с правильными параметрами и сохранением в файл:</p>
+<pre><samp>python3 files/ex1.py 110 1 1010 --base 3 --log files/work.log</samp></pre>
+<p>Вроде бы все работает, но посмотрите, сколько текста мы написали ради трех параметров! А если параметры имеют псевдонимы? Например, для вывода справочной информации по команде можно задавать как параметр <code>-h</code>, так и параметр <code>--help</code>. Что же делать?</p>
+<p>Выход из ситуации напрашивается сам собой. Если нужно сделать простую обработку параметров, то используйте список <var>argv</var> из библиотеки sys, но для сложных ситуаций придется искать другой путь.</p>
+<p>И в Python есть более легкий, быстрый и надежный способ — это библиотека argparse.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Библиотека argparse</h2>
+<p>Попробуем решить нашу задачу иным способом:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> argparse
+<span class="token keyword">import</span> sys
+
+parser <span class="token operator">=</span> argparse<span class="token punctuation">.</span>ArgumentParser<span class="token punctuation">(</span>
+    description<span class="token operator">=</span><span class="token string">"convert integers to decimal system"</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'integers'</span><span class="token punctuation">,</span> metavar<span class="token operator">=</span><span class="token string">'integers'</span><span class="token punctuation">,</span> nargs<span class="token operator">=</span><span class="token string">'+'</span><span class="token punctuation">,</span>
+                    <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">str</span><span class="token punctuation">,</span> <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'integers to be converted'</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'--base'</span><span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">int</span><span class="token punctuation">,</span>
+                    <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'default numeric system'</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'--log'</span><span class="token punctuation">,</span> default<span class="token operator">=</span>sys<span class="token punctuation">.</span>stdout<span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span>argparse<span class="token punctuation">.</span>FileType<span class="token punctuation">(</span><span class="token string">'w'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'the file where converted data should be written'</span><span class="token punctuation">)</span>
+
+args <span class="token operator">=</span> parser<span class="token punctuation">.</span>parse_args<span class="token punctuation">(</span><span class="token punctuation">)</span>
+s <span class="token operator">=</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> args<span class="token punctuation">.</span>base<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> args<span class="token punctuation">.</span>integers<span class="token punctuation">)</span><span class="token punctuation">)</span>
+args<span class="token punctuation">.</span>log<span class="token punctuation">.</span>write<span class="token punctuation">(</span>s <span class="token operator">+</span> <span class="token string">'\n'</span><span class="token punctuation">)</span>
+args<span class="token punctuation">.</span>log<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>python3 files/ex2.py -h
+
+usage: ex2.py [-h] [--base BASE] [--log LOG] integers [integers ...]
+    convert integers to decimal system
+ 
+    positional arguments:
+      integers     integers to be converted
+ 
+    optional arguments:
+      -h, --help   show this help message and exit
+      --base BASE  default numeric system
+      --log LOG    the file where converted data should be written</samp></pre>
+<pre><samp>python3 files/ex2.py 1 11 111
+
+1 3 7</samp></pre>
+<p>Интересно?</p>
+<p>Давайте разбираться.</p>
+<p>Для парсинга аргументов с помощью argparse требуется импортировать саму библиотеку (дополнительно устанавливать ее не нужно), создать экземпляр объекта <var>ArgumentParser</var> и запустить функцию парсинга <code>parse_args()</code>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> argparse
+
+parser <span class="token operator">=</span> argparse<span class="token punctuation">.</span>ArgumentParser<span class="token punctuation">(</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>parse_args<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если запустить эту программу с ключом <code>-h</code>, мы сразу получим справочную информацию.</p>
+<pre><samp>python3 files/first_argparse.py -h
+
+usage: first_argparse.py [-h]
+    
+optional arguments:
+  -h, --help  show this help message and exit</samp></pre>
+<p>Вот и все, что нужно программе, чтобы начать обрабатывать приходящие в нее аргументы. Таким образом, у нас есть:</p>
+<ol>
+<li>Документация (которую можно вызвать, передав опцию <code>--help</code> или <code>-h</code>)</li>
+<li>Проверка валидности (корректности) аргументов</li>
+<li>Сообщения об ошибках при получении невалидных аргументов</li>
+</ol>
+<p>Но это далеко не все, что может argparse. Скорее всего, раз мы решили им воспользоваться, захотим получить значения других, в том числе и не совсем стандартных аргументов.</p>
+<p>Чтобы сообщить парсеру о таких аргументах у <var>ArgumentParser</var>’a есть метод <var>add_argument</var>. Он принимает множество параметров, однако обязательным является только <strong>название</strong> создаваемого аргумента или флага (первый параметр).</p>
+<pre><code>ArgumentParser.add_argument(&lt;name or flags&gt; [, help][, metavar][, type]
+                                            [,nargs][, default][, action]
+                                            [, const][, choices]
+                                            [, required][, dest])
+</code></pre>
+<p>Парсер использует это имя для обозначений переменных, при выводе в справочной информации и т. д. Остальные модификаторы могут потребоваться для реализации более сложных конструкций. Рассмотрим некоторые из них.</p>
+<p>Текст подсказки, который показывается при вызове справки, вводится с помощью параметра <var>help</var>. <var>metavar</var> отвечает за название параметра в подсказке (если его не указать, то берется имя из первого аргумента <var>name</var>). <var>type</var> гарантирует, что параметр хранит значения только указанного типа (причем число можно представить в виде строки, но не любую строку можно привести к числу).</p>
+<p>При описании свойств аргумента в <var>add_argument</var> можно обозначить ожидаемое количество таких аргументов с помощью <var>nargs</var>. Это число (как 3 или 7) или строка '+' (которая означает, что элементов должно быть 1 или больше), или '?' (может 1, а может и не быть), или '*' (любое количество от 0 до бесконечности).</p>
+<p>Еще одним полезным параметром является значение аргумента по умолчанию (программисты говорят <strong>дефолтное</strong> значение, от английского слова default), которое задается с помощью параметра <var>default</var>. Этот параметр может принимать в себя строку, массив, объект (к примеру, <var>sys.stdin</var>) и многое другое.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> argparse
+
+parser <span class="token operator">=</span> argparse<span class="token punctuation">.</span>ArgumentParser<span class="token punctuation">(</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">"arg1"</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">"arg2"</span><span class="token punctuation">,</span> <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">"echo this string"</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">"int_args"</span><span class="token punctuation">,</span> metavar<span class="token operator">=</span><span class="token string">"N"</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">int</span><span class="token punctuation">,</span>
+                    nargs<span class="token operator">=</span><span class="token string">'+'</span><span class="token punctuation">,</span> <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">"echo some integers"</span><span class="token punctuation">)</span>
+args <span class="token operator">=</span> parser<span class="token punctuation">.</span>parse_args<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>args<span class="token punctuation">.</span>arg1<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>args<span class="token punctuation">.</span>arg2<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>args<span class="token punctuation">.</span>int_args<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>python3 files/ex3.py -h
+
+usage: ex3.py [-h] arg1 arg2 N [N ...]
+    
+positional arguments:
+  arg1
+  arg2        echo this string
+  N           echo some integers
+
+optional arguments:
+  -h, --help  show this help message and exit</samp></pre>
+<pre><samp>python3 files/ex3.py 'one'    'two' 3 4   17
+ 
+one
+two
+[3, 4, 17]</samp></pre>
+<p>Давайте рассмотрим и проанализируем еще один пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> argparse
+
+parser <span class="token operator">=</span> argparse<span class="token punctuation">.</span>ArgumentParser<span class="token punctuation">(</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">"--name"</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">"-up"</span><span class="token punctuation">,</span> <span class="token string">"--up_case"</span><span class="token punctuation">,</span> action<span class="token operator">=</span><span class="token string">"store_true"</span><span class="token punctuation">,</span>
+                    <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">"convert name to upper register"</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span>
+    <span class="token string">"--number"</span><span class="token punctuation">,</span> choices<span class="token operator">=</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">int</span><span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span>
+    <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">"select number"</span><span class="token punctuation">,</span> required<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+parser<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">"--no-name"</span><span class="token punctuation">,</span> action<span class="token operator">=</span><span class="token string">"store_const"</span><span class="token punctuation">,</span> const<span class="token operator">=</span><span class="token string">"no"</span><span class="token punctuation">,</span>
+                    dest<span class="token operator">=</span><span class="token string">"name"</span><span class="token punctuation">)</span>
+args <span class="token operator">=</span> parser<span class="token punctuation">.</span>parse_args<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+name <span class="token operator">=</span> args<span class="token punctuation">.</span>name
+<span class="token keyword">if</span> <span class="token punctuation">(</span>args<span class="token punctuation">.</span>up_case<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    name <span class="token operator">=</span> name<span class="token punctuation">.</span>upper<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"The name is </span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string">. And the number = </span><span class="token interpolation"><span class="token punctuation">{</span>args<span class="token punctuation">.</span>number<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Мы уже встречались с именованными аргументами, то есть такими, для которых расположение в командной строке при вызове программы не играет роли, а важно лишь то, чтобы значение аргумента предварялось его именем (ключом). Примером такого аргумента является, например, <code>--base</code> в самом первом примере этого урока.</p>
+<p>Чтобы сообщить argparse о желании использовать именованный аргумент, достаточно вставить знак "-" перед его названием (можно один, можно два, а можно и оба варианта сразу).</p>
+<p>В примере выше определен именованный аргумент <var>name</var>. Для него мы не указали ни подсказки (для справки), ни каких-либо других параметров.</p>
+<p>Еще у нас есть аргумент <var>up_case</var> (или <var>up</var>), простой флаг, принимающий значение true, если он указан. Такое поведение достигается благодаря параметру <var>action</var> у метода <var>add_argument</var>.</p>
+<p>Возможные значения этого параметра:</p>
+<ul>
+<li><var>store_true</var> — установить значение true</li>
+<li><var>store_false</var> — установить значение false</li>
+<li><var>store_const</var> — установить значение, указанное в параметре <var>const</var>. При этом параметр <var>dest</var> хранит имя переменной, в которой сохраняется это значение</li>
+</ul>
+<p>Фраза <code>parser.add_argument("--no-name", action="store_const", const="no", dest="name")</code> расшифровывается так:</p>
+<ol>
+<li>Создать именованный параметр <var>no-name</var></li>
+<li>При его указании проинициализировать переменную с именем <var>name</var> (указано в параметре <var>dest</var>) значением <var>no</var></li>
+</ol>
+<p>При добавлении аргумента <var>number</var> мы указали параметр <var>choice</var>, что позволило определить возможные значения для аргумента. Параметр <code>required = True</code> указывает на то, что аргумент является обязательным.</p>
+<p>Попробуйте самостоятельно поработать с программой выше, поизменять параметры и посмотреть, что получается.</p>
+<p>Несколько примеров ее работы:</p>
+<pre><samp>python3 files/ex4.py --help
+
+usage: ex4.py [-h] [--name NAME] [-up] --number {0,1,2} [--no-name]
+    
+optional arguments:
+  -h, --help        show this help message and exit
+  --name NAME
+  -up, --up_case    convert name to upper register
+  --number {0,1,2}  select number
+  --no-name</samp></pre>
+<pre><samp>python3 files/ex4.py -up --no-name
+
+usage: ex4.py [-h] [--name NAME] [-up] --number {0,1,2} [--no-name]
+ex4.py: error: the following arguments are required: --number
+
+    An exception has occurred, use %tb to see the full traceback.
+    SystemExit: 2</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Модули, импорт модулей из скриптов</h2>
+<p>Настало время немного детальнее поговорить о модулях в Python. Мы уже неоднократно ими пользовались, но не упомянули о том, как же они устроены внутри. Давайте исправим этот недочет.</p>
+<p>Когда в тексте нашей программы мы пишем команду <var>import</var>, Python пытается подключить (загрузить) файл, имя которого мы указали. Но для этого он должен ответить на вопрос: где искать файл?</p>
+<p>Давайте разберемся.</p>
+<p>В начале прошлого урока мы говорили про системную переменную PATH и поиск исполняемых файлов.</p>
+<p>В языке Python работает похожая технология для модулей при выполнении команды <var>import</var>. Давайте узнаем, где же Python будет искать файл с модулем, когда получит соответствующую команду.</p>
+<p>Для этого посмотрим на значение переменной <var>sys.path</var> из библиотеки (модуля) sys:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> sys
+<span class="token keyword">import</span> pprint
+pprint<span class="token punctuation">.</span>pprint<span class="token punctuation">(</span>sys<span class="token punctuation">.</span>path<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>['',
+ '/Users/anaconda/lib/python36.zip',
+ '/Users/anaconda/lib/python3.6',
+ '/Users/anaconda/lib/python3.6/lib-dynload',
+ '/Users/anaconda/lib/python3.6/site-packages',
+ '/Users/anaconda/lib/python3.6/site-packages/Sphinx-1.6.3-py3.6.egg',
+ '/Users/anaconda/lib/python3.6/site-packages/aeosa',
+ '/Users/anaconda/lib/python3.6/site-packages/setuptools-27.2.0-py3.6.egg',
+ '/Users/anaconda/lib/python3.6/site-packages/IPython/extensions',
+ '/Users/.ipython']</samp></pre>
+<p>Как вы могли заметить, переменная <var>sys.path</var> хранит некоторый список путей. А на первой позиции в этом списке стоит <strong>пустая строка</strong>. Это означает, что при импорте модуля, поиск первым делом будет осуществляться в каталоге, где находится сама запускаемая программа.</p>
+<p>Если в текущем каталоге модуль не найден, то Python попытается найти его последовательно во всех каталогах списка <var>sys.path</var>. Он может искать даже в zip-архивах.</p>
+<p>Если ни по одному из путей файл не найден, мы получим ошибку.</p>
+<p>Как вы уже знаете, Python позволяет импортировать те модули, которые вы разработали самостоятельно. Для этого (если импортируемый файл и файл, в который импортируем, лежат в одной директории) надо написать:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> имя_файла_без_<span class="token punctuation">.</span>py
+</code></pre>
+<p>Например, для файла module.py импорт будет выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> module
+</code></pre>
+<p>Однако при импорте Python выполнит этот файл, как будто вы запустили его на исполнение как отдельную программу. Иногда именно это нам и нужно, но существует достаточно большой процент сценариев, когда такое поведение нежелательно.</p>
+<p>В любой программе на Python есть глобальная переменная <code>__name__</code>. Анализ ее значения и поможет нам корректно работать с модулями. Правило такое:</p>
+<ul>
+<li>Если в переменной <code>__name__</code> находится значение <code>"__main__"</code>, это означает, что интерпретатор Python вызвал программу самостоятельно</li>
+<li>Если этот файл импортируется с помощью команды <var>import</var>, переменной <code>__name__</code> будет присвоено имя модуля. Мы уже встречались с подобной записью при изучении библиотеки PyQt</li>
+</ul>
+<p>Рассмотрим еще один пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># my_module_good.py</span>
+
+
+<span class="token keyword">def</span> <span class="token function">some_func</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"func is running"</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"I was called without ##import##"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Main part of my_module.py"</span><span class="token punctuation">)</span>
+    some_func<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre class="language-python"><code class="language-python"><span class="token comment"># my_script_good.py</span>
+
+<span class="token keyword">from</span> my_module_good <span class="token keyword">import</span> some_func
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"My_script is running"</span><span class="token punctuation">)</span>
+    some_func<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Как мы видим, если вызвать напрямую my_module_good.py, то запустится функция <var>main</var>, откуда произойдет вызов функции <var>some_func</var>. А если мы просто подключаем модуль, то вызова функции <var>main</var> из файла my_module_good.py не произойдет.</p>
+<p>Такой способ оформления программы является общепринятой практикой, и мы призываем вас следовать ей в будущем.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Заключение</h2>
+<p>Мы немного отвлеклись от непосредственного изучения взаимодействия с различными API, чтобы изучить различные дополнительные темы, которые неразрывно связаны с написанием программ для Веба. Уже на следующем уроке мы вернемся к главной теме второго полугодия и больше уже не будем от нее отступать.</p>
+</section></article></section>

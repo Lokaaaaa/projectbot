@@ -1,0 +1,243 @@
+<section class="lesson-material__content"><article class="material"><h1>Библиотеки unittest и pytest</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Повторение: зачем нужны библиотеки для тестирования</a></li>
+<li><a class="material__link" href="#2">Библиотека unittest</a></li>
+<li><a class="material__link" href="#3">Библиотека pytest</a></li>
+<li><a class="material__link" href="#4">Общие рекомендации о том, как писать тесты</a></li>
+<li><a class="material__link" href="#5">Резюме</a></li>
+<li><a class="material__link" href="#6">Бонус. Библиотека doctest</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы рассмотрим инструменты языка Python для тестирования: библиотеки unittest и pytest. С их помощью мы научимся писать гибкие и автоматизированные тесты.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Повторение: зачем нужны библиотеки для тестирования</h2>
+<p>На прошлом уроке мы узнали, что такое юнит-тестирование. Оказалось, что тестировать свои программы очень полезно, но не так уж и просто:</p>
+<ul>
+<li><strong>Тесты должны быть гибкими.</strong> Нужно тестировать самые разные случаи: не только правильность возвращаемых значений, но и, например, исключения</li>
+<li><strong>Тесты должны быть простыми.</strong> Если код теста сложен, то в нем легко ошибиться. К тому же, тесты — это еще и неявный способ документирования кода</li>
+<li><strong>Тесты должны быть автоматизированными.</strong> Запуск ста тестов должен быть таким же простым, как и запуск одного</li>
+<li>Отчет о непройденных тестах должен быть удобным и подробным, чтобы легко понять, где именно ошибка</li>
+</ul>
+<p>Сегодня мы познакомимся с библиотеками, которые позволяют писать гибкие, простые и автоматизированные тесты.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Библиотека unittest</h2>
+<p>unittest — стандартная библиотека Python для unit-тестирования. Ей пользуются не очень часто, потому что pytest, речь о которой пойдет чуть ниже, завоевала сердца абсолютного большинства тех, кто пишет тесты на Python (а к тому же еще она совместима с тестами, которые написаны для unittest), но, тем не менее, было бы несправедливо обойти вниманием этот инструмент.</p>
+<p>Давайте узнаем, как устроено тестирование с помощью этой библиотеки на примере функции <code>reverse()</code> из предыдущего урока. Поместим функцию в отдельный файл reverse.py и подключим его к тестирующему модулю.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Тестируемая функция</span>
+<span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token string">'Expected str, got {}'</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span><span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+</code></pre>
+<p>В тестирующем модуле сначала подключим библиотеку unittest, а затем из файла reverse.py импортируем функцию <var>reverse</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> unittest
+<span class="token keyword">from</span> reverse <span class="token keyword">import</span> reverse
+</code></pre>
+<p>Для каждого тестируемого компонента (в нашем случае — функции <code>reverse()</code>) нужно реализовать класс-наследник от <var>unittest.TestCase</var>. Методы этого класса, название которых начинается с <var>test_</var>, и будут тестами. У базового класса <var>unittest.TestCase</var> есть встроенные методы для проверки возвращаемых значений — в частности, метод <var>assertEqual</var>, который проверяет, соответствует ли полученное значение ожидаемому.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">TestReverse</span><span class="token punctuation">(</span>unittest<span class="token punctuation">.</span>TestCase<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">test_empty</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>assertEqual<span class="token punctuation">(</span>reverse<span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание, что название метода <var>test_empty</var> подсказывает нам, какой именно случай тестируется (пустая строка).</p>
+<p>Тестирование исключений через unittest делается с помощью метода <var>assertRaises</var>. Это менеджер контекста, который принимает на вход один аргумент — ожидаемое исключение (в нашем случае это <var>TypeError</var>):</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">test_wrong_type</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> self<span class="token punctuation">.</span>assertRaises<span class="token punctuation">(</span>TypeError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        reverse<span class="token punctuation">(</span><span class="token number">42</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Автоматизировать тестирование просто: в конце программы нужно дописать</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+     unittest<span class="token punctuation">.</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>и сохранить весь код в файл с расширением .py (например, в unittest_simple.py). Запускается так же, как обычная программа на Python.</p>
+<pre><samp>&gt;python files/unittest_simple.py
+-----------------------------------------------------------
+ Ran 2 tests in 0.000s
+ OK</samp></pre>
+<p>Два теста (мы описали два метода в классе <var>TestReverse</var>) прошли успешно.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Библиотека pytest</h2>
+<p>По сравнению с unittest, тесты pytest синтаксически проще. Вот пример такого теста:</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># Тестируемая функция</span>
+<span class="token keyword">def</span> <span class="token function">reverse</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> <span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token string">'Expected str, got {}'</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span><span class="token builtin">type</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+
+<span class="token comment"># Обязательно начинайте тест с префикса 'test_'</span>
+<span class="token keyword">def</span> <span class="token function">test_reverse</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">assert</span> reverse<span class="token punctuation">(</span><span class="token string">'abc'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'cba'</span>
+</code></pre>
+<p>Код теста — это обычная функция на Python. Для сравнения возвращаемого значения с ожидаемым используется конструкция <var>assert</var>.</p>
+<p>Запускается тест из командной строки с помощью специальной утилиты pytest, которая устанавливается вместе с библиотекой.</p>
+<pre><samp>pytest files/pytest_simple.py
+======================== test session starts =========================
+platform darwin -- Python 3.6.2, pytest-3.2.1, py-1.4.34, pluggy-0.4.0
+rootdir: /materials/additional/tests, inifile:
+collected 1 item
+    
+files/pytest_simple.py .
+    
+====================== 1 passed in 0.01 seconds ======================</samp></pre>
+<p>Запуск программы pytest_simple.py из консоли с помощью python или из вашей IDE ни к чему не приведет. В этой программе нет вызова функций или блока <code>if __name__ == "__main__"</code>:</p>
+<pre><samp>python files/pytest_simple.py</samp></pre>
+<p>Утилита pytest анализирует код следующим образом:</p>
+<ol>
+<li>Находит <strong>функции</strong>, названия которых начинаются с <code>test_</code>, и выполняет их как тесты</li>
+<li>Находит <strong>классы</strong>, названия которых начинаются с <code>Test</code>. У классов находит <strong>методы</strong>, названия которых начинаются с <code>test_</code>, и выполняет их как тесты</li>
+</ol>
+<p>Все проверки внутри тестовых функций или методов можно делать с помощью стандартного макроса <var>assert</var>. Для проверки исключений в библиотеке pytest, по аналогии с библиотекой unittest, есть специальный менеджер контекста <code>pytest.raises()</code>. Чтобы использовать его, сперва нужно импортировать библиотеку pytest.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> pytest
+
+<span class="token keyword">def</span> <span class="token function">test_exception</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> pytest<span class="token punctuation">.</span>raises<span class="token punctuation">(</span>ZeroDivisionError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token number">1</span> <span class="token operator">/</span> <span class="token number">0</span>
+</code></pre>
+<p>Для автоматизации тестирования с помощью pytest ничего, в общем-то, делать не нужно — достаточно написать тестовые функции (не забывая, что их название должно начинаться с <code>test_</code>). Утилита pytest способна принимать на вход несколько файлов с тестами, так что для каждой компоненты можно писать тесты в отдельном файле.</p>
+<p>Разумеется, это далеко не вся функциональность библиотеки pytest, а только ее крошечная часть. pytest позволяет создавать фикстуры (fixtures) — специальные функции, которые выполняются до или после непосредственно вызова теста. С помощью фикстур можно, например, сначала залить в базу данных тестовые данные, а после вызова теста удалить их.</p>
+<p>Еще одним мощным инструментом являются моки (Mock). С помощью них можно заменять какие-то части вашей программы при тестировании на макеты, которые обладают некоторым фиксированным поведением. Например, можно заменить реальный сервер системы на имитацию, которая возвращает заранее заготовленный ответ.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Общие рекомендации о том, как писать тесты</h2>
+<p><strong>Какие входные данные нужно тестировать?</strong></p>
+<ol>
+<li>Тестируйте корректность работы на <strong>неправильных</strong> входных данных. Примеры:
+<ul>
+<li>Неправильный тип аргумента (число вместо строки)</li>
+<li>Некорректное значение (квадратный корень из отрицательного числа или деление на ноль)</li>
+</ul>
+В этих случаях программа должна выбрасывать <strong>исключение</strong>. При тестировании нужно проверять, что удаляется нужное исключение.</li>
+<li>Тестируйте <strong>граничные</strong> случаи. Например:
+<ul>
+<li>Пустая строка</li>
+<li>Пустой список</li>
+<li>Ноль и т. д.</li>
+</ul>
+</li>
+<li>Не забывайте протестировать <strong>правильные</strong> входные данные :)</li>
+</ol>
+<p><strong>Как организовать код тестов?</strong></p>
+<ol>
+<li>Для каждого компонента заведите свой тестовый класс или отдельный файл. Названия тестовых функций должны отражать смысл теста:
+<ul>
+<li>Пример плохого названия: <var>test_1</var></li>
+<li>Пример хорошего названия: <var>test_palindrome</var></li>
+</ul>
+</li>
+<li>Желательно, чтобы в тестовой функции была ровно одна проверка
+<ul>
+<li>Пример «неправильного» теста функции <code>foo(n)</code> на pytest:</li>
+</ul>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">test_foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">assert</span> foo<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span>
+    <span class="token keyword">with</span> pytest<span class="token punctuation">.</span>raises<span class="token punctuation">(</span>TypeError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        foo<span class="token punctuation">(</span><span class="token string">'42'</span><span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li>Пример «правильного» теста:</li>
+</ul>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">test_foo_zero</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">assert</span> foo<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span>
+      
+<span class="token keyword">def</span> <span class="token function">test_foo_wrong_type</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> pytest<span class="token punctuation">.</span>raises<span class="token punctuation">(</span>TypeError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        foo<span class="token punctuation">(</span><span class="token string">'42'</span><span class="token punctuation">)</span>
+</code></pre>
+</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="5">Резюме</h2>
+<ol>
+<li>Мы познакомились с библиотеками unittest и pytest, которые позволяют писать простые, гибкие и автоматизированные тесты</li>
+<li>Мы изучили общие рекомендации к написанию тестов:
+<ul>
+<li>Какие данные тестировать: не только «ожидаемые» входные значения, но также неправильные типы и граничные случаи</li>
+<li>Как организовывать код тестов: отдельный тестовый класс для каждого компонента, одна проверка в одном тесте</li>
+</ul>
+</li>
+</ol>
+</section>
+<section class="material__chapter">
+<h2 id="6">Бонус. Библиотека doctest</h2>
+<p>В разговоре про модульное тестирование стоит упомянуть такой инструмент, как doctest. Эта библиотека, хоть и не обладает слишком обширными возможностями, зачастую бывает удобна для создания простых тестов.</p>
+<p>Модуль интересен тем, что тесты на нем выглядят как скопированные фрагменты сеанса из интерактивной строки Python.</p>
+<p>Давайте рассмотрим пример функции, которая возвращает квадратный корень из числа. Если аргумент не число, тогда бросается исключение <var>TypeError</var>, а если аргумент меньше нуля — исключение <var>ValueError</var>. С тестами для doctest такая функция будет выглядеть вот так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">square_root</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    &gt;&gt;&gt; square_root(4)
+    2.0
+    &gt;&gt;&gt; [square_root(x) for x in range(10)]
+    [0.0, 1.0, 1.4142135623730951, 1.7320508075688772, 2.0, 2.23606797749979, 2.449489742783178, 2.6457513110645907, 2.8284271247461903, 3.0]
+    &gt;&gt;&gt; square_root(-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: Argument must be greater than 0
+    &gt;&gt;&gt; square_root("yandexlyceum")
+    Traceback (most recent call last):
+        ...
+    TypeError: yandexlyceum is not valid int or float value
+    """</span>
+    <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token keyword">not</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>x<span class="token punctuation">}</span></span><span class="token string"> is not valid int or float value"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> x <span class="token operator">**</span> <span class="token number">0.5</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">"Argument must be greater than 0"</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    <span class="token keyword">import</span> doctest
+
+    doctest<span class="token punctuation">.</span>testmod<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Для того чтобы запустить файл в режиме прохождения тестов, надо в командной строке выполнить команду:</p>
+<pre><code>python имя_файла.py -v
+</code></pre>
+<p>Мы получим вот такой результат:</p>
+<pre><samp>Trying:
+    square_root(4)
+Expecting:
+    2.0
+ok
+Trying:
+    [square_root(x) for x in range(10)]
+Expecting:
+    [0.0, 1.0, 1.4142135623730951, 1.7320508075688772, 2.0, 2.23606797749979, 2.449489742783178, 2.6457513110645907, 2.8284271247461903, 3.0]
+ok
+Trying:
+    square_root(-1)
+Expecting:
+    Traceback (most recent call last):
+        ...
+    ValueError: Argument must be greater than 0
+ok
+Trying:
+    square_root("yandexlyceum")
+Expecting:
+    Traceback (most recent call last):
+        ...
+    TypeError: yandexlyceum is not valid int or float value
+ok
+1 items had no tests:
+    __main__
+1 items passed all tests:
+   4 tests in __main__.square_root
+4 tests in 2 items.
+4 passed and 0 failed.
+Test passed.</samp></pre>
+<p>Очевидно, что doctest не подходит для написания сложных тестов, для этого лучше использовать pytest. Но есть сценарии, в которых использование именно этой библиотеки более чем оправдано:</p>
+<ul>
+<li>Написание тестов для проверки базовой функциональности функций и объектов</li>
+<li>Проверка, что документация к функциям правильная и актуальная</li>
+<li>Генерация документации по своему модулю с примерами ввода-вывода</li>
+</ul>
+</section></article></section>

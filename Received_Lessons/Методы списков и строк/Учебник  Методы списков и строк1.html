@@ -1,0 +1,397 @@
+<section class="lesson-material__content"><article class="material"><h1>Методы списков и строк</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Как пользоваться таблицами</a></li>
+<li><a class="material__link" href="#2">Методы списков</a></li>
+<li><a class="material__link" href="#3">Методы строк</a></li>
+<li><a class="material__link" href="#4">Функции dir и help</a></li>
+<li><a class="material__link" href="#5">Форматированный вывод. f-строки</a></li>
+<li><a class="material__link" href="#6">Цепочки вызовов</a></li>
+<li><a class="material__link" href="#7">Использование методов списков. Структура данных «Стек»</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В материалах урока приводятся таблицы с почти полным перечнем методов списков и строк, которые можно использовать как справочный материал. Рассматривается неявное приведение объектов к булеву типу. Приводятся примеры цепочек вызова методов. Появление метода <var>pop</var> позволяет познакомиться с понятием стека.</p>
+<p>Этот урок отличается от прочих: большую часть его материала не нужно запоминать, но можно использовать как справочный материал. С этой же целью вводятся функции <var>dir</var> и <var>help</var>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Как пользоваться таблицами</h2>
+<p>Мы уже знакомы с некоторыми функциями для работы со списками, строками и множествами. Мы знаем также методы для работы с элементами множеств (<var>add</var>, <var>remove</var>, <var>discard</var> и т. д.), метод <var>append</var>, который позволяет добавлять элементы в список, метод <var>split</var> для разбиения строки на список «слов» и метод <var>join</var> для «сшивки» списка строк в одну. Однако мы не знаем, как делать со списками многие другие вещи: добавлять элементы в произвольное место, удалять элементы и т. д. Такие задачи решаются с помощью других функций и методов.</p>
+<p>Далее приводится перечень основных методов списков и строк, а также функций и специальных синтаксических конструкций для работы с ними, включая уже знакомые нам. Если при написании программы вы забудете, как называется тот или иной метод или какие у него аргументы, смело заглядывайте в материалы этого урока, в <a class="material__link" href="https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range" rel="noopener noreferrer" target="_blank">документацию</a>, пользуйтесь поиском в Интернете или описанными здесь функциями <var>dir</var> и <var>help</var>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Главное — усвоить основные возможности методов для стандартных типов строки и списка, а детали (например, порядок аргументов в методе <var>insert</var> или название именованного аргумента в методе <var>split</var>) всегда можно посмотреть здесь или в документации.</p>
+</section>
+<p>В таблице предполагается, что <var>a</var> и <var>a2</var> — списки, <var>x</var> — элемент списка, <var>s</var> и <var>s2</var> — строки, <var>c</var> — символ (строка длины 1), <var>n</var> — индекс элемента списка или строки, <var>start</var>, <var>stop</var>, <var>step</var> — границы среза (т. е. тоже индексы) и шаг среза, <var>k</var> — натуральное число.</p>
+<p>Для методов и функций также даны примеры выражений, которые будут истинными True и демонстрируют действие этого метода. Например, выражения <code>5 in [2, 3, 5]</code> и <code>'abc'.isalpha()</code> равны True. Их можно подставить в оператор <var>if</var> (и соответствующий блок будет выполнен) или в функцию <var>print</var> (и тогда она выведет True).</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Методы списков</h2>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%; height: 674px;">
+<tbody>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><strong>Операция</strong></td>
+<td style="width: 42.6684%; height: 18px;"><strong>Описание</strong></td>
+<td style="width: 38.3205%; height: 18px;"><strong>Пример</strong></td>
+</tr>
+<tr style="height: 19px;">
+<td style="width: 19.011%; height: 19px;"><code>x <strong>in</strong> a</code></td>
+<td style="width: 42.6684%; height: 19px;">Проверка, что <code>x</code> содержится в <code>а</code></td>
+<td style="width: 38.3205%; height: 19px;"><code>5 in [2, 3, 5]</code></td>
+</tr>
+<tr style="height: 38px;">
+<td style="width: 19.011%; height: 38px;"><code>x <strong>not in</strong> a</code></td>
+<td style="width: 42.6684%; height: 38px;">Проверка, что <code>x</code> не содержится в <code>а</code><br/>То же, что и <code>not (x in a)</code></td>
+<td style="width: 38.3205%; height: 38px;"><code>5 not in [2, 3, 6]</code></td>
+</tr>
+<tr style="height: 19px;">
+<td style="width: 19.011%; height: 19px;"><code>a + a2</code></td>
+<td style="width: 42.6684%; height: 19px;">Конкатенация списков, то есть новый список, в котором сначала идут все элементы <code>a</code>,<br/>а затем все элементы <code>a2</code></td>
+<td style="width: 38.3205%; height: 19px;"><code>[2, 4] + [5, 3] == [2, 4, 5, 3]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a * k</code></td>
+<td style="width: 42.6684%; height: 18px;">Список <code>a</code>, повторенный <code>k</code> раз</td>
+<td style="width: 38.3205%; height: 18px;"><code>[2, 3] * 3 == [2, 3, 2, 3, 2, 3]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a[n]</code></td>
+<td style="width: 42.6684%; height: 18px;"><code>n</code>-й элемент списка,<br/>отрицательные <code>n</code> — для отсчета с конца</td>
+<td style="width: 38.3205%; height: 18px;"><code>[2, 3, 7][0] == 2</code><br/><code>[2, 3, 7][-1] == 7</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a[start:stop:step]</code></td>
+<td style="width: 42.6684%; height: 18px;">Срез списка</td>
+<td style="width: 38.3205%; height: 18px;"><code>[2, 3, 7][:2] == [2, 3]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>len(a)</code></td>
+<td style="width: 42.6684%; height: 18px;">Длина списка</td>
+<td style="width: 38.3205%; height: 18px;"><code>len([2, 3, 7]) == 3</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>max(a)</code></td>
+<td style="width: 42.6684%; height: 18px;">Максимальный элемент списка</td>
+<td style="width: 38.3205%; height: 18px;"><code>max([2, 3, 7]) == 7</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>min(a)</code></td>
+<td style="width: 42.6684%; height: 18px;">Минимальный элемент списка</td>
+<td style="width: 38.3205%; height: 18px;"><code>min([2, 3, 7]) == 2</code></td>
+</tr>
+<tr style="height: 19px;">
+<td style="width: 19.011%; height: 19px;"><code>sum(a)</code></td>
+<td style="width: 42.6684%; height: 19px;">Сумма элементов списка</td>
+<td style="width: 38.3205%; height: 19px;"><code>sum([2, 3, 7]) == 12</code></td>
+</tr>
+<tr style="height: 54px;">
+<td style="width: 19.011%; height: 54px;"><code>a.index(x)</code></td>
+<td style="width: 42.6684%; height: 54px;">Индекс первого вхождения <code>x</code> в <code>a</code><br/>(вызовет ошибку, если <code>x not in a</code>, то есть если <code>х</code> отсутствует в <code>а</code>)</td>
+<td style="width: 38.3205%; height: 54px;"><code>[2, 3, 7].index(7) == 2</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a.count(x)</code></td>
+<td style="width: 42.6684%; height: 18px;">Количество вхождений <code>x</code> в <code>a</code></td>
+<td style="width: 38.3205%; height: 18px;"><code>[2, 7, 3, 7].count(7) == 2</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a.append(x)</code></td>
+<td style="width: 42.6684%; height: 18px;">Добавить <var>x</var> в конец <var>a</var></td>
+<td style="width: 38.3205%; height: 18px;"><code>a = [2, 3, 7]</code><br/><code>a.append(8)</code><br/><code>a == [2, 3, 7, 8]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a.extend(a2)</code></td>
+<td style="width: 42.6684%; height: 18px;">Добавить элементы коллекции <var>a2</var> в конец <var>a</var></td>
+<td style="width: 38.3205%; height: 18px;"><code>a = [2, 3, 7]</code><br/><code>a.extend([8, 4, 5])</code><br/><code>a == [2, 3, 7, 8, 4, 5]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code><strong>del</strong> a[n]</code></td>
+<td style="width: 42.6684%; height: 18px;">Удалить <var>n</var>-й элемент списка</td>
+<td style="width: 38.3205%; height: 18px;"><code>a = [2, 3, 7]</code><br/><code>del a[1]</code><br/><code>a == [2, 7]</code></td>
+</tr>
+<tr style="height: 54px;">
+<td style="width: 19.011%; height: 54px;"><code><strong>del</strong> a[start:stop:step]</code></td>
+<td style="width: 42.6684%; height: 54px;">Удалить из <code>a</code> все элементы, попавшие в срез</td>
+<td style="width: 38.3205%; height: 54px;"><code>a = [2, 3, 7]</code><br/><code>del a[:2]</code><br/><code>a == [7]</code></td>
+</tr>
+<tr style="height: 36px;">
+<td style="width: 19.011%; height: 36px;"><code>a.clear()</code></td>
+<td style="width: 42.6684%; height: 36px;">Удалить из <code>a</code> все элементы (то же, что <code>del a[:]</code>)</td>
+<td style="width: 38.3205%; height: 36px;"><code>a.clear()</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a.copy()</code></td>
+<td style="width: 42.6684%; height: 18px;">Копия <var>a</var> (то же, что и полный срез <code>a[:]</code>)</td>
+<td style="width: 38.3205%; height: 18px;"><code>b = a.copy()</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a += a2</code><br/><code>a *= k</code></td>
+<td style="width: 42.6684%; height: 18px;">Заменить содержимое списка на <code>a + a2</code><br/>и <code>a * k</code> соответственно</td>
+<td style="width: 38.3205%; height: 18px;"> </td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a.insert(n, x)</code></td>
+<td style="width: 42.6684%; height: 18px;">Вставить <code>x</code> в <code>a</code> на позицию <code>n</code>, подвинув последующую часть дальше</td>
+<td style="width: 38.3205%; height: 18px;"><code>a = [2, 3, 7]</code><br/><code>a.insert(0, 8)</code><br/><code>a == [8, 2, 3, 7]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a.pop(n)</code></td>
+<td style="width: 42.6684%; height: 18px;">Получить <var>n</var>-й элемент списка и одновременно удалить его из списка.<br/>Вызов метода без аргументов равносилен удалению последнего элемента:<br/><code>a.pop() == a.pop(-1)</code></td>
+<td style="width: 38.3205%; height: 18px;"><code>a = [2, 3, 7]</code><br/><code>a.pop(1) == 3</code><br/><code>a == [2, 7]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>a.remove(x)</code></td>
+<td style="width: 42.6684%; height: 18px;">Удалить первое вхождение <code>x</code> в <code>a</code>, в случае <code>x not in a</code> — ошибка</td>
+<td style="width: 38.3205%; height: 18px;"><code>a = [2, 3, 7]</code><br/><code>a.remove(3)</code><br/><code>a == [2, 7]</code></td>
+</tr>
+<tr style="height: 15px;">
+<td style="width: 19.011%; height: 15px;"><code>a.reverse()</code></td>
+<td style="width: 42.6684%; height: 15px;">Изменить порядок элементов в <code>a</code> на обратный (перевернуть список)</td>
+<td style="width: 38.3205%; height: 15px;"><code>a = [2, 3, 7]</code><br/><code>a.reverse()</code><br/><code>a == [7, 3, 2]</code></td>
+</tr>
+<tr style="height: 57px;">
+<td style="width: 19.011%; height: 57px;"><code>a.sort()</code></td>
+<td style="width: 42.6684%; height: 57px;">Отсортировать список по возрастанию</td>
+<td style="width: 38.3205%; height: 57px;"><code>a = [3, 2, 7]</code><br/><code>a.sort()</code><br/><code>a == [2, 3, 7]</code></td>
+</tr>
+<tr style="height: 57px;">
+<td style="width: 19.011%; height: 57px;"><code>a.sort(reverse=<strong>True</strong>)</code></td>
+<td style="width: 42.6684%; height: 57px;">Отсортировать список по убыванию</td>
+<td style="width: 38.3205%; height: 57px;"><code>a = [3, 2, 7]</code><br/><code>a.sort(reverse = True)</code><br/><code>a == [7, 3, 2]</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.011%; height: 18px;"><code>bool(a)</code></td>
+<td style="width: 42.6684%; height: 18px;">Один из способов проверить список на пустоту (возвращает <code>True</code>, если список непустой,<br/>и <code>False</code> в противном случае)</td>
+<td style="width: 38.3205%; height: 18px;"> </td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="material__chapter">
+<h2 id="3">Методы строк</h2>
+<div class="material__content-positioner">
+<table border="1" cellpadding="5px" style="border-collapse: collapse; width: 100%; height: 180px;">
+<tbody>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><strong>Операция</strong></td>
+<td style="width: 38.1926%; height: 18px;"><strong>Описание</strong></td>
+<td style="width: 42.029%; height: 18px;"><strong>Пример</strong></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s2 <strong>in</strong> s</code></td>
+<td style="width: 38.1926%; height: 18px;">Проверка, что подстрока <code>s2</code> содержится в <code>s</code></td>
+<td style="width: 42.029%; height: 18px;"><code>'m' in 'team'</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s2 <strong>not in</strong> s</code></td>
+<td style="width: 38.1926%; height: 18px;">Проверка, что подстрока <code>s2</code> не содержится в <code>s</code><br/>то же, что <code>not (s2 in s)</code></td>
+<td style="width: 42.029%; height: 18px;"><code>'I' not in 'team'</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s + s2</code></td>
+<td style="width: 38.1926%; height: 18px;">Конкатенация (склейка) строк, то есть строка,<br/>в которой сначала идут все символы из <code>s</code>,<br/>а затем все символы из <code>s2</code></td>
+<td style="width: 42.029%; height: 18px;"><code>'tea' + 'm' == 'team'</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s * k</code></td>
+<td style="width: 38.1926%; height: 18px;">Строка <code>s</code>, повторенная <code>k</code> раз</td>
+<td style="width: 42.029%; height: 18px;"><code>'ha' * 3 == 'hahaha'</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s[n]</code></td>
+<td style="width: 38.1926%; height: 18px;"><var>n</var>-й элемент строки,<br/>отрицательные <code>n</code> — для отсчета с конца</td>
+<td style="width: 42.029%; height: 18px;"><code>'team'[2] == 'a'</code><br/><code>'team'[-1] == 'm'</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s[start:stop:step]</code></td>
+<td style="width: 38.1926%; height: 18px;">Срез строки</td>
+<td style="width: 42.029%; height: 18px;"><code>'mama'[:2] == 'ma'</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>len(s)</code></td>
+<td style="width: 38.1926%; height: 18px;">Длина строки</td>
+<td style="width: 42.029%; height: 18px;"><code>len('abracadabra') == 11</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s.find(s2) </code><br/><code>s.rfind(s2)</code></td>
+<td style="width: 38.1926%; height: 18px;">Индекс начала первого или последнего<br/>вхождения подстроки <code>s2</code> в <code>s</code> (вернет -1, если <code>s2 not in s</code>)</td>
+<td style="width: 42.029%; height: 18px;"><code>s = 'abracadabra'</code><br/><code>s.find('ab') == 0</code><br/><code>s.rfind('ab') == 7</code><br/><code>s.find('x') == -1</code></td>
+</tr>
+<tr style="height: 18px;">
+<td style="width: 19.7783%; height: 18px;"><code>s.count(s2)</code></td>
+<td style="width: 38.1926%; height: 18px;">Количество неперекрывающихся вхождений <code>s2</code> в <code>s</code></td>
+<td style="width: 42.029%; height: 18px;"><code>'abracadabra'.count('a') == 5</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.startswith(s2) </code><br/><code>s.endswith(s2)</code></td>
+<td style="width: 38.1926%;">Проверка, что <code>s</code> начинается с <code>s2</code> или оканчивается на <code>s2</code></td>
+<td style="width: 42.029%;"><code>'abracadabra'.startswith('abra')</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s += s2 </code><br/><code>s *= k</code></td>
+<td style="width: 38.1926%;">Заменить содержимое строки на<br/><code>s + s2</code> и <code>s * k</code> соответственно</td>
+<td style="width: 42.029%;"> </td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.isdigit() </code><br/><code>s.isalpha() </code><br/><code>s.isalnum()</code></td>
+<td style="width: 38.1926%;">Проверка, что в строке <code>s</code> все символы — цифры,<br/>буквы (включая кириллические),<br/>цифры или буквы соответственно</td>
+<td style="width: 42.029%;"><code>'100'.isdigit()</code><br/><code>'abc'.isalpha()</code><br/><code>'E315'.isalnum()</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.islower()  </code><br/><code>s.isupper()</code></td>
+<td style="width: 38.1926%;">Проверка, что в строке <var>s</var> не встречаются большие буквы, маленькие буквы. <br/>Обратите внимание, что для обеих этих функций знаки препинания и цифры дают True</td>
+<td style="width: 42.029%;"><code>'hello!'.islower()</code><br/><code>'123PYTHON'.isupper()</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.lower() </code><br/><code>s.upper()</code></td>
+<td style="width: 38.1926%;">Строка <code>s</code>, в которой все буквы (включая кириллические)<br/>приведены к верхнему или нижнему регистру,<br/>т. е. заменены на строчные (маленькие) или заглавные (большие)</td>
+<td style="width: 42.029%;"><code>'Привет!'.lower() == 'привет!'</code><br/><code>'Привет!'.upper() == 'ПРИВЕТ!'</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.capitalize()</code></td>
+<td style="width: 38.1926%;">Строка <var>s</var>, в которой первая буква — заглавная</td>
+<td style="width: 42.029%;"><code>'привет'.capitalize() == 'Привет'</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.lstrip() </code><br/><code>s.rstrip() </code><br/><code>s.strip()</code></td>
+<td style="width: 38.1926%;">Строка <code>s</code>, у которой удалены символы пустого пространства<br/>(пробелы, табуляции) в начале,<br/>в конце или с обеих сторон</td>
+<td style="width: 42.029%;"><code>' Привет! '.strip() == 'Привет!'</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.ljust(k, c) </code><br/><code>s.rjust(k, c)</code></td>
+<td style="width: 38.1926%;">Добавляет справа или слева нужное количество<br/>символов <code>c</code>, чтобы длина <code>s</code> достигла <code>k</code></td>
+<td style="width: 42.029%;"><code>'Привет'.ljust(8, '!') == 'Привет!!</code><code>'</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.join(a)</code></td>
+<td style="width: 38.1926%;">Склеивает строки из списка <code>a</code> через символ <code>s</code></td>
+<td style="width: 42.029%;"><code>'+'.join(['Вася', 'Маша']) == 'Вася+Маша'</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.split(s2)</code></td>
+<td style="width: 38.1926%;">Список всех слов строки <code>s</code><br/>(подстрок, разделенных строками <code>s2</code>)</td>
+<td style="width: 42.029%;"><code>'Раз два три!'.split('а') ==</code><br/><code>['Р', 'з дв', ' три!']</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>s.replace(s2, s3)</code></td>
+<td style="width: 38.1926%;">Cтрока <code>s</code>, в которой все неперекрывающиеся<br/>вхождения <code>s2</code> заменены на <code>s3</code><br/>Есть необязательный третий параметр, с помощью которого можно указать, сколько раз производить замену</td>
+<td style="width: 42.029%;"><code>'Раз два три!'.replace('а', 'я') ==</code><code>'Ряз двя три!'</code><br/><code>'Раз два три!'.replace('а', 'я', 1) == 'Ряз два три!'</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>list(s)</code></td>
+<td style="width: 38.1926%;">Список символов из строки строки <code>s</code></td>
+<td style="width: 42.029%;"><code>list('Привет') ==</code><br/><code>['П', 'р', 'и', 'в', 'е', 'т']</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>bool(s)</code></td>
+<td style="width: 38.1926%;">Проверка, что строка не пустая (возвращает <code>True</code>, если не пустая, и <code>False</code> в противном случае)</td>
+<td style="width: 42.029%;"> </td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>int(s) </code><br/><code>float(s)</code></td>
+<td style="width: 38.1926%;">Если в строке <code>s</code> записано целое (дробное) число,<br/>получить это число, иначе — ошибка</td>
+<td style="width: 42.029%;"><code>int('25') == 25</code></td>
+</tr>
+<tr>
+<td style="width: 19.7783%;"><code>str(x)</code></td>
+<td style="width: 38.1926%;">Представить любой объект <code>x</code> в виде строки</td>
+<td style="width: 42.029%;"><code>str(25) == '25'</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Обратите внимание: <strong>никакие</strong> методы строк, включая <code>s.replace(...)</code>, не изменяют саму строку <var>s</var>. Все они лишь <strong>возвращают измененную строку</strong>, в отличие от большинства методов списков.</p>
+<p><code>a.sort()</code>, например, ничего не возвращает, а изменяет сам список <var>a</var>.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="4">Функции dir и help</h2>
+<p>Для получения информации о списке методов любого объекта (в том числе тех, о которых вы вряд ли хотели узнать) в Python существует специальная функция <strong>dir</strong>. Например, <code>dir([])</code> вернет все методы списков, и оператор <code>print(dir([]))</code> выведет длинный список, оканчивающийся так: <code>'index', 'insert', 'pop', 'remove', 'reverse', 'sort'</code>.</p>
+<p>Если же нам нужно узнать справочную информацию по конкретному методу или типу данных, для этого существует функция <strong>help</strong>. <code>help([])</code> выведет на экран много информации, большая часть которой пока лишняя. А вот <code>help([].insert)</code> выведет на экран краткую справку именно по методу <var>insert</var>, подсказывая, что первый аргумент этого метода — индекс, а второй — тот объект, который нужно вставить в список на этот индекс.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Заметьте: при вызове справки по методу <code>help([].insert)</code> после <var>insert</var> нет скобок (...) — ведь мы не хотим вызвать этот метод, чтобы вставить что-то в какой-то список. Функции <var>help</var> в качестве аргумента передается сам метод <var>insert</var>.</p>
+</section>
+</section>
+<section class="material__chapter">
+<h2 id="5">Форматированный вывод. f-строки</h2>
+<p>Этот блок урока не имеет отношения к методам списков и строк, но позволит нам познакомиться с возможностями форматированного вывода на экран переменных и выражений.</p>
+<p>Начиная с версии 3.6 в Python появился новый тип строк — f-строки, которые улучшают читаемость кода и работают быстрее других способов форматирования.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>f-строки</strong></p>
+<p>f-строки, которые буквально означают formatted string, задаются с помощью литерала f перед кавычками:</p>
+<pre class="language-python"><code class="language-python"><span class="token operator">&gt;&gt;</span><span class="token operator">&gt;</span> <span class="token string">"обычная строка"</span>
+<span class="token operator">&gt;&gt;</span><span class="token operator">&gt;</span> <span class="token string-interpolation"><span class="token string">f"f-строка"</span></span>
+</code></pre>
+</section>
+<p>f-строки делают очень простую вещь: они берут значения переменных, которые есть в текущей области видимости, и подставляют их в строку. В самой строке вам лишь нужно указать имя этой переменной в фигурных скобках.</p>
+<pre class="language-python"><code class="language-python">name <span class="token operator">=</span> <span class="token string">"Аркадий"</span>
+age <span class="token operator">=</span> <span class="token number">14</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Меня зовут </span><span class="token interpolation"><span class="token punctuation">{</span>name<span class="token punctuation">}</span></span><span class="token string">. Мне </span><span class="token interpolation"><span class="token punctuation">{</span>age<span class="token punctuation">}</span></span><span class="token string"> лет."</span></span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Меня зовут Аркадий. Мне 14 лет.</samp></pre>
+<p>В качестве подставляемого значения внутри фигурных скобок может быть: имя переменной (<code>f"Меня зовут {name}"</code>), элемент списка (<code>f"Третий месяц в году - {month[2]}"</code>) или словаря, методы объектов (<code>f"Имя: {name.upper()}"</code>). f-строки позволяют выполнять базовые арифметические операции (<code>f"({x} + {y}) / 2 = {(x + y) / 2}"</code>) и даже вызывать функции (<code>f"13 / 7 = {round(13/7)}"</code>).</p>
+<p>Кроме того, вы можете задавать форматирование для чисел.</p>
+<ul>
+<li>Указать необходимое количество знаков после запятой, спецификатор <var>f</var> отвечает за вывод чисел с плавающей точкой (тип <var>float</var>):</li>
+</ul>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Число пи по Архимеду - </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token number">22</span><span class="token operator">/</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token format-spec">.2f</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li>Представить результат в двоичной системе счисления, используя спецификатор <var>b</var>:</li>
+</ul>
+<pre class="language-python"><code class="language-python"><span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"10 в двоичной системе счисления - </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token format-spec">b</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Аналогично для шестнадцатеричной системы счисления используется спецификатор <var>x</var>, а для восьмеричной — <var>o</var>.</p>
+<p>Подробнее о допустимых вариантах форматирования можно почитать в <a class="material__link" href="https://docs.python.org/3.6/library/string.html#format-examples" rel="noopener noreferrer" target="_blank">документации</a> или на вот этом <a class="material__link" href="https://pyformat.info/" rel="noopener noreferrer" target="_blank">ресурсе</a>.</p>
+</section>
+<section class="material__chapter">
+<h2 id="6">Цепочки вызовов</h2>
+<p>Бывает удобно строить последовательные цепочки вызовов методов.</p>
+<p>Например, <code>s.strip().lower().replace('ё', 'е')</code> выдаст строку <var>s</var>, в которой убраны начальные и конечные пробелы, все буквы сделаны маленькими, после чего убраны все точки над Ё. В результате этого преобразования строка ' Зелёный клён ' превратится в 'зеленый клен'.</p>
+<p>Другой пример:</p>
+<pre class="language-python"><code class="language-python"><span class="token string">'мало Средне    МНОГО'</span><span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>index<span class="token punctuation">(</span><span class="token string">'средне'</span><span class="token punctuation">)</span> 
+</code></pre>
+<pre><samp>1</samp></pre>
+<p>В данном примере строка сначала полностью приводится к нижнему регистру (все буквы маленькие) при помощи метода <code>lower()</code>. Затем она превращается в список слов <code>['мало', 'средне', 'много']</code> при помощи <code>split()</code>. Далее метод <var>index</var> находит в этом списке слово «средне» на позиции номер 1.</p>
+</section>
+<section class="material__chapter">
+<h2 id="7">Использование методов списков. Структура данных «Стек»</h2>
+<p>Приведем пример использования методов списков <var>append</var> и <var>pop</var> для моделирования структуры данных «Стек». Эта структура данных часто используется при решении различных задач (например, при вычислении выражений).</p>
+<p>Представьте себе стопку сложенных футболок или любых других неодинаковых предметов, которые можно сложить в стопку. Из стопки удобно забрать самый верхний предмет — тот, который положили в нее последним. Если вы полностью разберете стопку, будете брать футболки в порядке, обратном тому, в котором их в нее клали.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Стек</strong></p>
+<p>Структура данных называется стек (stack, что и значит «стопка»). По-английски такую организацию данных называют <strong>LIFO — Last In First Out — Первым Пришел Последним Ушел!</strong></p>
+<p>Если пользоваться только методами <var>append</var> и <var>pop</var> без аргументов, список оказывается как раз такой стопкой.</p>
+</section>
+<p>Так, в примере ниже порядок вывода будет обратным порядку ввода:</p>
+<pre class="language-python"><code class="language-python">stack <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Какую футболку вы кладёте сверху стопки?'</span><span class="token punctuation">)</span>
+    stack<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">while</span> stack<span class="token punctuation">:</span>  <span class="token comment"># пока стопка не закончилась</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Сегодня вы надеваете футболку'</span><span class="token punctuation">,</span> stack<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Какую футболку вы кладёте сверху стопки?
+белую
+Какую футболку вы кладёте сверху стопки?
+красную
+Какую футболку вы кладёте сверху стопки?
+синюю
+Какую футболку вы кладёте сверху стопки?
+зеленую
+Какую футболку вы кладёте сверху стопки?
+веселую
+Сегодня вы надеваете футболку веселую
+Сегодня вы надеваете футболку зеленую
+Сегодня вы надеваете футболку синюю
+Сегодня вы надеваете футболку красную
+Сегодня вы надеваете футболку белую</samp></pre>
+<p>Здесь использовалась конструкция <code>while stack:</code>. В условии оператора <var>if</var> или <var>while</var> любой объект интерпретируется как <var>bool</var>: либо как True, либо как False. В случае списков и строк в False превращаются только <code>[]</code> и <code>''</code> соответственно (а в случае чисел — только ноль).</p>
+<p>Иными словами, можно было бы написать <code>while bool(stack):</code> или <code>while stack != []:</code> и получить тот же самый результат, но самый короткий и общепринятый вариант — просто <code>while stack:</code>.</p>
+</section></article></section>

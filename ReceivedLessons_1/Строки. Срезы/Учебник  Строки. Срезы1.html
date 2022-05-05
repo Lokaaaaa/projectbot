@@ -1,0 +1,75 @@
+<section class="lesson-material__content"><article class="material"><h1>Строки. Срезы</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Работа со строками (повторение)</a></li>
+<li><a class="material__link" href="#2">Срезы строк</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>На этом занятии мы продолжим отрабатывать навыки работы со строкой и познакомимся с новым методом извлечения подстроки — срезами.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Работа со строками (повторение)</h2>
+<p>Рассмотрим еще одну задачу. Билет называют счастливым по-питерски, если сумма цифр его номера, стоящих на четных местах, равна сумме цифр, стоящих на нечетных местах. Нам необходимо написать программу, которая определяет, является ли билет счастливым по-питерски.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-11/11.svg" width="480"/></div>
+<p>Если рассматривать номер билета как строку из цифр, задача сводится к подсчету суммы цифр, стоящих на позициях 0, 2, 4..., и суммы цифр, стоящих на позициях 1, 3, 5... Чтобы перебрать элементы, мы можем воспользоваться конструкцией <code>for i in range(...)</code>, указав шаг 2. Тогда соответствующий фрагмент программы может выглядеть следующим образом:</p>
+<pre class="language-python"><code class="language-python">number <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+odd <span class="token operator">=</span> even <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    odd <span class="token operator">+=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>number<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    even <span class="token operator">+=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>number<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">if</span> odd <span class="token operator">==</span> even<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Счастливый по-питерски!'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Подумайте, как можно решить данную задачу за один цикл.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Срезы строк</h2>
+<p>На примере разобранной задачи мы увидели, что перебор элементов строки с помощью конструкции <code>for i in range(...)</code> является достаточно гибким: можно перебрать не все индексы, можно идти с шагом, скажем, 2 или даже −1, то есть в обратном порядке. Но существует способ без всякого цикла преобразовать строку нужным образом: взять отдельный ее кусок, символы с нечетными номерами и т. д. Этот способ — <strong>срез (slice)</strong>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Срез строки</strong></p>
+<p>В самом простом варианте срез строки — ее кусок от одного индекса включительно и до другого не включительно (как для <var>range</var>). То есть это новая, более короткая строка.</p>
+<p>Срез записывается с помощью квадратных скобок, в которых указывается начальный и конечный индекс, разделенные двоеточием.</p>
+</section>
+<pre class="language-python"><code class="language-python">text <span class="token operator">=</span> <span class="token string">'Hello, world!'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>text<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>text<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">:</span><span class="token number">12</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Если не указан <strong>начальный индекс</strong>, срез берется от начала (от 0). Если не указан <strong>конечный индекс</strong>, срез берется до конца строки. Попробуйте предположить, что будет выведено на экран, если в предыдущей программе записать срезы следующим образом:</p>
+<pre class="language-python"><code class="language-python">text <span class="token operator">=</span> <span class="token string">'Hello, world!'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>text<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>text<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<p><strong>Разрешены отрицательные индексы</strong> для отсчета с конца списка. В следующем примере из строки, содержащей фамилию, имя и отчество, будет извлекаться фамилия.</p>
+<pre class="language-python"><code class="language-python">full_name <span class="token operator">=</span> <span class="token string">'Иванов И. И.'</span>
+surname <span class="token operator">=</span> full_name<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">6</span><span class="token punctuation">]</span>
+</code></pre>
+<p>Как и для <var>range</var>, в параметры среза можно добавить третье число — <strong>шаг обхода</strong>. Этот параметр не является обязательным и записывается через второе двоеточие. Вот как может выглядеть программа «Счастливый билет», если решать ее с помощью срезов:</p>
+<pre class="language-python"><code class="language-python">number <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+odd <span class="token operator">=</span> even <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># срез будет от начала строки до конца с шагом два: 0, 2, 4,... </span>
+<span class="token keyword">for</span> n <span class="token keyword">in</span> number<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">:</span>  
+    odd <span class="token operator">+=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+
+<span class="token comment"># срез от второго элемента строки до конца с шагом два: 1, 3, 5,...</span>
+<span class="token keyword">for</span> n <span class="token keyword">in</span> number<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">:</span> 
+    even <span class="token operator">+=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> odd <span class="token operator">==</span> even<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Счастливый по-питерски!'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Интересное отличие среза от обращения по индексу к отдельному элементу состоит в том, что мы не получим ошибку при указании границ среза за пределами строки. В срез в таком случае попадут только те элементы, которые находятся по валидным индексам среза:</p>
+<pre class="language-python"><code class="language-python">a <span class="token operator">=</span> <span class="token string">'Python'</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">:</span><span class="token number">10000</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># thon</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span><span class="token number">999</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># пустая строка</span>
+</code></pre>
+<p><strong>Шаг может быть и отрицательным</strong> — для прохода по строке в обратном порядке. Если в этом случае не указать начальный и конечный индекс среза, ими станут последний и первый индексы строки соответственно (а не наоборот, как при положительном шаге):</p>
+<pre class="language-python"><code class="language-python">text <span class="token operator">=</span> <span class="token string">'СЕЛ В ОЗЕРЕ БЕРЕЗОВ ЛЕС'</span>
+text_reversed <span class="token operator">=</span> text<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>text <span class="token operator">==</span> text_reversed<span class="token punctuation">)</span>
+</code></pre>
+<p>Итак, с помощью квадратных скобок можно получить доступ как к одному символу строки, так и к некоторой последовательности символов, причем совсем необязательно идущих подряд!</p>
+</section></article></section>

@@ -1,0 +1,444 @@
+<section class="lesson-material__content"><article class="material"><h1>Введение в асинхронное программирование.</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Введение</a></li>
+<li><a class="material__link" href="#2">Асинхронная программа.</a></li>
+<li><a class="material__link" href="#3">Немного терминов.</a></li>
+<li><a class="material__link" href="#4">Где асинхронность применяется в программировании?</a></li>
+<li><a class="material__link" href="#5">Примеры асинхронных программ.</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня мы узнаем, что такое асинхронное программирование, чем оно отличается от синхронного, как писать асинхронные программы на python.</p>
+<p>Этот урок не содержит задач.</p>
+</section>
+<section class="material__chapter">
+<p>Представьте, что вы готовите угощение из трёх блюд, которое содержит следующее:</p>
+<ul>
+<li>закуску, которая потребует 2 минут на подготовку и 3 минут приготовления-ожидания</li>
+<li>основное блюдо, занимающее 5 минут подготовительных работ и 10 минут приготовления-ожидания</li>
+<li>десерт, отнимающий 3 минут на предварительные мероприятия и 5 минут приготовления-ожидания</li>
+</ul>
+<p>Ваша задача - приготовить эти блюда за наименьшее время. Например, если мы будем все делать последовательно, то на закуску у нас уйдёт 5 минут, на основное блюдо - 15 минут и, наконец, десерт - ещё 8 минут. Всего потребуется 28 минут.</p>
+<p>Как же можно уменьшить необходимое время? Идея в том, что пока вы ждете приготовления одного блюда, можно заняться подготовкой к другому. Таким образом временные промежутки ожидания одного блюда и подготовки к приготовлению другого будут перекрываться.</p>
+<p>Например, при помощи следующих шагов можно улучшить результат:</p>
+<ol>
+<li>Подготовка закуски: 2 минуты.</li>
+<li>Подготовка основного блюда в то время, пока готовится закуска: 5 минут. Приготовление закуски завершится на этом этапе.</li>
+<li>Подготовка и приготовление десерта пока вы дожидаетесь завершения приготовления основного блюда: 8 минут. Десерт уже будет готов, а основному блюду потребуется ещё 2 минуты до окончательной готовности.</li>
+<li>Ожидание готовности основного блюда: 2 минуты.</li>
+</ol>
+<p>Итого 17 минут на все вместо 28 в предыдущем варианте.</p>
+<p>Очевидно, что существует более одного способа уменьшения времени на приготовление. В этом примере можно уложиться в 15 минут.</p>
+<p>Первый способ - это <strong>синхронный</strong> режим. Все действия выполняются последовательно друг за другом. Пока не будет окончено выполнение одного действие, другое начинать нельзя. Все действия в этом случае являются блокирующими.</p>
+<p>Второй способ - это <strong>асинхронный</strong> режим. Некоторые действия блокирующие - подготовка ингредиентов. Некоторые неблокирующие, например, ожидание приготовления блюда, в это время можно заняться чем-то еще, например, подготовкой ингредиентов для следующего блюда. При этом не привлекается еще один человек, т.е. используется только один поток выполнения.</p>
+<p>Давайте теперь, напишем программу, которая моделирует приготовление блюд по алгоритмам, описанным выше. Для удобства в программе одна минута реального времени будет соответствовать одной секунде времени работы программы, чтобы не надо было ждать 28 минут, пока все "блюда" приготовятся.</p>
+<p>Программа для первого <strong>синхронного</strong> варианта может выглядеть так:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> time
+<span class="token keyword">from</span> datetime <span class="token keyword">import</span> datetime
+
+<span class="token comment"># в нашей программе одна минута реального времени будет соответствовать одной секунде времени работы программы</span>
+<span class="token comment"># если установить коэффициент в 0.5, то половине секунды времени работы программы</span>
+COEFF <span class="token operator">=</span> <span class="token number">1</span>
+
+
+<span class="token keyword">def</span> <span class="token function">dish</span><span class="token punctuation">(</span>num<span class="token punctuation">,</span> prepare<span class="token punctuation">,</span> wait<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    функция имитирует приготовление одного блюда
+    :param num: номер блюда по порядку
+    :param prepare: сколько минут на подготовку
+    :param wait: сколько минут на ожидание готовности
+    :return:
+    """</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"start </span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> prepare dish </span><span class="token interpolation"><span class="token punctuation">{</span>num<span class="token punctuation">}</span></span><span class="token string"> </span><span class="token interpolation"><span class="token punctuation">{</span>prepare<span class="token punctuation">}</span></span><span class="token string"> min"</span></span><span class="token punctuation">)</span>
+    time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>COEFF <span class="token operator">*</span> prepare<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"start </span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> wait dish </span><span class="token interpolation"><span class="token punctuation">{</span>num<span class="token punctuation">}</span></span><span class="token string"> </span><span class="token interpolation"><span class="token punctuation">{</span>wait<span class="token punctuation">}</span></span><span class="token string"> min"</span></span><span class="token punctuation">)</span>
+    time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>COEFF <span class="token operator">*</span> wait<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> dish </span><span class="token interpolation"><span class="token punctuation">{</span>num<span class="token punctuation">}</span></span><span class="token string"> is ready"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    функция запускает "приготовление" блюд
+    :return:
+    """</span>
+    dish<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span>
+    dish<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+    dish<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    t0 <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># запоминаем время начала работы</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># запускаем приготовление</span>
+    delta <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> t0<span class="token punctuation">)</span> <span class="token operator">/</span> COEFF<span class="token punctuation">)</span>  <span class="token comment"># считаем затраченное время</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> It took </span><span class="token interpolation"><span class="token punctuation">{</span>delta<span class="token punctuation">}</span></span><span class="token string"> min"</span></span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Асинхронная программа.</h2>
+<p>Теперь напишем <strong>асинхронный</strong> вариант с использованием стандартной библиотеки asyncio:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+<span class="token keyword">import</span> time
+<span class="token keyword">import</span> asyncio
+<span class="token keyword">from</span> datetime <span class="token keyword">import</span> datetime
+
+COEFF <span class="token operator">=</span> <span class="token number">1</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">dish</span><span class="token punctuation">(</span>num<span class="token punctuation">,</span> prepare<span class="token punctuation">,</span> wait<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"start </span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> prepare dish </span><span class="token interpolation"><span class="token punctuation">{</span>num<span class="token punctuation">}</span></span><span class="token string"> </span><span class="token interpolation"><span class="token punctuation">{</span>prepare<span class="token punctuation">}</span></span><span class="token string"> min"</span></span><span class="token punctuation">)</span>
+    time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>COEFF <span class="token operator">*</span> prepare<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"start </span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> wait dish </span><span class="token interpolation"><span class="token punctuation">{</span>num<span class="token punctuation">}</span></span><span class="token string"> </span><span class="token interpolation"><span class="token punctuation">{</span>wait<span class="token punctuation">}</span></span><span class="token string"> min"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>COEFF <span class="token operator">*</span> wait<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> dish </span><span class="token interpolation"><span class="token punctuation">{</span>num<span class="token punctuation">}</span></span><span class="token string"> is ready"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    tasks <span class="token operator">=</span> <span class="token punctuation">[</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>dish<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>dish<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>dish<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span>
+    <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>gather<span class="token punctuation">(</span><span class="token operator">*</span>tasks<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    t0 <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># запоминаем время начала работы</span>
+    <span class="token keyword">if</span> os<span class="token punctuation">.</span>name <span class="token operator">==</span> <span class="token string">'nt'</span><span class="token punctuation">:</span>
+        asyncio<span class="token punctuation">.</span>set_event_loop_policy<span class="token punctuation">(</span>asyncio<span class="token punctuation">.</span>WindowsSelectorEventLoopPolicy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># запускаем асинхронное приготовление</span>
+    delta <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> t0<span class="token punctuation">)</span> <span class="token operator">/</span> COEFF<span class="token punctuation">)</span>  <span class="token comment"># считаем затраченное время</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{</span>datetime<span class="token punctuation">.</span>now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strftime<span class="token punctuation">(</span><span class="token string">'%HH:%MM:%SS'</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string"> It took </span><span class="token interpolation"><span class="token punctuation">{</span>delta<span class="token punctuation">}</span></span><span class="token string"> min"</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Перед разбором примера несколько пояснений:</p>
+<ol>
+<li>Функции, которые не являются блокирующими и могут выполняться асинхронно, называются корутинами <strong>(coroutines)</strong>. Для описания таких функций, начиная с Python 3.5, используют ключевое слово <code>async</code>:
+<pre class="language-python"><code class="language-python"><span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">my_coro</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+    </code></pre>
+</li>
+<li>Для выполнения неблокирующего вызова корутины используется ключевое слово <code>await</code>. Оно, как бы, говорит, что здесь мы начинаем ждать, и пока мы ждем выполнение программы может быть передано куда-то еще. Как только ожидание закончится, выполнение функции (корутины) будет продолжено до ее окончания или до следующей директивы await.</li>
+<li><code>asyncio.create_task()</code> - создает задачу на основе корутины. В этом примере мы создаем три задачи для приготовления трех блюд и помещаем их в список.</li>
+<li><code>asyncio.gather()</code> - "собирает" все асинхронные задачи, которые необходимо выполнить, запускает их и дожидается (<code>await</code>) их выполнения.</li>
+<li><code>asyncio.run()</code> - запускает корутину на выполнение.</li>
+</ol>
+<p>В приведенном примере есть две корутины</p>
+<ol>
+<li><code>async def dish(num, prepare, wait)</code> - приготовление блюда номер <code>num</code>, <code>prepare</code> минут на подготовку ингредиентов, <code>wait</code> минут на ожидание готовности. Внутри корутины использован блокирующий вызов (т.е. выполнение программы "замораживается") <code>time.sleep()</code> - приготовление ингредиентов, и неблокирующий асинхронный вызов <code>await asyncio.sleep()</code>. Когда выполнение корутины дойдет до <code>await
+                asyncio.sleep()</code>, то ее работа будет временно приостановлена, а управление передано следующей на очереди задаче. Выполнение корутины будет возобновлено, по возможности, как можно раньше, но не ранее завершения ожидания.</li>
+<li><code>async def main()</code> - это корутина предназначение для составления списка задач, которые надо выполнить
+<pre class="language-python"><code class="language-python">tasks <span class="token operator">=</span> <span class="token punctuation">[</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>dish<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>dish<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>dish<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span></code></pre>
+</li>
+<li><code>asyncio.run(main())</code> - Точка входа в программу. Создает и запускает цикл обработки событий. Принимает в качестве параметра корутину верхнего уровня.</li>
+</ol>
+<p>Обратите внимание на строки:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> os<span class="token punctuation">.</span>name <span class="token operator">==</span> <span class="token string">'nt'</span><span class="token punctuation">:</span>
+        asyncio<span class="token punctuation">.</span>set_event_loop_policy<span class="token punctuation">(</span>asyncio<span class="token punctuation">.</span>WindowsSelectorEventLoopPolicy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    </code></pre>
+<p>Дело в том, что в разных операционных системах, асинхронные вызовы могут быть реализованы неодинаково. Здесь мы ставим "костыль" для операционной системы Windows.</p>
+</section>
+<section class="material__chapter">
+<h2 id="3">Немного терминов.</h2>
+<p>Когда говорят об асинхронности, обычно используют три близких понятия. Это - <strong>конкурентность</strong> (concurrency), <strong>параллелизм</strong> (parallel execution) и <strong>многопоточность</strong> (multithreading). Все они связаны с одновременным выполнением задач, однако, это не одно и то же.</p>
+<p><strong>Конкурентность.</strong> <br/>Понятие конкурентного исполнения самое общее. Оно означает, что множество задач выполняются в одно время. Можно сказать, что в программе есть несколько логических потоков – по одному на каждую задачу. При этом потоки могут физически выполняться одновременно, но это не обязательно. Задачи при этом не должны быть связаны друг с другом, и не имеет значения, какая из них завершится раньше, а какая позже.</p>
+<p><strong>Параллелизм.</strong> <br/>Параллельное исполнение используют для разделения одной задачи на части для ускорения вычислений. Например, нужно сделать цветное изображение черно-белым. Обработка верхней половины не отличается от обработки нижней. Следовательно, можно разделить эту задачу на две части и раздать их разным потокам, чтобы ускорить выполнение в два раза. Наличие двух физических потоков здесь принципиально важно, так как на компьютере с одним вычислительным устройством (процессорным ядром) такой прием провести невозможно.</p>
+<div class="material__content-positioner"><img class="material__illustration material__screenshot" height="auto" src="https://yastatic.net/s3/lyceum/content/presentation/async_im_1.png" width="361"/></div>
+<p><strong>Многопоточность.</strong> <br/>Здесь поток является абстракцией, под которой может скрываться и отдельное ядро процессора, и <a class="material__link" href="https://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D1%82%D0%BE%D0%BA_%D0%B2%D1%8B%D0%BF%D0%BE%D0%BB%D0%BD%D0%B5%D0%BD%D0%B8%D1%8F" rel="noopener noreferrer" target="_blank">тред ОС</a>. Некоторые языки даже имеют собственные объекты потоков. Таким образом, эта концепция может иметь принципиально разную реализацию.</p>
+<p><strong>Асинхронность.</strong> <br/>Идея асинхронного выполнения заключается в том, что начало и конец одной операции происходят в разное время в разных частях кода. Чтобы получить результат, необходимо подождать, причем время ожидания непредсказуемо. Как правило, асинхронные задачи выполняются в одном потоке. Такой режим еще называют <strong>"кооперативная однопоточная многозадачность".</strong> Т.е. асинхронность - это частный случай конкурентности. Именно эта идея и была реализована в разобранном выше примере при помощи библиотеки asyncio.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Где асинхронность применяется в программировании?</h2>
+<p>Асинхронность больше всего подходит для таких сценариев:</p>
+<ol>
+<li>Программа выполняется слишком долго.</li>
+<li>Причина задержки — не вычисления, а ожидания ввода или вывода.</li>
+<li>Задачи, которые включают несколько одновременных операций ввода и вывода.
+<p>Это могут быть:</p>
+<ul>
+<li>Парсеры (обработчики),</li>
+<li>Сетевые сервисы (получение и отправка данных)</li>
+<li>Работа с данными (запросы в базы данных)</li>
+</ul>
+</li>
+<li>Асинхронный подход не применим в задачах, которые сильно нагружают процессор, например, расчет или проверка чисел на простоту. Здесь может спасти многопоточность.</li>
+</ol>
+<p>Далее мы разберем еще несколько примеров асинхронных программ.</p>
+</section>
+<section class="material__chapter">
+<h2 id="5">Примеры асинхронных программ.</h2>
+<p><strong>Worker Pool.</strong> <br/>Необходимо создать набор (pool) функций (workers), которые будут заниматься тем, что получают данные и выполняют какую-либо их обработку. При этом от момента запроса до момента получения данных может пройти достаточно большое время (до нескольких миллисекунд).</p>
+Синхронное решение.
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> time
+<span class="token keyword">from</span> random <span class="token keyword">import</span> randint
+
+ITER_NUM <span class="token operator">=</span> <span class="token number">10</span>  <span class="token comment"># количество итераций в каждом воркере</span>
+COROUT_NUM <span class="token operator">=</span> <span class="token number">5</span>  <span class="token comment"># необходимое количество воркеров</span>
+
+
+<span class="token keyword">def</span> <span class="token function">do_some_work</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>ITER_NUM<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>format_work<span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span><span class="token number">0.01</span> <span class="token operator">*</span> randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>COROUT_NUM<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        do_some_work<span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">format_work</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> i <span class="token operator">*</span> <span class="token string">' '</span> <span class="token operator">+</span> <span class="token string">"█"</span> <span class="token operator">+</span> <span class="token punctuation">(</span>COROUT_NUM <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token string">' '</span> <span class="token operator">+</span> <span class="token string-interpolation"><span class="token string">f'cr </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string"> iter </span><span class="token interpolation"><span class="token punctuation">{</span>j<span class="token punctuation">}</span></span><span class="token string"> '</span></span> <span class="token operator">+</span> <span class="token string">"■"</span> <span class="token operator">*</span> j
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>В программе создается некоторое количество (<code>COROUT_NUM</code>) воркеров, каждый из которых выполняет некоторое количество итераций (<code>ITER_NUM</code>). Каждая итерация получения данных занимает случайное время. В нашем примере единственная работа, которую делает воркер - выводит информацию о себе и о своих итерациях.</p>
+<p>Запустим код:</p>
+<pre><code>█     cr 0 iter 0
+█     cr 0 iter 1 ■
+█     cr 0 iter 2 ■■
+█     cr 0 iter 3 ■■■
+█     cr 0 iter 4 ■■■■
+█     cr 0 iter 5 ■■■■■
+█     cr 0 iter 6 ■■■■■■
+█     cr 0 iter 7 ■■■■■■■
+█     cr 0 iter 8 ■■■■■■■■
+█     cr 0 iter 9 ■■■■■■■■■
+ █    cr 1 iter 0
+ █    cr 1 iter 1 ■
+ █    cr 1 iter 2 ■■
+ █    cr 1 iter 3 ■■■
+ █    cr 1 iter 4 ■■■■
+ █    cr 1 iter 5 ■■■■■
+ █    cr 1 iter 6 ■■■■■■
+ █    cr 1 iter 7 ■■■■■■■
+ █    cr 1 iter 8 ■■■■■■■■
+ █    cr 1 iter 9 ■■■■■■■■■
+</code></pre>
+<p>Поскольку решение синхронное, то все воркеры и итерации выполняются строго друг за другом.</p>
+<p>Acинхронное решение.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> asyncio
+<span class="token keyword">import</span> os
+<span class="token keyword">from</span> random <span class="token keyword">import</span> randint
+
+ITER_NUM <span class="token operator">=</span> <span class="token number">10</span>
+COROUT_NUM <span class="token operator">=</span> <span class="token number">5</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">do_some_work</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>ITER_NUM<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>format_work<span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span><span class="token number">0.01</span> <span class="token operator">*</span> randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    tasks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>COROUT_NUM<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        tasks<span class="token punctuation">.</span>append<span class="token punctuation">(</span>asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>do_some_work<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>gather<span class="token punctuation">(</span><span class="token operator">*</span>tasks<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">format_work</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> i <span class="token operator">*</span> <span class="token string">' '</span> <span class="token operator">+</span> <span class="token string">"█"</span> <span class="token operator">+</span> <span class="token punctuation">(</span>COROUT_NUM <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token string">' '</span> <span class="token operator">+</span> <span class="token string-interpolation"><span class="token string">f'cr </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string"> iter </span><span class="token interpolation"><span class="token punctuation">{</span>j<span class="token punctuation">}</span></span><span class="token string"> '</span></span> <span class="token operator">+</span> <span class="token string">"■"</span> <span class="token operator">*</span> j
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> os<span class="token punctuation">.</span>name <span class="token operator">==</span> <span class="token string">'nt'</span><span class="token punctuation">:</span>
+        asyncio<span class="token punctuation">.</span>set_event_loop_policy<span class="token punctuation">(</span>asyncio<span class="token punctuation">.</span>WindowsSelectorEventLoopPolicy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    </code></pre>
+<p>Здесь функция <code>async def do_some_work(i)</code> является асинхронной. В ней выполняется блокирующая функция - <code>print</code>, и асинхронная <code>await asyncio.sleep()</code>.</p>
+<p>Запустим код:</p>
+<pre><code>█     cr 0 iter 0
+ █    cr 1 iter 0
+  █   cr 2 iter 0
+   █  cr 3 iter 0
+    █ cr 4 iter 0
+ █    cr 1 iter 1 ■
+    █ cr 4 iter 1 ■
+  █   cr 2 iter 1 ■
+ █    cr 1 iter 2 ■■
+█     cr 0 iter 1 ■
+  █   cr 2 iter 2 ■■
+   █  cr 3 iter 1 ■
+█     cr 0 iter 2 ■■
+█     cr 0 iter 3 ■■■
+    █ cr 4 iter 2 ■■
+ █    cr 1 iter 3 ■■■
+   █  cr 3 iter 2 ■■
+</code></pre>
+<p>Здесь очень хорошо видно, что сначала выполняется 0-я итерация каждого из запущенных воркеров, а затем каждая из их итераций выполняется в зависимости от времени, которое надо подождать (а оно случайное).</p>
+<p><strong>Загрузка файлов из сети интернет и их локальное сохранение.</strong> <br/>Мы будем получать случайные картинки из интернета и сохранять их на локальный диск. Скачивать будем с сайта <a class="material__link" href="https://loremflickr.com/640/480" rel="noopener noreferrer" target="_blank">loremflickr.com</a>. Каждый запрос get, отправленный по этому адресу, будет перенаправлен на случайное изображение размером 640Х480. Сама операция получения изображения является "узким горлышком". В момент получения информации от сервера, синхронная программа будет блокировать и просто "ждать". Программа сохраняет файлы в папку img, не забудьте ее создать.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> requests
+<span class="token keyword">from</span> time <span class="token keyword">import</span> time
+
+
+<span class="token keyword">def</span> <span class="token function">get_file</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> url<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"getting file number </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    r <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> allow_redirects<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+    write_file<span class="token punctuation">(</span>i<span class="token punctuation">,</span> r<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">write_file</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> response<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"writing file number </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    filename <span class="token operator">=</span> response<span class="token punctuation">.</span>url<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'./img/</span><span class="token interpolation"><span class="token punctuation">{</span>filename<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">,</span> <span class="token string">'wb'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+        <span class="token builtin">file</span><span class="token punctuation">.</span>write<span class="token punctuation">(</span>response<span class="token punctuation">.</span>content<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    url <span class="token operator">=</span> <span class="token string">'https://loremflickr.com/640/480'</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        get_file<span class="token punctuation">(</span>i<span class="token punctuation">,</span> url<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    t0 <span class="token operator">=</span> time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> t0<span class="token punctuation">}</span></span><span class="token string"> seconds'</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Функция <code>def get_file(url)</code> получает ссылку и выполняет <strong>get</strong> запрос. Результат выполнения запроса передается в функцию <code>write_file()</code>, которая сохраняет файл на диск. <br/>Пример вывода и время работы программы:</p>
+<pre><code>getting file number 0
+writing file number 0
+getting file number 1
+writing file number 1
+getting file number 2
+writing file number 2
+getting file number 3
+writing file number 3
+getting file number 4
+writing file number 4
+getting file number 5
+    ................
+    ................
+getting file number 27
+writing file number 27
+getting file number 28
+writing file number 28
+getting file number 29
+writing file number 29
+21.349416255950928 seconds
+</code></pre>
+<p>Файлы последовательно скачиваются и записываются на диск. Синхронная программа обработала 30 файлов за 21.3 секунды.</p>
+<p>Перепишем эту программу асинхронно. Для этого применим библиотеку <code>pip install aiohttp</code>. Она позволяет вызывать http методы асинхронно. <a class="material__link" href="https://docs.aiohttp.org/en/stable/client_quickstart.html" rel="noopener noreferrer" target="_blank">Документация и примеры</a>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+<span class="token keyword">from</span> time <span class="token keyword">import</span> time
+<span class="token keyword">import</span> asyncio
+<span class="token keyword">import</span> aiohttp
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">get_file</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> url<span class="token punctuation">,</span> session<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"getting file number </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    response <span class="token operator">=</span> <span class="token keyword">await</span> session<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> allow_redirects<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+    <span class="token keyword">await</span> write_file<span class="token punctuation">(</span>i<span class="token punctuation">,</span> response<span class="token punctuation">)</span>
+    response<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">write_file</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> response<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"writing file number </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    filename <span class="token operator">=</span> response<span class="token punctuation">.</span>url<span class="token punctuation">.</span>name
+    data <span class="token operator">=</span> <span class="token keyword">await</span> response<span class="token punctuation">.</span>read<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'./img/</span><span class="token interpolation"><span class="token punctuation">{</span>filename<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">,</span> <span class="token string">'wb'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> <span class="token builtin">file</span><span class="token punctuation">:</span>
+        <span class="token builtin">file</span><span class="token punctuation">.</span>write<span class="token punctuation">(</span>data<span class="token punctuation">)</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    url <span class="token operator">=</span> <span class="token string">'https://loremflickr.com/640/480'</span>
+    tasks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    session <span class="token operator">=</span> aiohttp<span class="token punctuation">.</span>ClientSession<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        task <span class="token operator">=</span> asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>get_file<span class="token punctuation">(</span>i<span class="token punctuation">,</span> url<span class="token punctuation">,</span> session<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        tasks<span class="token punctuation">.</span>append<span class="token punctuation">(</span>task<span class="token punctuation">)</span>
+    <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>gather<span class="token punctuation">(</span><span class="token operator">*</span>tasks<span class="token punctuation">)</span>
+    <span class="token keyword">await</span> session<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    t0 <span class="token operator">=</span> time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> os<span class="token punctuation">.</span>name <span class="token operator">==</span> <span class="token string">'nt'</span><span class="token punctuation">:</span>
+        asyncio<span class="token punctuation">.</span>set_event_loop_policy<span class="token punctuation">(</span>asyncio<span class="token punctuation">.</span>WindowsSelectorEventLoopPolicy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> t0<span class="token punctuation">}</span></span><span class="token string"> seconds'</span></span><span class="token punctuation">)</span>
+</code></pre>
+<p>Корутина <code>async def get_file(url, session)</code> получает ссылку и сессию, в рамках которой надо выполнить запрос. Можно было бы создавать сессию на каждый запрос (как это и было в синхронном режиме), но это займет больше времени. В корутине асинхронно запускается <strong>get</strong> запрос, и пока программа ждет на него ответа, отправляет запросы на получения остальных файлов. По мере получения данных асинхронно вызывается функция <code>await
+            write_file()</code>, которая асинхронно "вычитывает" данные из полученного ответа и сохраняет их в файл на диск. Операция сохранения файла уже блокирующая. Так же по окончании работы с ответом надо его закрыть <code>response.close()</code> и после получения всех данных надо закрыть сессию <code>await session.close()</code>. Чтобы не писать каждый раз закрытие ответа и сессии, можно использовать асинхронный контекстный менеджер async with, по аналогии с синхронным with.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">get_file</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> url<span class="token punctuation">,</span> session<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"getting file number </span><span class="token interpolation"><span class="token punctuation">{</span>i<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">async</span> <span class="token keyword">with</span> session<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> allow_redirects<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span> <span class="token keyword">as</span> response<span class="token punctuation">:</span>
+        <span class="token keyword">await</span> write_file<span class="token punctuation">(</span>i<span class="token punctuation">,</span> response<span class="token punctuation">)</span>
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    url <span class="token operator">=</span> <span class="token string">'https://loremflickr.com/640/480'</span>
+    tasks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">async</span> <span class="token keyword">with</span> aiohttp<span class="token punctuation">.</span>ClientSession<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">as</span> session<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            task <span class="token operator">=</span> asyncio<span class="token punctuation">.</span>create_task<span class="token punctuation">(</span>get_file<span class="token punctuation">(</span>i<span class="token punctuation">,</span> url<span class="token punctuation">,</span> session<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            tasks<span class="token punctuation">.</span>append<span class="token punctuation">(</span>task<span class="token punctuation">)</span>
+        <span class="token keyword">await</span> asyncio<span class="token punctuation">.</span>gather<span class="token punctuation">(</span><span class="token operator">*</span>tasks<span class="token punctuation">)</span>
+</code></pre>
+<p><br/>Пример вывода и время работы программы:</p>
+<pre><code>getting file number 0
+getting file number 1
+getting file number 2
+getting file number 3
+getting file number 4
+getting file number 5
+getting file number 6
+getting file number 7
+getting file number 8
+        ...............
+        ...............
+getting file number 28
+getting file number 29
+writing file number 3
+writing file number 22
+writing file number 29
+writing file number 1
+writing file number 5
+writing file number 24
+        ...........
+        ...........
+writing file number 12
+writing file number 28
+1.3730313777923584 seconds
+    </code></pre>
+<p>Сначала все файлы были запущены на скачивание. Затем, по мере получения файлов, они записываются на диск. 30 файлов были обработаны за 1.37 секунды.</p>
+<p><strong>Получение результатов работы из асинхронной функции.</strong></p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> os
+<span class="token keyword">import</span> aiohttp
+<span class="token keyword">import</span> asyncio
+
+urls <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'http://www.google.com'</span><span class="token punctuation">,</span> <span class="token string">'http://www.yandex.ru'</span><span class="token punctuation">,</span> <span class="token string">'http://www.python.org'</span><span class="token punctuation">,</span> <span class="token string">'http://vk.com'</span><span class="token punctuation">]</span>
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">get_url</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span> session<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'GETTING URL: </span><span class="token interpolation"><span class="token punctuation">{</span>url<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">async</span> <span class="token keyword">with</span> session<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">)</span> <span class="token keyword">as</span> resp<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'URL </span><span class="token interpolation"><span class="token punctuation">{</span>url<span class="token punctuation">}</span></span><span class="token string"> RECEIVED STATUS: </span><span class="token interpolation"><span class="token punctuation">{</span>resp<span class="token punctuation">.</span>status<span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+        text <span class="token operator">=</span> <span class="token keyword">await</span> resp<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'URL </span><span class="token interpolation"><span class="token punctuation">{</span>url<span class="token punctuation">}</span></span><span class="token string"> LEN TEXT: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token builtin">len</span><span class="token punctuation">(</span>text<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> url<span class="token punctuation">,</span> text
+
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    counter <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token keyword">async</span> <span class="token keyword">with</span> aiohttp<span class="token punctuation">.</span>ClientSession<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">as</span> session<span class="token punctuation">:</span>
+        tasks <span class="token operator">=</span> <span class="token punctuation">[</span>get_url<span class="token punctuation">(</span>url<span class="token punctuation">,</span> session<span class="token punctuation">)</span> <span class="token keyword">for</span> url <span class="token keyword">in</span> urls<span class="token punctuation">]</span>
+        <span class="token keyword">for</span> future <span class="token keyword">in</span> asyncio<span class="token punctuation">.</span>as_completed<span class="token punctuation">(</span>tasks<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            counter <span class="token operator">+=</span> <span class="token number">1</span>
+            res_url<span class="token punctuation">,</span> res_text <span class="token operator">=</span> <span class="token keyword">await</span> future
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"the </span><span class="token interpolation"><span class="token punctuation">{</span>counter<span class="token punctuation">}</span></span><span class="token string"> len result for url </span><span class="token interpolation"><span class="token punctuation">{</span>res_url<span class="token punctuation">}</span></span><span class="token string"> was: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token builtin">len</span><span class="token punctuation">(</span>res_text<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> os<span class="token punctuation">.</span>name <span class="token operator">==</span> <span class="token string">'nt'</span><span class="token punctuation">:</span>
+        asyncio<span class="token punctuation">.</span>set_event_loop_policy<span class="token punctuation">(</span>asyncio<span class="token punctuation">.</span>WindowsSelectorEventLoopPolicy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>Для получения результатов работы из асинхронной функции используется <code>asyncio.as_completed()</code>. Эта функция принимает корутины, преобразует их в задачи и запускает на выполнение, она заменяет <code>asyncio.create_task()</code> и <code>asyncio.gather()</code>. В качестве результатов работы возвращает итератор, содержащий объекты типа <code>asyncio.Future</code>. Для каждого такого объекта надо вызвать await и он вернет результат работы корутины.</p>
+</section></article></section>

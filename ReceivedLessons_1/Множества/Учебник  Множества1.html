@@ -1,0 +1,193 @@
+<section class="lesson-material__content"><article class="material"><h1>Множества</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Объекты типа set</a></li>
+<li><a class="material__link" href="#2">Операции над множеством</a></li>
+<li><a class="material__link" href="#3">Операции над двумя множествами</a></li>
+<li><a class="material__link" href="#4">Сравнение множеств</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>В этом уроке мы обсудим множества Python. Этот тип данных аналогичен математическим множествам, он поддерживает быстрые операции проверки наличия элемента в множестве, добавления и удаления элементов, операции объединения, пересечения и вычитания множеств.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Объекты типа set</h2>
+<p>Мы написали уже много программ, работающих с данными, количество которых неизвестно на момент написания программы. Теперь было бы здорово уметь хранить в памяти неизвестное на момент написания программы количество данных. В этом нам помогут так называемые <strong>коллекции</strong> — специальные типы данных, которые умеют хранить несколько значений под одним именем. Первая из коллекций, с которой мы познакомимся, называется <strong>множество</strong>.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Множество</strong></p>
+<p>Множество — составной тип данных, представляющий собой несколько значений (элементов множества) под одним именем. Этот тип называется <var>set</var>, не создавайте, пожалуйста, переменные с таким именем! Чтобы задать множество, нужно в фигурных скобках перечислить его элементы.</p>
+</section>
+<p>Здесь создается множество из четырех элементов (названий млекопитающих), которое затем выводится на экран:</p>
+<pre class="language-python"><code class="language-python">mammals <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'cat'</span><span class="token punctuation">,</span> <span class="token string">'dog'</span><span class="token punctuation">,</span> <span class="token string">'fox'</span><span class="token punctuation">,</span> <span class="token string">'elephant'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>mammals<span class="token punctuation">)</span>
+</code></pre>
+<p>Введите этот код в Python и запустите программу несколько раз. Скорее всего, вы увидите разный порядок перечисления млекопитающих, так происходит потому, что элементы в множестве Python не упорядочены. Это позволяет быстро выполнять операции над множествами, о которых мы скоро поговорим чуть позже.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Создание множества</strong></p>
+<p>Для создания пустых множеств обязательно вызывать функцию <var>set</var>:</p>
+<pre class="language-python"><code class="language-python">empty <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<p>Обратите внимание: элементами множества могут быть строки или числа. Возникает вопрос: а может ли множество содержать и строки, и числа? Давайте попробуем:</p>
+<pre class="language-python"><code class="language-python">mammals_and_numbers <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'cat'</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token string">'dog'</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">'fox'</span><span class="token punctuation">,</span> <span class="token number">12</span><span class="token punctuation">,</span> <span class="token string">'elephant'</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>mammals_and_numbers<span class="token punctuation">)</span>
+</code></pre>
+<p>Как видим, множество может содержать и строки, и числа, а Python опять выводит элементы множества в случайном порядке. Заметьте, если поставить в программе оператор вывода множества на экран несколько раз, не изменяя само множество, порядок вывода элементов не изменится.</p>
+<p>Может ли элемент входить в множество несколько раз? Это было бы странно, так как совершенно непонятно, как отличить один элемент от другого. Нет смысла хранить несколько одинаковых объектов, удобно иметь контейнер, сохраняющий только уникальный объекты. Поэтому множество содержит каждый элемент только один раз. Следующий фрагмент кода это демонстрирует:</p>
+<pre class="language-python"><code class="language-python">birds <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'raven'</span><span class="token punctuation">,</span> <span class="token string">'sparrow'</span><span class="token punctuation">,</span> <span class="token string">'sparrow'</span><span class="token punctuation">,</span> <span class="token string">'dove'</span><span class="token punctuation">,</span> <span class="token string">'hawk'</span><span class="token punctuation">,</span> <span class="token string">'falcon'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>birds<span class="token punctuation">)</span>
+</code></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Итак, у множеств есть три ключевые особенности:</p>
+<ul>
+<li>Порядок элементов в множестве не определен</li>
+<li>Элементы множеств — строки и/или числа</li>
+<li>Множество не может содержать одинаковых элементов</li>
+</ul>
+</section>
+<p>Выполнение этих трех свойств позволяет организовать элементы множества в структуру со сложными взаимосвязями, благодаря которым можно быстро проверять наличие элементов в множестве, объединять множества и т. д. Но пока давайте обсудим ограничения.</p>
+</section>
+<section class="material__chapter">
+<h2 id="2">Операции над множеством</h2>
+<p>Простейшая операция — <strong>вычисление числа элементов</strong> множества. Для этого служит функция <var>len</var>. Мы уже встречались с этой функцией раньше, когда определяли длину строки:</p>
+<pre class="language-python"><code class="language-python">my_set <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">}</span>
+n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>my_set<span class="token punctuation">)</span>  <span class="token comment"># =&gt; 3</span>
+</code></pre>
+<p>Далее можно <strong>вывести элементы</strong> множества с помощью функции <var>print</var>:</p>
+<pre class="language-python"><code class="language-python">my_set <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_set<span class="token punctuation">)</span> <span class="token comment"># =&gt; {'b', 'c', 'a'}</span>
+</code></pre>
+<p>В вашем случае порядок может отличаться, так как правило упорядочивания элементов в множестве выбирается случайным образом при запуске интерпретатора Python.</p>
+<p>Очень часто необходимо <strong>обойти все элементы</strong> множества в цикле. Для этого используется цикл <var>for</var> и оператор <var>in</var>, с помощью которых можно перебрать не только все элементы диапазона (как мы это делали раньше, используя <var>range</var>), но и элементы множества:</p>
+<pre class="language-python"><code class="language-python">my_set <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">}</span>
+<span class="token keyword">for</span> elem <span class="token keyword">in</span> my_set<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>elem<span class="token punctuation">)</span>
+</code></pre>
+<p>такой код выводит:</p>
+<pre><samp>b
+a
+c</samp></pre>
+<p>Однако, как и в прошлый раз, в вашем случае порядок может отличаться: заранее он неизвестен. Код для работы с множествами нужно писать таким образом, чтобы он правильно работал при любом порядке обхода. Для этого надо знать два правила:</p>
+<ul>
+<li>Если мы не изменяли множество, порядок обхода элементов тоже не изменится</li>
+<li>После изменения множества порядок элементов может измениться произвольным образом</li>
+</ul>
+<p>Чтобы <strong>проверить наличие элемента</strong> в множестве, можно воспользоваться уже знакомым оператором <var>in</var>:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> elem <span class="token keyword">in</span> my_set<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Элемент есть в множестве'</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Элемента нет в множестве'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Выражение <code>elem in my_set</code> возвращает True, если элемент есть в множестве, и False, если его нет. Интересно, что эта операция для множеств в Python выполняется за время, не зависящее от мощности множества (количества его элементов).</p>
+<p><strong>Добавление элемента</strong> в множество делается при помощи <var>add</var>:</p>
+<pre class="language-python"><code class="language-python">new_elem <span class="token operator">=</span> <span class="token string">'e'</span>
+my_set<span class="token punctuation">.</span>add<span class="token punctuation">(</span>new_elem<span class="token punctuation">)</span>
+</code></pre>
+<p><var>add</var> — что-то вроде функции, «приклеенной» к конкретному множеству. Такие «приклеенные функции» называются <strong>методами</strong>.</p>
+<p>Таким образом, если в коде присутствует имя множества, затем точка и еще одно название со скобками, второе название — имя метода. Если элемент, равный <var>new_elem</var>, уже существует в множестве, оно не изменится, поскольку не может содержать одинаковых элементов. Ошибки при этом не произойдет. Небольшой пример:</p>
+<pre class="language-python"><code class="language-python">my_set <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+my_set<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token string">'a'</span><span class="token punctuation">)</span>
+my_set<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token string">'b'</span><span class="token punctuation">)</span>
+my_set<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token string">'a'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_set<span class="token punctuation">)</span>
+</code></pre>
+<p>Данный код три раза вызовет метод <var>add</var>, «приклеенный» к множеству <var>my_set</var>, а затем выведет либо <code>{'a', 'b'}</code>, либо <code>{'b', 'a'}</code>.</p>
+<p>С <strong>удалением элемента</strong> сложнее. Для этого есть сразу три метода: <var>discard</var> (удалить заданный элемент, если он есть в множестве, и ничего не делать, если его нет), <var>remove</var> (удалить заданный элемент, если он есть, и породить ошибку KeyError, если нет) и <var>pop</var>. Метод pop удаляет некоторый элемент из множества и возвращает его как результат. Порядок удаления при этом неизвестен.</p>
+<pre class="language-python"><code class="language-python">my_set <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">}</span>
+ 
+my_set<span class="token punctuation">.</span>discard<span class="token punctuation">(</span><span class="token string">'a'</span><span class="token punctuation">)</span>         <span class="token comment"># Удалён</span>
+my_set<span class="token punctuation">.</span>discard<span class="token punctuation">(</span><span class="token string">'hello'</span><span class="token punctuation">)</span>     <span class="token comment"># Не удалён, ошибки нет</span>
+my_set<span class="token punctuation">.</span>remove<span class="token punctuation">(</span><span class="token string">'b'</span><span class="token punctuation">)</span>          <span class="token comment"># Удалён</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>my_set<span class="token punctuation">)</span>               <span class="token comment"># В множестве остался один элемент 'c'</span>
+my_set<span class="token punctuation">.</span>remove<span class="token punctuation">(</span><span class="token string">'world'</span><span class="token punctuation">)</span>      <span class="token comment"># Не удалён, ошибка KeyError</span>
+</code></pre>
+<p>На первый взгляд, странно, что есть метод <var>remove</var>, который увеличивает количество падений вашей программы. Однако если вы на 100 % уверены, что элемент должен быть в множестве, то лучше получить ошибку во время отладки и исправить ее, чем тратить время на поиски при неправильной работе программы.</p>
+<p>Метод <var>pop</var> удаляет из множества случайный элемент и возвращает его значение:</p>
+<pre class="language-python"><code class="language-python">my_set <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'до удаления:'</span><span class="token punctuation">,</span> my_set<span class="token punctuation">)</span>
+elem <span class="token operator">=</span> my_set<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'удалённый элемент:'</span><span class="token punctuation">,</span> elem<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'после удаления:'</span><span class="token punctuation">,</span> my_set<span class="token punctuation">)</span>
+</code></pre>
+<p>Результат работы случаен, например, такой код может вывести следующее:</p>
+<pre><samp>до удаления: {'b', 'a', 'c'}
+удалённый элемент: b
+после удаления: {'a', 'c'}</samp></pre>
+<p>Если попытаться применить <var>pop</var> к пустому множеству, произойдет ошибка KeyError.</p>
+<p><strong>Очистить</strong> множество от всех элементов можно методом <var>clear</var>:</p>
+<pre class="language-python"><code class="language-python">my_set<span class="token punctuation">.</span>clear<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="3">Операции над двумя множествами</h2>
+<p>Есть четыре операции, которые из двух множеств делают новое множество: объединение, пересечение, разность и симметричная разность.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-9/set-union.svg" width="680"/></div>
+<p>Объединение двух множеств включает в себя все элементы, которые есть хотя бы в одном из них. Для этой операции существует метод <var>union</var>:</p>
+<pre class="language-python"><code class="language-python">union <span class="token operator">=</span> my_set1<span class="token punctuation">.</span>union<span class="token punctuation">(</span>my_set2<span class="token punctuation">)</span>
+</code></pre>
+<p>Или можно использовать оператор <var>|</var>:</p>
+<pre class="language-python"><code class="language-python">union <span class="token operator">=</span> my_set1 <span class="token operator">|</span> my_set2
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-9/set-intersection.svg" width="680"/></div>
+<p>Пересечение двух множеств включает в себя все элементы, которые есть в обоих множествах:</p>
+<pre class="language-python"><code class="language-python">intersection <span class="token operator">=</span> my_set1<span class="token punctuation">.</span>intersection<span class="token punctuation">(</span>my_set2<span class="token punctuation">)</span>
+</code></pre>
+<p>Или аналог:</p>
+<pre class="language-python"><code class="language-python">intersection <span class="token operator">=</span> my_set1 <span class="token operator">&amp;</span> my_set2
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-9/set-difference.svg" width="680"/></div>
+<p>Разность двух множеств включает в себя все элементы, которые есть в первом множестве, но которых нет во втором:</p>
+<pre class="language-python"><code class="language-python">diff <span class="token operator">=</span> my_set1<span class="token punctuation">.</span>difference<span class="token punctuation">(</span>my_set2<span class="token punctuation">)</span>
+</code></pre>
+<p>Или аналог:</p>
+<pre class="language-python"><code class="language-python">diff <span class="token operator">=</span> my_set1 <span class="token operator">-</span> my_set2
+</code></pre>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-9/set-symmetric_difference.svg" width="680"/></div>
+<p>Симметричная разность двух множеств включает в себя все элементы, которые есть только в одном из этих множеств:</p>
+<pre class="language-python"><code class="language-python">symm_diff <span class="token operator">=</span> my_set1<span class="token punctuation">.</span>symmetric_difference<span class="token punctuation">(</span>my_set2<span class="token punctuation">)</span>
+</code></pre>
+<p>Или аналогичный вариант:</p>
+<pre class="language-python"><code class="language-python">symm_diff <span class="token operator">=</span> my_set1 <span class="token operator">^</span> my_set2
+</code></pre>
+<p>Люди часто путают обозначения | и &amp;, поэтому рекомендуется вместо них писать <code>s1.union(s2)</code> и <code>s1.intersection(s2)</code>. Операции − и ^ перепутать сложнее, их можно записывать прямо так.</p>
+<pre class="language-python"><code class="language-python">s1 <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">}</span>
+s2 <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">,</span> <span class="token string">'d'</span><span class="token punctuation">}</span>
+union <span class="token operator">=</span> s1<span class="token punctuation">.</span>union<span class="token punctuation">(</span>s2<span class="token punctuation">)</span>                <span class="token comment"># {'a', 'b', 'c', 'd'}</span>
+intersection <span class="token operator">=</span> s1<span class="token punctuation">.</span>intersection<span class="token punctuation">(</span>s2<span class="token punctuation">)</span>  <span class="token comment"># {'a', 'c'}</span>
+diff <span class="token operator">=</span> s1 <span class="token operator">-</span> s2                      <span class="token comment"># {'b'}</span>
+symm_diff <span class="token operator">=</span> s1 <span class="token operator">^</span> s2                 <span class="token comment"># {'b', 'd'}</span>
+</code></pre>
+</section>
+<section class="material__chapter">
+<h2 id="4">Сравнение множеств</h2>
+<p>Все операторы сравнения множеств, а именно: <var>==</var>, <var>&lt;</var>, <var>&gt;</var>, <var>&lt;=</var>, <var>&gt;=</var>, возвращают True, если сравнение истинно, и False — в противном случае.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Равенство и неравенство множеств</strong></p>
+<p>Множества считаются равными, если они содержат одинаковые наборы элементов. Равенство множеств, как в случае с числами и строками, обозначается оператором <var>==</var>.</p>
+<p>Неравенство множеств обозначается оператором <var>!=</var>. Он работает противоположно оператору <var>==</var>.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">if</span> set1 <span class="token operator">==</span> set2<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Множества равны'</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Множества не равны'</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Обратите внимание на то, что у двух равных множеств могут быть разные порядки обхода, например, из-за того, что элементы в каждое из них добавлялись в разном порядке.</p>
+<p>Теперь перейдем к операторам <var>&lt;=</var>, <var>&gt;=</var>. Они означают «является подмножеством» и «является надмножеством».</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Подмножество и надмножество</strong></p>
+<p>Подмножество — некоторая выборка элементов множества, которая может быть как меньше множества, так и совпадать с ним, на что указывают символы «&lt;» и «=» в операторе <var>&lt;=</var>. Наоборот, надмножество включает все элементы некоторого множества и, возможно, какие-то еще.</p>
+</section>
+<pre class="language-python"><code class="language-python">s1 <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s1 <span class="token operator">&lt;=</span> s1<span class="token punctuation">)</span>  <span class="token comment"># True</span>
+ 
+s2 <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s2 <span class="token operator">&lt;=</span> s1<span class="token punctuation">)</span>  <span class="token comment"># True</span>
+s3 <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s3 <span class="token operator">&lt;=</span> s1<span class="token punctuation">)</span>  <span class="token comment"># True</span>
+s4 <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'z'</span><span class="token punctuation">}</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>s4 <span class="token operator">&lt;=</span> s1<span class="token punctuation">)</span>  <span class="token comment"># False</span>
+</code></pre>
+<p>Операция <code>s1 &lt; s2</code> означает «<var>s1</var> является подмножеством <var>s2</var>, но целиком не совпадает с ним». Операция <code>s1 &gt; s2</code> означает «<var>s1</var> является надмножеством <var>s2</var>, но целиком не совпадает с ним».</p>
+</section></article></section>

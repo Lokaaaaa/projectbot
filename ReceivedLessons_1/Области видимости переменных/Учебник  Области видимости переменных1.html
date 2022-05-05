@@ -1,0 +1,384 @@
+<section class="lesson-material__content"><article class="material"><h1>Области видимости переменных</h1>
+<section class="material__plan"><nav>
+<ol>
+<li><a class="material__link" href="#1">Локальные и глобальные переменные</a></li>
+<li><a class="material__link" href="#2">Области видимости</a></li>
+<li><a class="material__link" href="#3">Использование глобальных переменных</a></li>
+<li><a class="material__link" href="#4">Аргументы функций как локальные переменные</a></li>
+</ol>
+</nav></section>
+<section class="material__annotation">
+<h2>Аннотация</h2>
+<p>Сегодня речь пойдет об областях видимости переменных. Занятие будет посвящено в первую очередь переменным и лишь во вторую — функциям. Эти знания нечасто нужны для написания кода, но совершенно необходимы для понимания того, как программа работает. Это поможет вам не гадать, как ведет себя программа, и значительно сократит время, которое вы тратите на отладку.</p>
+</section>
+<section class="material__chapter">
+<h2 id="1">Локальные и глобальные переменные</h2>
+<p>Разбиение программы на функции позволяет сильно упростить программу. С помощью них реализуется принцип модульности, обеспечивающий изоляцию частей программы. Так, программисту необходимо оперировать только небольшим набором переменных, а не всеми сразу.</p>
+<p>Для того чтобы использовать только необходимые данные, придуманы области видимости, которые скрывают от одной части программы переменные, используемые в другой части программы. Хотя это делается автоматически, крайне важно понимать, как интерпретатор это делает, иначе неизбежны ошибки. А еще изредка вам будет нужно «обойти» эти ограничения и сделать переменную, доступную всем частям программы, и на такой случай вам придется познакомиться с глобальными переменными.</p>
+<p>На прошлых занятиях мы уже неоднократно использовали аргументы функций. Пользоваться ими вроде бы просто, но за кажущейся простотой скрывается много тонкостей:</p>
+<ul>
+<li>С какими переменными может работать функция?</li>
+<li>Что если в двух функциях переменные называются одинаково?</li>
+<li>Может ли функция изменить значение аргумента?</li>
+</ul>
+<p>Есть и много других вопросов. На этом занятии мы постараемся ответить на них.</p>
+<p>Вернемся к уже рассмотренной на прошлом занятии функции, которая должна выводить на экран содержимое списка, печатая каждый элемент на своей строчке. Посмотрим на переданный аргумент функции.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_array</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> element <span class="token keyword">in</span> array<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span>
+
+
+print_array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'Hello'</span><span class="token punctuation">,</span> <span class="token string">'world'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+print_array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">123</span><span class="token punctuation">,</span> <span class="token number">456</span><span class="token punctuation">,</span> <span class="token number">789</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Hello
+world
+123
+456
+789</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Локальная переменная</strong></p>
+<p>Переменная <var>array</var> будет <strong>локальной</strong>. Она существует только во время выполнения (или «жизни», как иногда говорят) функции. Можно сказать, что имя аргумента функции — <strong>временное имя</strong> для переданного в функцию значения.</p>
+</section>
+<p>Мы создали список <code>['Hello', 'world']</code> и передали его в функцию. Список существует независимо от того, есть у него имя или нет, но, если у объекта нет имени, мы не можем с ним работать. Поэтому у переданного списка временно появляется имя — в тот самый момент, когда функция начинает работу. Когда функция прекращает работу, оно исчезает.</p>
+<p>В вышеописанной программе имя <var>array</var> не существует вне функции.</p>
+<p>Что интересно, у каждого объекта в программе может быть несколько имен. Например, слегка модифицируем программу:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_array</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> element <span class="token keyword">in</span> array<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span>
+
+
+words <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'Hello'</span><span class="token punctuation">,</span> <span class="token string">'world'</span><span class="token punctuation">]</span>
+print_array<span class="token punctuation">(</span>words<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Hello
+world</samp></pre>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Теперь у списка есть имя <var>words</var>. Но в момент выполнения функции у этого списка существуют сразу два имени: <var>words</var> — имя из «внешнего мира», из <strong>глобальной области видимости</strong>, и <var>array</var> — локальное имя. В функции можно использовать любое из них, но внешнее — крайне не рекомендуется.</p>
+</section>
+<p>Давайте перепишем программу, используя внешнее имя, и разберемся, почему так делать не стоит:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_array</span><span class="token punctuation">(</span>array<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> element <span class="token keyword">in</span> words<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span>
+
+
+words <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'Hello'</span><span class="token punctuation">,</span> <span class="token string">'world'</span><span class="token punctuation">]</span>
+print_array<span class="token punctuation">(</span>words<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Hello
+world</samp></pre>
+<p>Пока все работает аналогично предыдущему примеру. А теперь выполним такую команду:</p>
+<pre class="language-python"><code class="language-python">print_array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'abc'</span><span class="token punctuation">,</span> <span class="token string">'def'</span><span class="token punctuation">,</span> <span class="token string">'ghi'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Hello
+world</samp></pre>
+<p>Мы рассчитывали, что будут распечатаны три строки: abc, def и ghi, но вместо этого снова распечатались Hello и world, которые находятся в списке <var>words</var>. Если ваша функция написана так, то, чтобы поменять ее поведение, придется не просто передать ей список, а перезаписать используемую переменную: <code>words = ['abc', 'def', 'ghi']</code>.</p>
+<p>Еще один минус: раньше вы могли прочитать три строки функции <var>print_array</var> и точно понять, как она будет работать. Теперь вам необходимо прочитать всю программу (а в большой программе могут быть тысячи строк), чтобы разобраться, как ведет себя эта функция, а все потому что она теперь не самодостаточна, а зависит от внешней переменной.</p>
+<p>Все, что вы сейчас узнали об использовании внешних переменных в функции, необходимо в первую очередь для поиска ошибок. Если программа ведет себя странно, проверьте, не используете ли вы где-то внешние (глобальные) переменные.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p><strong>Повторим: использовать в своих программах эту возможность языка стоит как можно реже.</strong></p>
+<p>К внешним переменным прибегать допустимо, если переменная — <strong>константа</strong>. Константы обычно пишутся большими буквами, чтобы не перепутать их с обычными переменными.</p>
+</section>
+<p>Давайте напишем функцию, которая по номеру печатает соответствующий цвет радуги:</p>
+<pre class="language-python"><code class="language-python">ENGLISH_RAINBOW_COLORS <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">'red'</span><span class="token punctuation">,</span> <span class="token string">'orange'</span><span class="token punctuation">,</span> <span class="token string">'yellow'</span><span class="token punctuation">,</span> <span class="token string">'green'</span><span class="token punctuation">,</span> <span class="token string">'blue'</span><span class="token punctuation">,</span> <span class="token string">'indigo'</span><span class="token punctuation">,</span> <span class="token string">'violet'</span>
+<span class="token punctuation">]</span>
+RUSSIAN_RAINBOW_COLORS <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">'красный'</span><span class="token punctuation">,</span> <span class="token string">'оранжевый'</span><span class="token punctuation">,</span> <span class="token string">'желтый'</span><span class="token punctuation">,</span> <span class="token string">'зеленый'</span><span class="token punctuation">,</span> <span class="token string">'голубой'</span><span class="token punctuation">,</span> <span class="token string">'синий'</span><span class="token punctuation">,</span>
+    <span class="token string">'фиолетовый'</span>
+<span class="token punctuation">]</span>
+
+
+<span class="token keyword">def</span> <span class="token function">rainbow_color</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span> russian_or_english<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> russian_or_english <span class="token operator">==</span> <span class="token string">'russian'</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>RUSSIAN_RAINBOW_COLORS<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">elif</span> russian_or_english <span class="token operator">==</span> <span class="token string">'english'</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>ENGLISH_RAINBOW_COLORS<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Неверный язык'</span><span class="token punctuation">)</span>
+
+
+rainbow_color<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">'russian'</span><span class="token punctuation">)</span>
+rainbow_color<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">'english'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>желтый
+yellow</samp></pre>
+<p>Эта функция будет работать нормально: предполагается, конечно, что в ходе работы программы никому не понадобится менять константы (на то они и константы).</p>
+<p>Заметьте, что мы не передаем эти константы в функцию как аргументы, а просто пользуемся ими. Они есть в нашем распоряжении, потому что определены на самом верхнем уровне.</p>
+<p>Однако, если константы надо использовать лишь в одной конкретной функции, лучше <strong>внести</strong> их в эту функцию. Тогда их точно никто не испортит.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">rainbow_color</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span> russian_or_english<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ENGLISH_RAINBOW_COLORS <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'red'</span><span class="token punctuation">,</span> <span class="token string">'orange'</span><span class="token punctuation">,</span> <span class="token string">'yellow'</span><span class="token punctuation">,</span>
+                              <span class="token string">'green'</span><span class="token punctuation">,</span> <span class="token string">'blue'</span><span class="token punctuation">,</span> <span class="token string">'indigo'</span><span class="token punctuation">,</span> <span class="token string">'violet'</span>
+                              <span class="token punctuation">]</span>
+    RUSSIAN_RAINBOW_COLORS <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'красный'</span><span class="token punctuation">,</span> <span class="token string">'оранжевый'</span><span class="token punctuation">,</span> <span class="token string">'желтый'</span><span class="token punctuation">,</span>
+                              <span class="token string">'зеленый'</span><span class="token punctuation">,</span> <span class="token string">'голубой'</span><span class="token punctuation">,</span> <span class="token string">'синий'</span><span class="token punctuation">,</span> <span class="token string">'фиолетовый'</span>
+                              <span class="token punctuation">]</span>
+    <span class="token keyword">if</span> russian_or_english <span class="token operator">==</span> <span class="token string">'russian'</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>RUSSIAN_RAINBOW_COLORS<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">elif</span> russian_or_english <span class="token operator">==</span> <span class="token string">'english'</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>ENGLISH_RAINBOW_COLORS<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Неверный язык'</span><span class="token punctuation">)</span>
+
+
+rainbow_color<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">'russian'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>желтый</samp></pre>
+</section>
+<section class="material__chapter">
+<h2 id="2">Области видимости</h2>
+<p>Давайте поговорим об области видимости переменных немного подробнее.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Области видимости переменных</strong></p>
+<p>Сформулируем общее правило, касающееся видимости переменных:</p>
+<ol>
+<li>Внутри функции видны все переменные этой функции (локальные переменные и аргументы функции).</li>
+<li>Внутри функции видны переменные, которые определены снаружи этой функции.</li>
+<li>Снаружи не видны никакие переменные, которые определены внутри функции.</li>
+</ol>
+</section>
+<p>Принцип такой же, как в машине с тонированными стеклами: изнутри видны все наружные объекты (и внутренние, конечно же), а вот снаружи посмотреть в машину не получается.</p>
+<p>Но вот вопрос: что же произойдет, если имена переменных в функции и во внешней программе совпадут?</p>
+<p>Оказывается, есть два варианта.</p>
+<p>Первый вариант мы уже видели: ситуация, когда внутри функции используется внешняя переменная, и это ровно та же внешняя переменная, что была снаружи. В следующем примере — это переменная <var>PI</var>.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_circle_length</span><span class="token punctuation">(</span>radius<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    perimeter <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> PI <span class="token operator">*</span> radius
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Длина окружности: '</span><span class="token punctuation">,</span> perimeter<span class="token punctuation">)</span>
+
+
+PI <span class="token operator">=</span> <span class="token number">3.14</span>
+print_circle_length<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Длина окружности:  62.800000000000004</samp></pre>
+<p>Второй вариант — ситуация, когда внутри функции используется переменная с тем же именем, что и в основной программе, но перед использованием ей присваивается новое значение.</p>
+<pre class="language-python"><code class="language-python">area <span class="token operator">=</span> <span class="token string">'Красная площадь'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">print_square_area</span><span class="token punctuation">(</span>length<span class="token punctuation">,</span> width<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    area <span class="token operator">=</span> length <span class="token operator">*</span> width
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Площадь площади: '</span><span class="token punctuation">,</span> area<span class="token punctuation">)</span>
+
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Место встречи: '</span><span class="token punctuation">,</span> area<span class="token punctuation">)</span>
+print_square_area<span class="token punctuation">(</span><span class="token number">330</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Повторяю, место встречи: '</span><span class="token punctuation">,</span> area<span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Место встречи:  Красная площадь
+Площадь площади:  24750
+Повторяю, место встречи:  Красная площадь</samp></pre>
+<p>Если попытаться мысленно выполнить программу, кажется, что функция должна <strong>испортить</strong> внешнюю переменную <var>area</var>, записав в нее вместо строки «Красная площадь» число, равное площади прямоугольника со сторонами <var>length</var> и <var>area</var>. Но этого не происходит. Когда после выполнения функции мы повторяем печать, оказывается, что переменная area все так же содержит строку «Красная площадь», хотя внутри функции там точно было число.</p>
+<p>Что же произошло?</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Оказывается, <var>area</var> внутри функции и снаружи — это две <strong>совершенно разные</strong> переменные. Если внутри функции переменной что-то присваивается (в любом месте функции), интерпретатор не позволит вам работать с внешней переменной.</p>
+<p>Вместо этого он создает <strong>новую</strong> переменную с тем же именем и присваивает значение уже ей. При этом к внешней переменной вы обратиться уже не можете: внутри функции она потеряла свое имя.</p>
+</section>
+<p>Как иногда говорят, внутренняя переменная с тем же именем ее <strong>перекрыла</strong>, или <strong>затенила</strong> (на английском языке это называется variable shadowing).</p>
+<p>На рисунке представлена визуализация описанного принципа.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-20/variable-shadowing.svg" width="680"/></div>
+<p>Это сделано для того, чтобы обезопасить вас от ошибок. Если бы функция могла менять внешние переменные, в программе происходило бы много странных и непонятных вещей.</p>
+<p>Например, представьте, что вы написали функцию, которая вычисляет площадь и записывает что-то в переменную <var>area</var>. При этом в основной программе переменной <var>area</var> у вас не было, поэтому все работало хорошо. Потом вы в какой-то момент ввели переменную <var>area</var> — теперь функция, которая работала хорошо и безопасно, стала менять значение <var>area</var> во внешней программе. Вам бы пришлось долго искать в программе ошибку, из-за которой вы встречаетесь на площади 24 750.</p>
+<p>Именно поэтому области видимости так важны. Они позволяют изолировать небольшой кусочек программы, в котором ваши изменения на что-то влияют. Благодаря областям видимости не окажется так, что вы поменяли строку в одной функции, а сломалась другая.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Для того чтобы не вносить в программу лишние глобальные переменные, часто весь код с внешнего уровня программы (т. е. все, что не находится внутри функции) переносят в отдельную функцию <var>main</var>. После этого остается только вызвать ее. Все переменные, которые были глобальными, таким образом, становятся локальными для функции <var>main</var> и не загрязняют область видимости других функций.</p>
+</section>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">print_square_area</span><span class="token punctuation">(</span>length<span class="token punctuation">,</span> width<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    area <span class="token operator">=</span> length <span class="token operator">*</span> width
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Площадь площади: '</span><span class="token punctuation">,</span> area<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    area <span class="token operator">=</span> <span class="token string">'Красная площадь'</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Место встречи: '</span><span class="token punctuation">,</span> area<span class="token punctuation">)</span>
+    print_square_area<span class="token punctuation">(</span><span class="token number">330</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Повторяю, место встречи: '</span><span class="token punctuation">,</span> area<span class="token punctuation">)</span>
+
+
+main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Место встречи:  Красная площадь
+Площадь площади:  24750
+Повторяю, место встречи:  Красная площадь</samp></pre>
+<p>Снова посмотрим на визуализацию принципа выделения функции <var>main</var>:</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-20/separate-scopes.svg" width="680"/></div>
+</section>
+<section class="material__chapter">
+<h2 id="3">Использование глобальных переменных</h2>
+<p>Впрочем, если у вас есть глобальная переменная и вам зачем-то очень нужно повлиять на эту внешнюю переменную, это можно сделать.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Для изменения глобальной переменной перед тем, как присваивать внутри функции этой переменной какое-то значение, нужно указать, что она глобальная, т. е. относится к внешней области видимости.</p>
+</section>
+<p>Например, напишем функцию, которая при вызове будет обновлять счетчик, считающий, сколько раз вызвана эта функция.</p>
+<pre class="language-python"><code class="language-python">ask_number <span class="token operator">=</span> <span class="token number">0</span>
+
+
+<span class="token keyword">def</span> <span class="token function">ask_again</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> ask_number
+    ask_number <span class="token operator">=</span> ask_number <span class="token operator">+</span> <span class="token number">1</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ты спрашиваешь меня уже в '</span><span class="token punctuation">,</span> ask_number<span class="token punctuation">,</span> <span class="token string">'-й раз'</span><span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+
+
+ask_again<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ask_again<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ask_again<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Ты спрашиваешь меня уже в 1-й раз
+Ты спрашиваешь меня уже в 2-й раз
+Ты спрашиваешь меня уже в 3-й раз</samp></pre>
+<p>Хотя переменной <var>ask_number</var> и присваивается значение, она является внешней переменной за счет строчки <code>global ask_number</code>.</p>
+<p>Мы уже не раз говорили, но повторим еще раз: о глобальных переменных нужно помнить и знать, но использовать их в своих программах крайне не рекомендуется.</p>
+<p>Менять внутри функции значение внешней переменной еще хуже, чем использовать внешние переменные, не изменяя их. Старайтесь писать функции, которые минимально зависят от всего, что происходит снаружи.</p>
+<p>Но давайте теперь немного поэкспериментируем с нашей программой. Уберем строку, которая делала переменную глобальной. Когда мы запустим программу, интерпретатор выдаст ошибку:</p>
+<pre class="language-python"><code class="language-python">ask_number <span class="token operator">=</span> <span class="token number">0</span>
+
+
+<span class="token keyword">def</span> <span class="token function">ask_again</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ask_number <span class="token operator">=</span> ask_number <span class="token operator">+</span> <span class="token number">1</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ты спрашиваешь меня уже в '</span><span class="token punctuation">,</span> ask_number<span class="token punctuation">,</span> <span class="token string">'-й раз'</span><span class="token punctuation">,</span> sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+
+
+ask_again<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ask_again<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ask_again<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>UnboundLocalError                         Traceback (most recent call last)
+&lt;ipython-input-15-1733b3dfd088&gt; in &lt;module&gt;()
+      7 
+      8 
+----&gt; 9 ask_again()
+     10 ask_again()
+     11 ask_again()
+
+&lt;ipython-input-15-1733b3dfd088&gt; in ask_again()
+      3 
+      4 def ask_again():
+----&gt; 5     ask_number = ask_number + 1
+      6     print('Ты спрашиваешь меня уже в ', ask_number, '-й раз', sep='')
+      7
+UnboundLocalError: local variable 'ask_number' referenced before assignment</samp></pre>
+<p>В переводе на русский язык это означает, что вы ссылаетесь на локальную переменную <var>ask_number</var>, прежде чем ей присвоено значение. Это происходит потому, что присваивание сделало переменную локальной.</p>
+<p>Но в конструкции <code>ask_number = ask_number + 1</code> cначала выполняется правая часть, в которой мы пытаемся эту локальную переменную использовать.</p>
+<p>Однако использовать ее пока нельзя, так как она к этому моменту еще не существует. Как вы должны помнить, локальные переменные создаются в момент присваивания и до этого использовать их нельзя.</p>
+<p>Одна из немногих причин использовать глобальные переменные — возможность сохранить какие-то данные между вызовами функции. Функция не может ничего сохранить «на будущее» в локальных переменных, поскольку они исчезнут, после того как интерпретатор вернется из функции. Зато, если функция при первом вызове сохранит что-либо в глобальную переменную, при следующих вызовах эти данные будут доступны для чтения (и для изменения). Но не забудьте, что глобальная переменная может быть изменена не только из этой функции, но и в любом другом месте программы, так что вы должны внимательно следить за тем, чтобы значение вашей переменной не испортилось между вызовами функции.</p>
+</section>
+<section class="material__chapter">
+<h2 id="4">Аргументы функций как локальные переменные</h2>
+<p>Внимательный читатель мог заметить, что мы не рассмотрели еще один случай (точнее, даже два) использования переменных с одинаковыми именами.</p>
+<p>Это случай, когда имя локальной переменной совпадает с именем <strong>аргумента функции</strong>, и случай, когда имя внешней переменной совпадает с именем аргумента.</p>
+<p>Первая программа:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Привет,"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+    name <span class="token operator">=</span> <span class="token string">'товарищ'</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Здравствуй,"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+
+
+greet<span class="token punctuation">(</span><span class="token string">'Вася'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Привет, Вася
+Здравствуй, товарищ</samp></pre>
+<p>Вторая программа:</p>
+<pre class="language-python"><code class="language-python">name <span class="token operator">=</span> <span class="token string">'Петя'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">greet</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Привет,"</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+
+
+greet<span class="token punctuation">(</span><span class="token string">'Вася'</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>Привет, Вася</samp></pre>
+<p>Работу обеих программ очень легко объяснить. Они выполняются именно так, потому что аргумент функции — по сути обыкновенная локальная переменная. В момент вызова функции происходит присваивание значения «Вася» этой локальной переменной. А дальше программист волен ее использовать и изменять, как ему вздумается.</p>
+<section class="material__note">
+<p class="material__note-heading"><strong>Важно!</strong></p>
+<p>Аргумент функции всегда является локальной переменной, а значит, будет иметь приоритет над внешней переменной с тем же именем.</p>
+</section>
+<p>Рассмотрим еще одну задачу «Физическое моделирование». Физики часто используют компьютерное моделирование, чтобы понять, как протекает физический процесс. Для этого они описывают физическую систему несколькими переменными, которые изменяются во времени по некоторому закону. Мы будем моделировать очень простую систему: движение камня, который бросили под углом 45° к горизонту. Задача состоит в том, чтобы определить координаты тела в любой момент времени. На камень вдоль оси Y действует только сила тяжести. Из механики вам известно, что движение будет происходить по параболе.</p>
+<div class="material__content-positioner"><img class="material__illustration" height="auto" src="https://yastatic.net/s3/lyceum/content/images/first-year/lesson-20/lesson-20.jpg" width="680"/></div>
+<p>Мы знаем, что на камень действует ускорение свободного падения вдоль вертикальной оси.</p>
+<p>a<sub>x</sub> = 0; a<sub>y</sub> = -g = −9.81 м/с<sup>2</sup></p>
+<p>Ускорение остается постоянным в течение всего времени, пока камень не столкнется с землей. Оно будет изменять скорость. За время Δt скорости изменятся на величины:</p>
+<p>Δv<sub>x</sub> = a<sub>x</sub>Δt; Δv<sub>y</sub> = a<sub>y</sub>Δt</p>
+<p>Давайте теперь предположим, что внутри этого промежутка времени Δt скорость не меняется. Тогда на этом коротеньком промежутке тело двигается равномерно и прямолинейно, а координаты изменятся на величины:</p>
+<p>Δx = v<sub>x</sub>Δt; Δy = v<sub>y</sub>Δt</p>
+<p>Получается, что мы разбили движение на отрезки, которые тело проходит с постоянной скоростью и по прямой. Но если отрезки сделать очень маленькими, окажется, что на каждом отрезке камень действительно не успевает сильно изменить ни скорость, ни направление. В итоге отрезки выстраиваются в траекторию, которая очень близка к тому, как тело будет двигаться на самом деле.</p>
+<p>Теперь мы можем найти координаты и скорости в каждый последующий момент времени, зная их значения в предыдущий:</p>
+<p>v<sub>xпослед</sub> = v<sub>xпред</sub> + a<sub>x</sub>Δt</p>
+<p>v<sub>yпослед</sub> = v<sub>yпред</sub> + a<sub>y</sub>Δt</p>
+<p>x<sub>послед</sub> = x<sub>пред</sub> + v<sub>xпред</sub>Δt</p>
+<p>y<sub>послед</sub> = у<sub>пред</sub> + v<sub>упред</sub>Δt</p>
+<p>Чтобы окончательно решить задачу, нам остается указать координаты и скорости в начальный момент. Мы зададим координаты нулевыми, а проекции скорости вдоль осей x и y — равными 10 м/с (бросок под углом 45°).</p>
+<p>Пересчитывать скорости и координаты мы будем каждые 0,05 с. Чтобы получить еще более плавное движение, можно взять интервал времени поменьше.</p>
+<p>Вот простенькая программа для вычисления траектории камня:</p>
+<pre class="language-python"><code class="language-python">dt <span class="token operator">=</span> <span class="token number">0.05</span>  <span class="token comment"># Шаг по времени</span>
+ax<span class="token punctuation">,</span> ay <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">9.81</span>  <span class="token comment"># Ускорения вдоль осей</span>
+x<span class="token punctuation">,</span> y <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span>  <span class="token comment"># Начальные координаты</span>
+vx<span class="token punctuation">,</span> vy <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span>  <span class="token comment"># Начальные скорости</span>
+
+<span class="token keyword">while</span> y <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token comment"># Обновляем скорости</span>
+    vx <span class="token operator">+=</span> ax <span class="token operator">*</span> dt
+    vy <span class="token operator">+=</span> ay <span class="token operator">*</span> dt
+    <span class="token comment"># Обновляем координаты</span>
+    x <span class="token operator">+=</span> vx <span class="token operator">*</span> dt
+    y <span class="token operator">+=</span> vy <span class="token operator">*</span> dt
+    <span class="token comment"># Точки траектории печатаем округленными до 3 знака</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">round</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">round</span><span class="token punctuation">(</span>y<span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><samp>0.5 0.475
+1.0 0.926
+1.5 1.353
+2.0 1.755
+2.5 2.132
+3.0 2.485
+3.5 2.813
+4.0 3.117
+4.5 3.396
+5.0 3.651
+5.5 3.881
+6.0 4.087
+6.5 4.268
+7.0 4.425
+7.5 4.557
+8.0 4.665
+8.5 4.748
+9.0 4.806
+9.5 4.84
+10.0 4.85
+10.5 4.835
+11.0 4.795
+11.5 4.731
+12.0 4.642
+12.5 4.529
+13.0 4.392
+13.5 4.23
+14.0 4.043
+14.5 3.832
+15.0 3.596
+15.5 3.336
+16.0 3.051
+16.5 2.741
+17.0 2.408
+17.5 2.049
+18.0 1.666
+18.5 1.259
+19.0 0.827
+19.5 0.37
+20.0 -0.111</samp></pre>
+<p><strong>Ваша задача</strong> — завести отдельную функцию <code>update_coordinates()</code>, которая будет обновлять значения координат и скоростей.</p>
+<p>Перепишите эту программу в трех разных вариантах.</p>
+<p>В первом варианте <var>x</var> и <var>y</var>, <var>vx</var> и <var>vy</var> должны быть отдельными переменными, как это сделано сейчас. Однако они должны обновляться внутри функции.</p>
+<p>Во втором варианте координаты и скорости должны быть записаны в два списка, а функция должна обновлять эти списки:</p>
+<pre class="language-python"><code class="language-python">coords <span class="token operator">=</span> <span class="token punctuation">[</span>x<span class="token punctuation">,</span> y<span class="token punctuation">]</span>
+velocities <span class="token operator">=</span> <span class="token punctuation">[</span>vx<span class="token punctuation">,</span> vy<span class="token punctuation">]</span>
+</code></pre>
+<p>Напомним, что кортежи отличаются от списков тем, что они неизменяемы.</p>
+<p>В третьем варианте <var>x</var> и <var>y</var>, <var>vx</var> и <var>vy</var> должны быть записаны в два кортежа, а функция должна обновлять эти кортежи:</p>
+<pre class="language-python"><code class="language-python">coords <span class="token operator">=</span> <span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+velocities <span class="token operator">=</span> <span class="token punctuation">(</span>vx<span class="token punctuation">,</span> vy<span class="token punctuation">)</span>
+</code></pre>
+<p>Объясните, чем третий вариант принципиально отличается от первых двух.</p>
+</section></article></section>
